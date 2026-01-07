@@ -38,8 +38,8 @@ export default function StrategiesPage() {
       const activeData = await activeRes.json()
 
       if (strategiesData.success && strategiesData.strategies) {
-        const activeIds = new Set(
-          activeData.strategies?.map((s: any) => s.strategyId) || []
+        const activeIds = new Set<string>(
+          activeData.strategies?.map((s: any) => s.strategyId as string) || []
         )
         setActiveStrategies(activeIds)
         setStrategies(strategiesData.strategies)

@@ -15,8 +15,9 @@ function createPrismaClient() {
 
     const adapter = new PrismaLibSQL(libsql)
 
+    // @ts-ignore - Turso adapter type compatibility
     return new PrismaClient({
-      adapter: adapter as any,
+      adapter,
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     })
   }

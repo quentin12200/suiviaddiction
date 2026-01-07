@@ -146,14 +146,14 @@ async function generateStrategies(analysis: any) {
   }
 
   const topTriggers = Array.from(analysis.topTriggers.entries())
-    .sort((a, b) => (b[1] as number) - (a[1] as number))
+    .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
     .slice(0, 3)
-    .map(([trigger]) => trigger as string)
+    .map(([trigger]) => trigger)
 
   const topEmotions = Array.from(analysis.emotionalStates.entries())
-    .sort((a, b) => (b[1] as number) - (a[1] as number))
+    .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
     .slice(0, 3)
-    .map(([emotion]) => emotion as string)
+    .map(([emotion]) => emotion)
 
   const prompt = `Tu es un coach spécialisé dans l'accompagnement au changement et la gestion des addictions. Analyse ce profil et génère 5 stratégies personnalisées et concrètes.
 

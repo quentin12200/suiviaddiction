@@ -145,13 +145,13 @@ async function generateStrategies(analysis: any) {
     return getDefaultStrategies(analysis)
   }
 
-  const topTriggers = Array.from(analysis.topTriggers.entries())
-    .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+  const topTriggers = (Array.from(analysis.topTriggers.entries()) as Array<[string, number]>)
+    .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(([trigger]) => trigger)
 
-  const topEmotions = Array.from(analysis.emotionalStates.entries())
-    .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+  const topEmotions = (Array.from(analysis.emotionalStates.entries()) as Array<[string, number]>)
+    .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(([emotion]) => emotion)
 

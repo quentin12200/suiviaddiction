@@ -8,10 +8,12 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient }
 function createPrismaClient() {
   // Si on utilise Turso (URL libsql://)
   if (process.env.DATABASE_URL?.startsWith('libsql://')) {
+    // Convertir libsql:// en https:// pour éviter les vérifications de migration
+    const httpsUrl = process.env.DATABASE_URL.replace('libsql://', 'https://')
+
     const libsql = createClient({
-      url: process.env.DATABASE_URL,
+      url: httpsUrl,
       authToken: process.env.DATABASE_AUTH_TOKEN,
-      syncInterval: 0, // Désactiver la synchronisation automatique
     })
 
     const adapter = new PrismaLibSQL(libsql)

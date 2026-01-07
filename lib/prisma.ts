@@ -16,7 +16,7 @@ function createPrismaClient() {
     const adapter = new PrismaLibSQL(libsql)
 
     return new PrismaClient({
-      adapter,
+      adapter: adapter as any,
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     })
   }

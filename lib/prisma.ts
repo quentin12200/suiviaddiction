@@ -11,6 +11,7 @@ function createPrismaClient() {
     const libsql = createClient({
       url: process.env.DATABASE_URL,
       authToken: process.env.DATABASE_AUTH_TOKEN,
+      syncInterval: 0, // Désactiver la synchronisation automatique
     })
 
     const adapter = new PrismaLibSQL(libsql)

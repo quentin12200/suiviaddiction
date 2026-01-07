@@ -21,6 +21,7 @@ export default function Navigation() {
     { href: '/new', label: 'Nouvelle entrée' },
     { href: '/history', label: 'Historique' },
     { href: '/goals', label: 'Objectifs' },
+    { href: '/strategies', label: 'Stratégies' },
     { href: '/import', label: 'Importer CSV' },
   ]
 

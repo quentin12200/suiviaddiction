@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navigation from './components/Navigation'
 import FreedomScore from './components/FreedomScore'
 import AIEncouragement from './components/AIEncouragement'
+import ActiveStrategies from './components/ActiveStrategies'
 import {
   LineChart,
   Line,
@@ -124,6 +125,9 @@ export default function DashboardPage() {
 
         {/* Encouragement IA */}
         <AIEncouragement />
+
+        {/* Stratégies Actives */}
+        <ActiveStrategies />
 
         {/* Résumé du jour */}
         <div className={styles.grid}>

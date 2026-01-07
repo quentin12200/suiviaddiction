@@ -1,0 +1,5 @@
+# Vercel ignore file
+.env
+.env.local
+*.db
+*.db-journal

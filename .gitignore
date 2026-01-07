@@ -40,4 +40,5 @@ prisma/dev.db-journal
 *.db-journal
 
 # csv data
-data/
+data/*.csv
+!data/*.example.csv

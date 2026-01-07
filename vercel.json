@@ -1,0 +1,10 @@
+{
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "DATABASE_AUTH_TOKEN": "@database_auth_token",
+    "APP_USERNAME": "@app_username",
+    "APP_PASSWORD": "@app_password",
+    "SESSION_SECRET": "@session_secret"
+  }
+}

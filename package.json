@@ -1,0 +1,38 @@
+{
+  "name": "suiviaddiction",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "postinstall": "prisma generate",
+    "import:csv": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/importCsv.ts"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@prisma/client": "^5.18.0",
+    "@prisma/adapter-libsql": "^5.18.0",
+    "@libsql/client": "^0.6.0",
+    "bcryptjs": "^2.4.3",
+    "recharts": "^2.12.0",
+    "csv-parse": "^5.5.6",
+    "iron-session": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/bcryptjs": "^2.4.6",
+    "typescript": "^5",
+    "prisma": "^5.18.0",
+    "ts-node": "^10.9.2"
+  }
+}

@@ -1,0 +1,6 @@
+Date,Heure,Ai-je fumé ? (O/N),Nombre de joints,Heure du joint,Intervalle depuis dernier joint (min),Envie de fumer (0-10),État émotionnel,État physique,Contexte / activité,Déclencheur,Action alternative (si pas fumé),Décision consciente (O/N),Commentaire libre (texte intégral)
+2024-01-01,09:00,N,0,,480,3,Calme,Bien,Maison,Routine,Méditation,O,Bon réveil sans envie de fumer
+2024-01-01,14:30,O,1,14:30,330,7,Stressé,Tendu,Travail,Stress,,O,Projet urgent stressant
+2024-01-01,19:00,O,2,19:00,270,5,Calme,Relaxé,Maison,Routine,,O,Retour à la maison
+2024-01-02,10:00,N,0,,900,2,Joyeux,Énergique,Extérieur,Social,Marche,O,Belle journée ensoleillée
+2024-01-02,16:00,O,1,16:00,360,8,Anxieux,Fatigué,Maison,Ennui,,N,Difficulté à résister

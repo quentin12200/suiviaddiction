@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { getIronSession } from 'iron-session'
-import { SessionData } from '@/lib/session'
 
 // Routes publiques qui ne nécessitent pas d'authentification
 const publicRoutes = ['/login', '/api/auth/login']
@@ -14,22 +12,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Vérifier la session
-  const response = NextResponse.next()
-  const session = await getIronSession<SessionData>(request, response, {
-    password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
-    cookieName: 'suiviaddiction_session',
-    cookieOptions: {
-      secure: process.env.NODE_ENV === 'production',
-    },
-  })
+  // Vérifier la présence du cookie de session
+  // Note: On ne peut pas décrypter iron-session dans Edge Runtime
+  // La vérification réelle se fait au niveau des API routes
+  const sessionCookie = request.cookies.get('suiviaddiction_session')
 
-  // Si pas connecté, rediriger vers login
-  if (!session.isLoggedIn) {
+  // Si pas de cookie de session, rediriger vers login
+  if (!sessionCookie) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {

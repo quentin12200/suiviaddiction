@@ -15,11 +15,13 @@ function createPrismaClient() {
 
     const adapter = new PrismaLibSQL(libsql)
 
-    // @ts-ignore - Turso adapter type compatibility
-    return new PrismaClient({
+    // Type assertion pour compatibilité Turso adapter
+    const options: any = {
       adapter,
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    })
+    }
+
+    return new PrismaClient(options)
   }
 
   // Sinon utilisation classique (SQLite local)

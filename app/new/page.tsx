@@ -52,6 +52,7 @@ export default function NewEntryPage() {
         setSuccess(true)
         setTimeout(() => {
           router.push('/')
+          router.refresh() // Force le rechargement des données du dashboard
         }, 1500)
       } else {
         setError(data.error || 'Erreur lors de la création')

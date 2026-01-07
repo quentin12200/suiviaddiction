@@ -11,7 +11,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "postinstall": "prisma generate",
+    "db:migrate": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/migrate-db.ts",
+    "postinstall": "prisma generate && npm run db:migrate || true",
     "import:csv": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/importCsv.ts"
   },
   "dependencies": {

@@ -46,6 +46,7 @@ interface DashboardStats {
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     fetchStats()
@@ -53,6 +54,7 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
+      setLoading(true)
       const response = await fetch('/api/stats/dashboard')
       const data = await response.json()
       setStats(data)
@@ -61,6 +63,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1)
+    fetchStats()
   }
 
   if (loading) {
@@ -118,16 +125,21 @@ export default function DashboardPage() {
     <div>
       <Navigation />
       <div className={styles.container}>
-        <h1 className={styles.title}>Tableau de bord</h1>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Tableau de bord</h1>
+          <button onClick={handleRefresh} className={styles.refreshButton} disabled={loading}>
+            {loading ? '🔄 Rafraîchissement...' : '🔄 Rafraîchir'}
+          </button>
+        </div>
 
         {/* Score de Liberté */}
-        <FreedomScore />
+        <FreedomScore key={`freedom-${refreshKey}`} />
 
         {/* Encouragement IA */}
-        <AIEncouragement />
+        <AIEncouragement key={`ai-${refreshKey}`} />
 
         {/* Stratégies Actives */}
-        <ActiveStrategies />
+        <ActiveStrategies key={`strategies-${refreshKey}`} />
 
         {/* Résumé du jour */}
         <div className={styles.grid}>

@@ -71,9 +71,18 @@ export default function NewEntryPage() {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
 
+    let processedValue: any = value
+
+    // Convertir les nombres
+    if (type === 'number' || type === 'range') {
+      processedValue = parseInt(value, 10) || 0
+    } else if (type === 'checkbox') {
+      processedValue = checked
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: processedValue,
     }))
   }
 

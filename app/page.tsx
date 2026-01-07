@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navigation from './components/Navigation'
+import AIEncouragement from './components/AIEncouragement'
 import {
   LineChart,
   Line,
@@ -116,6 +117,9 @@ export default function DashboardPage() {
       <Navigation />
       <div className={styles.container}>
         <h1 className={styles.title}>Tableau de bord</h1>
+
+        {/* Encouragement IA */}
+        <AIEncouragement />
 
         {/* Résumé du jour */}
         <div className={styles.grid}>

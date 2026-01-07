@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navigation from './components/Navigation'
+import FreedomScore from './components/FreedomScore'
 import AIEncouragement from './components/AIEncouragement'
 import {
   LineChart,
@@ -117,6 +118,9 @@ export default function DashboardPage() {
       <Navigation />
       <div className={styles.container}>
         <h1 className={styles.title}>Tableau de bord</h1>
+
+        {/* Score de Liberté */}
+        <FreedomScore />
 
         {/* Encouragement IA */}
         <AIEncouragement />

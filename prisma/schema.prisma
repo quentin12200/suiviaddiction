@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle pour suivre chaque entrée de journal d'addiction
+model Entry {
+  id                    String   @id @default(cuid())
+  date                  DateTime
+  time                  String   // Format HH:mm
+  hasSmoked             Boolean
+  jointCount            Int      @default(0)
+  jointTime             String?  // Heure du joint si différente
+  minutesSinceLastJoint Int?
+  cravingLevel          Int      // 0-10
+  emotionalState        String   @default("")
+  physicalState         String   @default("")
+  context               String   @default("")
+  trigger               String   @default("")
+  alternativeAction     String   @default("")
+  consciousDecision     Boolean  @default(false)
+  comment               String   @default("")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([date])
+}
+
+// Modèle pour les objectifs journaliers
+model DailyGoal {
+  id                  String   @id @default(cuid())
+  date                DateTime @unique
+  maxJoints           Int      // Nombre maximum de joints autorisés
+  minIntervalMinutes  Int      // Intervalle minimum entre joints (en minutes)
+  note                String   @default("")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([date])
+}

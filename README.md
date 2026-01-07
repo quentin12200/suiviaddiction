@@ -171,17 +171,22 @@ L'intervalle depuis le dernier joint est calculé automatiquement.
 
 ## 🚢 Déploiement
 
-### Vercel (recommandé)
+### Vercel + Turso (recommandé) ⭐
 
-1. Push le code sur GitHub
-2. Connecter le repository à Vercel
-3. Configurer les variables d'environnement dans Vercel :
-   - `APP_USERNAME`
-   - `APP_PASSWORD`
-   - `SESSION_SECRET`
-   - `DATABASE_URL` (utiliser un provider comme Turso pour SQLite en production)
+**👉 [Guide complet de déploiement Vercel](DEPLOYMENT_VERCEL.md)**
 
-4. Déployer
+Le guide couvre :
+- Configuration de Turso (base de données SQLite gratuite)
+- Déploiement sur Vercel (hébergement gratuit)
+- Configuration des variables d'environnement
+- Import des données CSV
+- Dépannage et surveillance
+
+**Résumé rapide** :
+1. Créer une base Turso gratuite
+2. Connecter le repo GitHub à Vercel
+3. Configurer les variables d'environnement
+4. Déployer !
 
 ### Build local
 

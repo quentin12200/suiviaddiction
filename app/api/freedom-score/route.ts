@@ -9,8 +9,10 @@ export async function GET() {
       orderBy: { date: 'desc' },
     })
 
+    type EntryType = typeof entries[number]
+
     // Convertir en format attendu
-    const formattedEntries = entries.map(entry => ({
+    const formattedEntries = entries.map((entry: EntryType) => ({
       hasSmoked: entry.hasSmoked,
       jointCount: entry.jointCount,
       cravingLevel: entry.cravingLevel,

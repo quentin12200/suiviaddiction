@@ -10,6 +10,8 @@ export async function GET() {
       orderBy: { date: 'desc' },
     })
 
+    type EntryType = typeof entries[number]
+
     // Créer le contenu CSV
     const headers = [
       'Date',
@@ -30,7 +32,7 @@ export async function GET() {
 
     const csvRows = [headers.join(';')]
 
-    entries.forEach(entry => {
+    entries.forEach((entry: EntryType) => {
       const row = [
         entry.date.toISOString().split('T')[0].split('-').reverse().join('/'), // DD/MM/YYYY
         entry.time,

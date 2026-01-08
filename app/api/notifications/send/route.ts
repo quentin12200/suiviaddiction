@@ -16,6 +16,8 @@ export async function POST(request: NextRequest) {
     // Récupérer toutes les souscriptions actives
     const subscriptions = await prisma.pushSubscription.findMany()
 
+    type SubType = typeof subscriptions[number]
+
     if (subscriptions.length === 0) {
       return NextResponse.json({
         success: false,
@@ -25,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Convertir en format PushSubscriptionData
-    const pushSubscriptions = subscriptions.map((sub) => ({
+    const pushSubscriptions = subscriptions.map((sub: SubType) => ({
       endpoint: sub.endpoint,
       keys: {
         p256dh: sub.p256dh,

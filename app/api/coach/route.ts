@@ -18,14 +18,16 @@ export async function POST(request: NextRequest) {
       take: 10,
     })
 
+    type EntryType = typeof recentEntries[number]
+
     const activeStrategies = await prisma.activeStrategy.findMany({
       where: { isActive: true },
     })
 
     // Calculer quelques stats pour le contexte
     const last7Days = recentEntries.slice(0, 7)
-    const smokingDays = last7Days.filter(e => e.hasSmoked).length
-    const averageCraving = last7Days.reduce((sum, e) => sum + e.cravingLevel, 0) / last7Days.length
+    const smokingDays = last7Days.filter((e: EntryType) => e.hasSmoked).length
+    const averageCraving = last7Days.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / last7Days.length
 
     // Préparer le contexte pour l'IA
     const systemContext = `Tu es un coach personnel spécialisé dans l'accompagnement des personnes souffrant d'addiction (cannabis, jeux vidéo, sexuelle). Tu parles avec Quentin, 34 ans, syndiqué CGT.

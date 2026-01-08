@@ -18,17 +18,25 @@ export async function POST(request: NextRequest) {
       orderBy: { date: 'desc' },
     })
 
+    type EntryType = typeof entries[number]
+
     const goals = await prisma.dailyGoal.findMany({
       orderBy: { date: 'desc' },
     })
+
+    type GoalType = typeof goals[number]
 
     const strategies = await prisma.activeStrategy.findMany({
       orderBy: { activatedAt: 'desc' },
     })
 
+    type StrategyType = typeof strategies[number]
+
     const disciplineEntries = await prisma.disciplineEntry.findMany({
       orderBy: { date: 'desc' },
     })
+
+    type DisciplineEntryType = typeof disciplineEntries[number]
 
     // Générer le CSV des entrées d'addiction
     const csvHeaders = [
@@ -48,7 +56,7 @@ export async function POST(request: NextRequest) {
       'Commentaire',
     ].join(',')
 
-    const csvRows = entries.map((entry) => {
+    const csvRows = entries.map((entry: EntryType) => {
       const date = new Date(entry.date)
       return [
         date.toLocaleDateString('fr-FR'),
@@ -72,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Générer le CSV des objectifs
     const goalsHeaders = ['Date', 'Max joints', 'Intervalle min (min)', 'Note'].join(',')
-    const goalsRows = goals.map((goal) => {
+    const goalsRows = goals.map((goal: GoalType) => {
       return [
         new Date(goal.date).toLocaleDateString('fr-FR'),
         goal.maxJoints,
@@ -84,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Générer le CSV des stratégies
     const strategiesHeaders = ['ID Stratégie', 'Titre', 'Description', 'Catégorie', 'Active', 'Activée le'].join(',')
-    const strategiesRows = strategies.map((strategy) => {
+    const strategiesRows = strategies.map((strategy: StrategyType) => {
       return [
         `"${strategy.strategyId}"`,
         `"${strategy.title}"`,
@@ -110,7 +118,7 @@ export async function POST(request: NextRequest) {
       'Pire moment',
       'Meilleur moment',
     ].join(',')
-    const disciplineRows = disciplineEntries.map((entry) => {
+    const disciplineRows = disciplineEntries.map((entry: DisciplineEntryType) => {
       return [
         new Date(entry.date).toLocaleDateString('fr-FR'),
         entry.wakeUpTime || '',

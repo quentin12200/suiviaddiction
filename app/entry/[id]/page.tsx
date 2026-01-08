@@ -32,6 +32,67 @@ export default function EntryDetailPage() {
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState<Partial<Entry>>({})
 
+  const triggerCategories = {
+    'Émotions': [
+      'Stress intense',
+      'Anxiété',
+      'Ennui profond',
+      'Tristesse / Déprime',
+      'Colère / Frustration',
+      'Solitude',
+      'Euphorie / Excitation',
+    ],
+    'Contexte social': [
+      'Pression des amis',
+      'Fête / Soirée',
+      'Voir d\'autres fumer',
+      'Conversation difficile',
+      'Conflit relationnel',
+      'Isolement social',
+    ],
+    'Moments de la journée': [
+      'Réveil',
+      'Pause café',
+      'Après le repas',
+      'Fin de journée de travail',
+      'Soirée à la maison',
+      'Avant de dormir',
+      'Weekend / Jour off',
+    ],
+    'État physique': [
+      'Fatigue extrême',
+      'Douleur physique',
+      'Manque de sommeil',
+      'Après effort physique',
+      'Maladie / Mal-être',
+    ],
+    'Environnement': [
+      'Chez moi (habitude)',
+      'Lieu habituel de conso',
+      'Disponibilité facile',
+      'Objet déclencheur (briquet, etc)',
+      'Odeur / Stimulus sensoriel',
+    ],
+    'Activités': [
+      'Rien à faire',
+      'Procrastination',
+      'Avant tâche difficile',
+      'Après effort mental',
+      'Pause travail',
+      'Activité routinière (conduite, etc)',
+    ],
+    'États mentaux': [
+      'Pensées obsédantes',
+      'Envie soudaine inexpliquée',
+      'Rationalisation ("juste une fois")',
+      'Test de volonté',
+      'Nostalgie de la sensation',
+    ],
+    'Autre': [
+      'Autre (préciser en commentaire)',
+    ],
+  }
+
   useEffect(() => {
     if (params.id) {
       fetchEntry(params.id as string)
@@ -342,14 +403,23 @@ export default function EntryDetailPage() {
             <div className={styles.formGroup}>
               <label>Déclencheur</label>
               {editing ? (
-                <input
-                  type="text"
+                <select
                   name="trigger"
                   value={formData.trigger || ''}
                   onChange={handleChange}
-                  className={styles.input}
-                  placeholder="Qu'est-ce qui a déclenché cette envie ?"
-                />
+                  className={styles.select}
+                >
+                  <option value="">-- Identifier le déclencheur --</option>
+                  {Object.entries(triggerCategories).map(([category, triggers]) => (
+                    <optgroup key={category} label={category}>
+                      {triggers.map((trigger) => (
+                        <option key={trigger} value={trigger}>
+                          {trigger}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
               ) : (
                 <p className={styles.value}>{entry.trigger || '-'}</p>
               )}

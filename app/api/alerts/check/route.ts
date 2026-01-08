@@ -32,8 +32,10 @@ export async function GET(request: NextRequest) {
       try {
         const subscriptions = await prisma.pushSubscription.findMany()
 
+        type SubType = typeof subscriptions[number]
+
         if (subscriptions.length > 0) {
-          const pushSubscriptions = subscriptions.map((sub) => ({
+          const pushSubscriptions = subscriptions.map((sub: SubType) => ({
             endpoint: sub.endpoint,
             keys: {
               p256dh: sub.p256dh,

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Navigation from '@/app/components/Navigation'
 import styles from './entry.module.css'
 
@@ -21,8 +21,6 @@ interface Entry {
   alternativeAction: string
   consciousDecision: boolean
   comment: string
-  createdAt: string
-  updatedAt: string
 }
 
 export default function EntryDetailPage() {
@@ -30,7 +28,9 @@ export default function EntryDetailPage() {
   const router = useRouter()
   const [entry, setEntry] = useState<Entry | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [formData, setFormData] = useState<Partial<Entry>>({})
 
   useEffect(() => {
     if (params.id) {
@@ -42,37 +42,79 @@ export default function EntryDetailPage() {
     try {
       const response = await fetch(`/api/entries/${id}`)
       const data = await response.json()
-
-      if (data.entry) {
+      if (data.success && data.entry) {
         setEntry(data.entry)
+        setFormData(data.entry)
       } else {
-        setError('Entrée non trouvée')
+        alert('Entrée non trouvée')
+        router.push('/history')
       }
     } catch (error) {
       console.error('Erreur chargement entrée:', error)
-      setError('Erreur de chargement')
+      alert('Erreur de chargement')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async () => {
-    if (!entry || !confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
-      return
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target
+    const checked = (e.target as HTMLInputElement).checked
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value) || 0 : value,
+    }))
+  }
+
+  const handleSave = async () => {
+    if (!entry) return
+
+    setSaving(true)
+
+    try {
+      const response = await fetch(`/api/entries/${entry.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setEntry(data.entry)
+        setEditing(false)
+        alert('✅ Entrée mise à jour !')
+      } else {
+        alert('❌ Erreur: ' + (data.error || 'Impossible de sauvegarder'))
+      }
+    } catch (error) {
+      alert('❌ Erreur de connexion')
+    } finally {
+      setSaving(false)
     }
+  }
+
+  const handleDelete = async () => {
+    if (!entry) return
+
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) return
 
     try {
       const response = await fetch(`/api/entries/${entry.id}`, {
         method: 'DELETE',
       })
 
-      if (response.ok) {
+      const data = await response.json()
+
+      if (data.success) {
+        alert('✅ Entrée supprimée')
         router.push('/history')
       } else {
-        setError('Erreur lors de la suppression')
+        alert('❌ Erreur de suppression')
       }
-    } catch (err) {
-      setError('Erreur de connexion au serveur')
+    } catch (error) {
+      alert('❌ Erreur de connexion')
     }
   }
 
@@ -86,11 +128,6 @@ export default function EntryDetailPage() {
     })
   }
 
-  const formatDateTime = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleString('fr-FR')
-  }
-
   if (loading) {
     return (
       <div>
@@ -102,15 +139,12 @@ export default function EntryDetailPage() {
     )
   }
 
-  if (error || !entry) {
+  if (!entry) {
     return (
       <div>
         <Navigation />
         <div className={styles.container}>
-          <div className={styles.error}>{error || 'Entrée non trouvée'}</div>
-          <button onClick={() => router.push('/history')} className={styles.backButton}>
-            Retour à l&apos;historique
-          </button>
+          <p>Entrée non trouvée</p>
         </div>
       </div>
     )
@@ -121,144 +155,266 @@ export default function EntryDetailPage() {
       <Navigation />
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Détail de l&apos;entrée</h1>
-          <div className={styles.headerActions}>
-            <button onClick={() => router.push('/history')} className={styles.backButton}>
-              Retour
-            </button>
-            <button onClick={handleDelete} className={styles.deleteButton}>
-              Supprimer
-            </button>
+          <h1 className={styles.title}>
+            {editing ? 'Modifier l\'entrée' : 'Détails de l\'entrée'}
+          </h1>
+          <div className={styles.actions}>
+            {!editing ? (
+              <>
+                <button onClick={() => setEditing(true)} className={styles.editButton}>
+                  ✏️ Modifier
+                </button>
+                <button onClick={handleDelete} className={styles.deleteButton}>
+                  🗑️ Supprimer
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={handleSave} disabled={saving} className={styles.saveButton}>
+                  {saving ? 'Sauvegarde...' : '✓ Sauvegarder'}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditing(false)
+                    setFormData(entry)
+                  }}
+                  disabled={saving}
+                  className={styles.cancelButton}
+                >
+                  ✕ Annuler
+                </button>
+              </>
+            )}
           </div>
         </div>
 
         <div className={styles.card}>
-          {/* Informations principales */}
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Informations générales</h2>
-            <div className={styles.grid}>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Date</span>
-                <span className={styles.fieldValue}>{formatDate(entry.date)}</span>
+          <h2>{formatDate(entry.date)}</h2>
+
+          <div className={styles.form}>
+            {/* Date et heure */}
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label>Date</label>
+                {editing ? (
+                  <input
+                    type="date"
+                    name="date"
+                    value={formData.date?.split('T')[0] || ''}
+                    onChange={handleChange}
+                    className={styles.input}
+                  />
+                ) : (
+                  <p className={styles.value}>{formatDate(entry.date)}</p>
+                )}
               </div>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Heure</span>
-                <span className={styles.fieldValue}>{entry.time}</span>
+
+              <div className={styles.formGroup}>
+                <label>Heure</label>
+                {editing ? (
+                  <input
+                    type="time"
+                    name="time"
+                    value={formData.time || ''}
+                    onChange={handleChange}
+                    className={styles.input}
+                  />
+                ) : (
+                  <p className={styles.value}>{entry.time}</p>
+                )}
               </div>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Consommation</span>
-                <span className={entry.hasSmoked ? styles.badgeYes : styles.badgeNo}>
-                  {entry.hasSmoked ? 'Oui' : 'Non'}
-                </span>
-              </div>
-              {entry.hasSmoked && (
-                <>
-                  <div className={styles.field}>
-                    <span className={styles.fieldLabel}>Nombre de joints</span>
-                    <span className={styles.fieldValue}>{entry.jointCount}</span>
-                  </div>
-                  {entry.jointTime && (
-                    <div className={styles.field}>
-                      <span className={styles.fieldLabel}>Heure du joint</span>
-                      <span className={styles.fieldValue}>{entry.jointTime}</span>
-                    </div>
-                  )}
-                  {entry.minutesSinceLastJoint !== null && (
-                    <div className={styles.field}>
-                      <span className={styles.fieldLabel}>Temps depuis dernier joint</span>
-                      <span className={styles.fieldValue}>
-                        {Math.floor(entry.minutesSinceLastJoint / 60)}h{' '}
-                        {entry.minutesSinceLastJoint % 60}min
-                      </span>
-                    </div>
-                  )}
-                </>
+            </div>
+
+            {/* A fumé */}
+            <div className={styles.formGroup}>
+              <label>As-tu fumé ?</label>
+              {editing ? (
+                <label className={styles.checkbox}>
+                  <input
+                    type="checkbox"
+                    name="hasSmoked"
+                    checked={formData.hasSmoked || false}
+                    onChange={handleChange}
+                  />
+                  <span>Oui, j'ai fumé</span>
+                </label>
+              ) : (
+                <p className={styles.value}>
+                  <span className={entry.hasSmoked ? styles.badgeYes : styles.badgeNo}>
+                    {entry.hasSmoked ? 'Oui' : 'Non'}
+                  </span>
+                </p>
               )}
             </div>
-          </section>
 
-          {/* État mental et physique */}
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>État mental et physique</h2>
-            <div className={styles.grid}>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Niveau d&apos;envie</span>
-                <span className={styles.cravingBadge}>
-                  {entry.cravingLevel}/10
-                </span>
+            {/* Nombre de joints */}
+            {(editing ? formData.hasSmoked : entry.hasSmoked) && (
+              <div className={styles.formGroup}>
+                <label>Nombre de joints</label>
+                {editing ? (
+                  <input
+                    type="number"
+                    name="jointCount"
+                    value={formData.jointCount || 0}
+                    onChange={handleChange}
+                    className={styles.input}
+                    min="0"
+                  />
+                ) : (
+                  <p className={styles.value}>{entry.jointCount}</p>
+                )}
               </div>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>État émotionnel</span>
-                <span className={styles.fieldValue}>
-                  {entry.emotionalState || 'Non renseigné'}
-                </span>
-              </div>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>État physique</span>
-                <span className={styles.fieldValue}>
-                  {entry.physicalState || 'Non renseigné'}
-                </span>
-              </div>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Décision consciente</span>
-                <span className={entry.consciousDecision ? styles.badgeYes : styles.badgeNo}>
-                  {entry.consciousDecision ? 'Oui' : 'Non'}
-                </span>
-              </div>
+            )}
+
+            {/* Niveau d'envie */}
+            <div className={styles.formGroup}>
+              <label>Niveau d'envie (0-10)</label>
+              {editing ? (
+                <input
+                  type="range"
+                  name="cravingLevel"
+                  value={formData.cravingLevel || 0}
+                  onChange={handleChange}
+                  className={styles.range}
+                  min="0"
+                  max="10"
+                />
+              ) : (
+                <p className={styles.value}>
+                  <span className={styles.cravingBadge}>{entry.cravingLevel}/10</span>
+                </p>
+              )}
+              {editing && <span className={styles.rangeValue}>{formData.cravingLevel}/10</span>}
             </div>
-          </section>
 
-          {/* Contexte */}
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Contexte</h2>
-            <div className={styles.grid}>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Contexte / Activité</span>
-                <span className={styles.fieldValue}>
-                  {entry.context || 'Non renseigné'}
-                </span>
-              </div>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Déclencheur</span>
-                <span className={styles.fieldValue}>
-                  {entry.trigger || 'Non renseigné'}
-                </span>
-              </div>
-              {entry.alternativeAction && (
-                <div className={styles.field}>
-                  <span className={styles.fieldLabel}>Action alternative</span>
-                  <span className={styles.fieldValue}>{entry.alternativeAction}</span>
-                </div>
+            {/* État émotionnel */}
+            <div className={styles.formGroup}>
+              <label>État émotionnel</label>
+              {editing ? (
+                <input
+                  type="text"
+                  name="emotionalState"
+                  value={formData.emotionalState || ''}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="Ex: stressé, calme, anxieux..."
+                />
+              ) : (
+                <p className={styles.value}>{entry.emotionalState || '-'}</p>
               )}
             </div>
-          </section>
 
-          {/* Commentaire */}
-          {entry.comment && (
-            <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>Commentaire</h2>
-              <div className={styles.comment}>{entry.comment}</div>
-            </section>
-          )}
-
-          {/* Métadonnées */}
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Métadonnées</h2>
-            <div className={styles.grid}>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Créé le</span>
-                <span className={styles.fieldValue}>
-                  {formatDateTime(entry.createdAt)}
-                </span>
-              </div>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Modifié le</span>
-                <span className={styles.fieldValue}>
-                  {formatDateTime(entry.updatedAt)}
-                </span>
-              </div>
+            {/* État physique */}
+            <div className={styles.formGroup}>
+              <label>État physique</label>
+              {editing ? (
+                <input
+                  type="text"
+                  name="physicalState"
+                  value={formData.physicalState || ''}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="Ex: fatigué, énergique..."
+                />
+              ) : (
+                <p className={styles.value}>{entry.physicalState || '-'}</p>
+              )}
             </div>
-          </section>
+
+            {/* Contexte */}
+            <div className={styles.formGroup}>
+              <label>Contexte</label>
+              {editing ? (
+                <input
+                  type="text"
+                  name="context"
+                  value={formData.context || ''}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="Où étais-tu ? Avec qui ?"
+                />
+              ) : (
+                <p className={styles.value}>{entry.context || '-'}</p>
+              )}
+            </div>
+
+            {/* Déclencheur */}
+            <div className={styles.formGroup}>
+              <label>Déclencheur</label>
+              {editing ? (
+                <input
+                  type="text"
+                  name="trigger"
+                  value={formData.trigger || ''}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="Qu'est-ce qui a déclenché cette envie ?"
+                />
+              ) : (
+                <p className={styles.value}>{entry.trigger || '-'}</p>
+              )}
+            </div>
+
+            {/* Action alternative */}
+            <div className={styles.formGroup}>
+              <label>Action alternative</label>
+              {editing ? (
+                <textarea
+                  name="alternativeAction"
+                  value={formData.alternativeAction || ''}
+                  onChange={handleChange}
+                  className={styles.textarea}
+                  placeholder="Qu'as-tu fait à la place ?"
+                  rows={3}
+                />
+              ) : (
+                <p className={styles.value}>{entry.alternativeAction || '-'}</p>
+              )}
+            </div>
+
+            {/* Décision consciente */}
+            <div className={styles.formGroup}>
+              <label>Décision consciente ?</label>
+              {editing ? (
+                <label className={styles.checkbox}>
+                  <input
+                    type="checkbox"
+                    name="consciousDecision"
+                    checked={formData.consciousDecision || false}
+                    onChange={handleChange}
+                  />
+                  <span>Oui, c'était une décision consciente</span>
+                </label>
+              ) : (
+                <p className={styles.value}>
+                  {entry.consciousDecision ? '✓ Oui' : '✗ Non'}
+                </p>
+              )}
+            </div>
+
+            {/* Commentaire */}
+            <div className={styles.formGroup}>
+              <label>Commentaire</label>
+              {editing ? (
+                <textarea
+                  name="comment"
+                  value={formData.comment || ''}
+                  onChange={handleChange}
+                  className={styles.textarea}
+                  placeholder="Notes supplémentaires..."
+                  rows={4}
+                />
+              ) : (
+                <p className={styles.value}>{entry.comment || '-'}</p>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.backButton}>
+            <button onClick={() => router.push('/history')} className={styles.button}>
+              ← Retour à l'historique
+            </button>
+          </div>
         </div>
       </div>
     </div>

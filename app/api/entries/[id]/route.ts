@@ -31,6 +31,47 @@ export async function GET(
 }
 
 /**
+ * PUT - Mettre à jour une entrée
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const data = await request.json()
+
+    // Mise à jour de l'entrée
+    const entry = await prisma.entry.update({
+      where: { id: params.id },
+      data: {
+        date: data.date ? new Date(data.date) : undefined,
+        time: data.time,
+        hasSmoked: data.hasSmoked,
+        jointCount: data.jointCount,
+        jointTime: data.jointTime,
+        minutesSinceLastJoint: data.minutesSinceLastJoint,
+        cravingLevel: data.cravingLevel,
+        emotionalState: data.emotionalState,
+        physicalState: data.physicalState,
+        context: data.context,
+        trigger: data.trigger,
+        alternativeAction: data.alternativeAction,
+        consciousDecision: data.consciousDecision,
+        comment: data.comment,
+      },
+    })
+
+    return NextResponse.json({ success: true, entry })
+  } catch (error) {
+    console.error('Erreur mise à jour entrée:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erreur lors de la mise à jour de l\'entrée' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * DELETE - Supprimer une entrée
  */
 export async function DELETE(

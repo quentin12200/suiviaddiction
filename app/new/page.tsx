@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, FormEvent, useEffect } from 'react'
+import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Navigation from '../components/Navigation'
 import styles from './new.module.css'
@@ -25,8 +25,8 @@ export default function NewEntryPage() {
     jointCount: 1,
     jointTime: timeStr,
     cravingLevel: 5,
-    emotionalState: '',
-    physicalState: '',
+    emotionalStates: [] as string[],
+    physicalStates: [] as string[],
     context: '',
     trigger: '',
     alternativeAction: '',
@@ -40,10 +40,17 @@ export default function NewEntryPage() {
     setLoading(true)
 
     try {
+      // Joindre les sélections multiples avec des virgules
+      const dataToSend = {
+        ...formData,
+        emotionalState: formData.emotionalStates.join(', '),
+        physicalState: formData.physicalStates.join(', '),
+      }
+
       const response = await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       })
 
       const data = await response.json()
@@ -52,6 +59,7 @@ export default function NewEntryPage() {
         setSuccess(true)
         setTimeout(() => {
           router.push('/')
+          router.refresh()
         }, 1500)
       } else {
         setError(data.error || 'Erreur lors de la création')
@@ -71,10 +79,32 @@ export default function NewEntryPage() {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
 
+    let processedValue: any = value
+
+    if (type === 'number' || type === 'range') {
+      processedValue = parseInt(value, 10) || 0
+    } else if (type === 'checkbox') {
+      processedValue = checked
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: processedValue,
     }))
+  }
+
+  const toggleMultipleChoice = (category: 'emotionalStates' | 'physicalStates', value: string) => {
+    setFormData((prev) => {
+      const current = prev[category]
+      const isSelected = current.includes(value)
+
+      return {
+        ...prev,
+        [category]: isSelected
+          ? current.filter((v) => v !== value)
+          : [...current, value],
+      }
+    })
   }
 
   const emotionalStates = [
@@ -96,14 +126,16 @@ export default function NewEntryPage() {
     'Relaxé',
     'Douleur',
     'Énergique',
+    'Excité', // AJOUTÉ
   ]
 
   const contexts = [
+    'Maison',
+    'Bureau',
+    'Extérieur',
+    'Union Locale CGT',
     'Seul',
     'En groupe',
-    'Travail',
-    'Maison',
-    'Extérieur',
     'Soirée',
     'Autre',
   ]
@@ -178,7 +210,7 @@ export default function NewEntryPage() {
             </label>
           </div>
 
-          {/* Si fumé, afficher les champs supplémentaires */}
+          {/* Si fumé */}
           {formData.hasSmoked && (
             <>
               <div className={styles.row}>
@@ -232,52 +264,50 @@ export default function NewEntryPage() {
             />
           </div>
 
-          {/* État émotionnel */}
+          {/* États émotionnels - SÉLECTION MULTIPLE */}
           <div className={styles.formGroup}>
-            <label htmlFor="emotionalState" className={styles.label}>
-              État émotionnel
+            <label className={styles.label}>
+              États émotionnels (plusieurs choix possibles)
             </label>
-            <select
-              id="emotionalState"
-              name="emotionalState"
-              value={formData.emotionalState}
-              onChange={handleChange}
-              className={styles.select}
-            >
-              <option value="">-- Sélectionner --</option>
+            <div className={styles.checkboxGrid}>
               {emotionalStates.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
+                <label key={state} className={styles.checkboxItemLabel}>
+                  <input
+                    type="checkbox"
+                    checked={formData.emotionalStates.includes(state)}
+                    onChange={() => toggleMultipleChoice('emotionalStates', state)}
+                    className={styles.checkboxItem}
+                  />
+                  <span>{state}</span>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
 
-          {/* État physique */}
+          {/* États physiques - SÉLECTION MULTIPLE */}
           <div className={styles.formGroup}>
-            <label htmlFor="physicalState" className={styles.label}>
-              État physique
+            <label className={styles.label}>
+              États physiques (plusieurs choix possibles)
             </label>
-            <select
-              id="physicalState"
-              name="physicalState"
-              value={formData.physicalState}
-              onChange={handleChange}
-              className={styles.select}
-            >
-              <option value="">-- Sélectionner --</option>
+            <div className={styles.checkboxGrid}>
               {physicalStates.map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
+                <label key={state} className={styles.checkboxItemLabel}>
+                  <input
+                    type="checkbox"
+                    checked={formData.physicalStates.includes(state)}
+                    onChange={() => toggleMultipleChoice('physicalStates', state)}
+                    className={styles.checkboxItem}
+                  />
+                  <span>{state}</span>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
 
           {/* Contexte */}
           <div className={styles.formGroup}>
             <label htmlFor="context" className={styles.label}>
-              Contexte / Activité
+              Où es-tu / Contexte ?
             </label>
             <select
               id="context"
@@ -329,7 +359,7 @@ export default function NewEntryPage() {
                 value={formData.alternativeAction}
                 onChange={handleChange}
                 className={styles.input}
-                placeholder="Ex: Marché, méditation, sport..."
+                placeholder="Ex: Marche, méditation, sport..."
               />
             </div>
           )}

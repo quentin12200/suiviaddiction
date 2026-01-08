@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/session'
+import { getSessionFromRequest } from '@/lib/session'
 
 /**
  * API route pour l'authentification
@@ -15,12 +15,13 @@ export async function POST(request: NextRequest) {
 
     // Vérification des identifiants
     if (username === validUsername && password === validPassword) {
-      const session = await getSession()
+      const response = NextResponse.json({ success: true })
+      const session = await getSessionFromRequest(request, response)
       session.isLoggedIn = true
       session.username = username
       await session.save()
 
-      return NextResponse.json({ success: true })
+      return response
     }
 
     return NextResponse.json(
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
       { status: 401 }
     )
   } catch (error) {
+    console.error('Login error:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }

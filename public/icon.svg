@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#grad)" rx="80"/>
+
+  <!-- Central Icon - Abstracted brain/consciousness symbol -->
+  <g transform="translate(256, 256)">
+    <!-- Outer circle representing freedom -->
+    <circle cx="0" cy="0" r="160" fill="none" stroke="white" stroke-width="12" opacity="0.3"/>
+
+    <!-- Inner growing plant/progress symbol -->
+    <g>
+      <!-- Stem -->
+      <rect x="-8" y="-40" width="16" height="80" fill="white" rx="8"/>
+
+      <!-- Leaves - representing growth -->
+      <ellipse cx="-35" cy="-10" rx="28" ry="40" fill="white" opacity="0.9" transform="rotate(-30 -35 -10)"/>
+      <ellipse cx="35" cy="10" rx="28" ry="40" fill="white" opacity="0.9" transform="rotate(30 35 10)"/>
+
+      <!-- Top leaf/flower - representing achievement -->
+      <circle cx="0" cy="-60" r="30" fill="white"/>
+      <circle cx="-20" cy="-75" r="18" fill="white" opacity="0.8"/>
+      <circle cx="20" cy="-75" r="18" fill="white" opacity="0.8"/>
+    </g>
+
+    <!-- Ascending arrows - representing progress -->
+    <g opacity="0.6">
+      <path d="M -100,-80 L -90,-100 L -80,-80" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 100,-80 L 110,-100 L 120,-80" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- Bottom text -->
+  <text x="256" y="450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle" opacity="0.9">
+    Liberté
+  </text>
+</svg>

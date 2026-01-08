@@ -131,7 +131,16 @@ export default function HistoryPage() {
     <div>
       <Navigation />
       <div className={styles.container}>
-        <h1 className={styles.title}>Historique des entrées</h1>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Historique des entrées</h1>
+          <a
+            href="/api/export-csv"
+            download
+            className={styles.exportButton}
+          >
+            📥 Télécharger CSV
+          </a>
+        </div>
 
         {/* Filtres */}
         <div className={styles.filters}>

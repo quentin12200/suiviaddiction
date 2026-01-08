@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navigation from './components/Navigation'
+import FreedomScore from './components/FreedomScore'
+import AIEncouragement from './components/AIEncouragement'
+import ActiveStrategies from './components/ActiveStrategies'
+import AlertMonitor from './components/AlertMonitor'
+import NotificationSettings from './components/NotificationSettings'
 import {
   LineChart,
   Line,
@@ -43,21 +48,42 @@ interface DashboardStats {
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [lastFetchDate, setLastFetchDate] = useState<string>('')
 
   useEffect(() => {
     fetchStats()
-  }, [])
+
+    // Vérifier toutes les minutes si on a changé de jour
+    const interval = setInterval(() => {
+      const today = new Date().toDateString()
+      if (lastFetchDate && lastFetchDate !== today) {
+        console.log('🔄 Nouveau jour détecté, rafraîchissement automatique...')
+        setRefreshKey(prev => prev + 1)
+        fetchStats()
+      }
+    }, 60000) // Toutes les 60 secondes
+
+    return () => clearInterval(interval)
+  }, [lastFetchDate])
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/stats/dashboard')
+      setLoading(true)
+      const response = await fetch('/api/stats/dashboard', { cache: 'no-store' })
       const data = await response.json()
       setStats(data)
+      setLastFetchDate(new Date().toDateString())
     } catch (error) {
       console.error('Erreur chargement stats:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1)
+    fetchStats()
   }
 
   if (loading) {
@@ -115,7 +141,27 @@ export default function DashboardPage() {
     <div>
       <Navigation />
       <div className={styles.container}>
-        <h1 className={styles.title}>Tableau de bord</h1>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Tableau de bord</h1>
+          <button onClick={handleRefresh} className={styles.refreshButton} disabled={loading}>
+            {loading ? '🔄 Rafraîchissement...' : '🔄 Rafraîchir'}
+          </button>
+        </div>
+
+        {/* Alertes Préventives */}
+        <AlertMonitor key={`alert-${refreshKey}`} />
+
+        {/* Notifications */}
+        <NotificationSettings />
+
+        {/* Score de Liberté */}
+        <FreedomScore key={`freedom-${refreshKey}`} />
+
+        {/* Encouragement IA */}
+        <AIEncouragement key={`ai-${refreshKey}`} />
+
+        {/* Stratégies Actives */}
+        <ActiveStrategies key={`strategies-${refreshKey}`} />
 
         {/* Résumé du jour */}
         <div className={styles.grid}>

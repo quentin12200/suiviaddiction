@@ -26,6 +26,7 @@ interface Entry {
  */
 export async function GET() {
   try {
+    console.log('Dashboard API called - Starting...')
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const sevenDaysAgo = new Date(today)
@@ -33,6 +34,7 @@ export async function GET() {
     const thirtyDaysAgo = new Date(today)
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
+    console.log('Fetching today entries...')
     // Entrées d'aujourd'hui
     const todayEntries = await prisma.entry.findMany({
       where: {

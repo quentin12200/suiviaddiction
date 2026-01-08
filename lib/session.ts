@@ -1,5 +1,6 @@
 import { getIronSession, IronSession } from 'iron-session'
 import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
 
 export interface SessionData {
   isLoggedIn: boolean
@@ -7,7 +8,7 @@ export interface SessionData {
 }
 
 // Configuration de la session
-const sessionOptions = {
+export const sessionOptions = {
   password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
   cookieName: 'suiviaddiction_session',
   cookieOptions: {
@@ -17,7 +18,14 @@ const sessionOptions = {
 }
 
 /**
- * Récupère la session actuelle
+ * Récupère la session actuelle (pour API Routes)
+ */
+export async function getSessionFromRequest(req: NextRequest, res: NextResponse): Promise<IronSession<SessionData>> {
+  return getIronSession<SessionData>(req, res, sessionOptions)
+}
+
+/**
+ * Récupère la session actuelle (pour Server Components)
  */
 export async function getSession(): Promise<IronSession<SessionData>> {
   const cookieStore = await cookies()

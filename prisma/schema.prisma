@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -44,4 +45,19 @@ model DailyGoal {
   updatedAt           DateTime @updatedAt
 
   @@index([date])
+}
+
+// Modèle pour les stratégies personnalisées activées par l'utilisateur
+model ActiveStrategy {
+  id          String   @id @default(cuid())
+  strategyId  String   // ID de la stratégie (morning_routine, stress_management, etc.)
+  title       String
+  description String
+  category    String   // morning, evening, stress, emotional, social
+  isActive    Boolean  @default(true)
+  activatedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([strategyId])
+  @@index([isActive])
 }

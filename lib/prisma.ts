@@ -6,19 +6,29 @@ import { createClient } from '@libsql/client'
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 function createPrismaClient() {
-  // Si on utilise Turso (URL libsql://)
-  if (process.env.DATABASE_URL?.startsWith('libsql://')) {
+  // Si on utilise Turso (détecté par la présence du token d'auth)
+  if (process.env.DATABASE_AUTH_TOKEN) {
+    // S'assurer d'utiliser le protocole HTTPS pour éviter les vérifications de migration
+    let url = process.env.DATABASE_URL!
+    if (url.startsWith('libsql://')) {
+      url = url.replace('libsql://', 'https://')
+    }
+
+    // Créer le client avec l'URL HTTPS uniquement (pas de sync/migration)
     const libsql = createClient({
-      url: process.env.DATABASE_URL,
+      url,
       authToken: process.env.DATABASE_AUTH_TOKEN,
     })
 
     const adapter = new PrismaLibSQL(libsql)
 
-    return new PrismaClient({
+    // Type assertion pour compatibilité Turso adapter
+    const options: any = {
       adapter,
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    })
+    }
+
+    return new PrismaClient(options)
   }
 
   // Sinon utilisation classique (SQLite local)

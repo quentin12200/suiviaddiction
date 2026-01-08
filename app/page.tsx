@@ -47,17 +47,31 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [lastFetchDate, setLastFetchDate] = useState<string>('')
 
   useEffect(() => {
     fetchStats()
-  }, [])
+
+    // Vérifier toutes les minutes si on a changé de jour
+    const interval = setInterval(() => {
+      const today = new Date().toDateString()
+      if (lastFetchDate && lastFetchDate !== today) {
+        console.log('🔄 Nouveau jour détecté, rafraîchissement automatique...')
+        setRefreshKey(prev => prev + 1)
+        fetchStats()
+      }
+    }, 60000) // Toutes les 60 secondes
+
+    return () => clearInterval(interval)
+  }, [lastFetchDate])
 
   const fetchStats = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/stats/dashboard')
+      const response = await fetch('/api/stats/dashboard', { cache: 'no-store' })
       const data = await response.json()
       setStats(data)
+      setLastFetchDate(new Date().toDateString())
     } catch (error) {
       console.error('Erreur chargement stats:', error)
     } finally {

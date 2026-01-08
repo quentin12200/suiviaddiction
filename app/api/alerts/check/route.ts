@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { analyzePatterns, checkRiskAlert } from '@/lib/alertSystem'
+import { sendNotificationToAll } from '@/lib/push-notifications'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,6 +28,38 @@ export async function GET(request: NextRequest) {
     const alert = checkRiskAlert(patterns, currentHour)
 
     if (alert) {
+      // Envoyer une notification push automatiquement
+      try {
+        const subscriptions = await prisma.pushSubscription.findMany()
+
+        if (subscriptions.length > 0) {
+          const pushSubscriptions = subscriptions.map((sub) => ({
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
+          })) as PushSubscription[]
+
+          await sendNotificationToAll(pushSubscriptions, {
+            title: getAlertTitle(alert.type),
+            body: alert.reason,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            data: {
+              type: alert.type,
+              suggestion: alert.suggestion,
+              url: '/',
+            },
+          })
+
+          console.log(`📬 Notification envoyée à ${subscriptions.length} appareil(s)`)
+        }
+      } catch (notifError) {
+        console.error('Erreur envoi notification:', notifError)
+        // Continue sans bloquer si l'envoi échoue
+      }
+
       return NextResponse.json({
         success: true,
         hasAlert: true,

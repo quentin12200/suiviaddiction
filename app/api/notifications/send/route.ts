@@ -1,39 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { sendNotificationToAll, NotificationPayload } from '@/lib/push-notifications'
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, body, url, subscription } = await request.json()
+    const { title, body, icon, data } = await request.json()
 
-    if (!subscription) {
+    if (!title || !body) {
       return NextResponse.json(
-        { success: false, error: 'Subscription requise' },
+        { success: false, error: 'Title et body requis' },
         { status: 400 }
       )
     }
 
-    // Configuration Web Push (nécessite une clé VAPID)
-    // VAPID keys peuvent être générées avec: npx web-push generate-vapid-keys
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-    const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY
+    // Récupérer toutes les souscriptions actives
+    const subscriptions = await prisma.pushSubscription.findMany()
 
-    if (!vapidPublicKey || !vapidPrivateKey) {
-      console.warn('VAPID keys non configurées')
+    if (subscriptions.length === 0) {
       return NextResponse.json({
         success: false,
-        error: 'Configuration push incomplète',
+        message: 'Aucune souscription active',
+        sent: 0,
       })
     }
 
-    // Pour l'instant, on simule l'envoi
-    // Dans une vraie implémentation, on utiliserait la librairie 'web-push'
-    console.log('Envoi notification:', { title, body, url })
+    // Convertir en format PushSubscription
+    const pushSubscriptions = subscriptions.map((sub) => ({
+      endpoint: sub.endpoint,
+      keys: {
+        p256dh: sub.p256dh,
+        auth: sub.auth,
+      },
+    })) as PushSubscription[]
+
+    // Préparer le payload
+    const payload: NotificationPayload = {
+      title,
+      body,
+      icon: icon || '/icon-192.png',
+      badge: '/icon-192.png',
+      data,
+    }
+
+    // Envoyer les notifications
+    await sendNotificationToAll(pushSubscriptions, payload)
 
     return NextResponse.json({
       success: true,
-      message: 'Notification envoyée',
+      message: `Notifications envoyées à ${subscriptions.length} appareil(s)`,
+      sent: subscriptions.length,
     })
   } catch (error) {
-    console.error('Erreur envoi notification:', error)
+    console.error('❌ Erreur envoi notifications:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }

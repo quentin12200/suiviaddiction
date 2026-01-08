@@ -12,12 +12,22 @@ interface DailyGoal {
   note: string
 }
 
+interface GoalSuggestion {
+  level: string
+  maxJoints: number
+  minIntervalMinutes: number
+  note: string
+}
+
 export default function GoalsPage() {
   const [goals, setGoals] = useState<DailyGoal[]>([])
   const [loading, setLoading] = useState(true)
   const [formLoading, setFormLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [suggestions, setSuggestions] = useState<GoalSuggestion[]>([])
+  const [aiAnalysis, setAiAnalysis] = useState('')
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
 
   // Pré-remplir avec la date d'aujourd'hui
   const today = new Date().toISOString().split('T')[0]
@@ -115,11 +125,106 @@ export default function GoalsPage() {
     return date.toLocaleDateString('fr-FR')
   }
 
+  const fetchAISuggestions = async () => {
+    setLoadingSuggestions(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/goals/suggest')
+      const data = await response.json()
+
+      if (data.success) {
+        setSuggestions(data.suggestions || [])
+        setAiAnalysis(data.analysis || '')
+      } else {
+        setError(data.message || 'Erreur lors de la génération des suggestions')
+      }
+    } catch (err) {
+      setError('Erreur de connexion au serveur')
+    } finally {
+      setLoadingSuggestions(false)
+    }
+  }
+
+  const applySuggestion = (suggestion: GoalSuggestion) => {
+    setFormData({
+      date: today,
+      maxJoints: suggestion.maxJoints,
+      minIntervalMinutes: suggestion.minIntervalMinutes,
+      note: suggestion.note,
+    })
+    // Scroll vers le formulaire
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div>
       <Navigation />
       <div className={styles.container}>
         <h1 className={styles.title}>Gestion des objectifs</h1>
+
+        {/* Suggestions IA */}
+        <div className={styles.aiSection}>
+          <div className={styles.aiHeader}>
+            <div>
+              <h2>🤖 Objectifs adaptatifs (IA)</h2>
+              <p className={styles.aiSubtitle}>
+                L&apos;IA analyse ta progression et te propose des objectifs réalistes
+              </p>
+            </div>
+            <button
+              onClick={fetchAISuggestions}
+              className={styles.aiButton}
+              disabled={loadingSuggestions}
+            >
+              {loadingSuggestions ? 'Génération...' : '✨ Générer suggestions'}
+            </button>
+          </div>
+
+          {aiAnalysis && (
+            <div className={styles.aiAnalysis}>
+              <strong>📊 Analyse :</strong> {aiAnalysis}
+            </div>
+          )}
+
+          {suggestions.length > 0 && (
+            <div className={styles.suggestionsGrid}>
+              {suggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className={`${styles.suggestionCard} ${
+                    styles[`level${suggestion.level.charAt(0).toUpperCase() + suggestion.level.slice(1)}`]
+                  }`}
+                >
+                  <div className={styles.suggestionLevel}>
+                    {suggestion.level === 'easy' && '🟢 Facile'}
+                    {suggestion.level === 'medium' && '🟡 Moyen'}
+                    {suggestion.level === 'hard' && '🔴 Ambitieux'}
+                  </div>
+                  <div className={styles.suggestionStats}>
+                    <div className={styles.suggestionStat}>
+                      <span className={styles.suggestionLabel}>Max joints</span>
+                      <span className={styles.suggestionValue}>{suggestion.maxJoints}</span>
+                    </div>
+                    <div className={styles.suggestionStat}>
+                      <span className={styles.suggestionLabel}>Intervalle</span>
+                      <span className={styles.suggestionValue}>
+                        {suggestion.minIntervalMinutes} min
+                      </span>
+                    </div>
+                  </div>
+                  <p className={styles.suggestionNote}>{suggestion.note}</p>
+                  <button
+                    onClick={() => applySuggestion(suggestion)}
+                    className={styles.applyButton}
+                  >
+                    Utiliser cet objectif
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Formulaire */}
         <div className={styles.formSection}>

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getValidAccessToken } from '@/lib/google-refresh'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const accessToken = cookieStore.get('google_drive_access_token')
+    const accessToken = await getValidAccessToken('drive')
 
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, error: 'Google Drive non connecté' },
+        { success: false, error: 'Google Drive non connecté ou session expirée' },
         { status: 401 }
       )
     }
@@ -19,17 +18,25 @@ export async function POST(request: NextRequest) {
       orderBy: { date: 'desc' },
     })
 
+    type EntryType = typeof entries[number]
+
     const goals = await prisma.dailyGoal.findMany({
       orderBy: { date: 'desc' },
     })
+
+    type GoalType = typeof goals[number]
 
     const strategies = await prisma.activeStrategy.findMany({
       orderBy: { activatedAt: 'desc' },
     })
 
+    type StrategyType = typeof strategies[number]
+
     const disciplineEntries = await prisma.disciplineEntry.findMany({
       orderBy: { date: 'desc' },
     })
+
+    type DisciplineEntryType = typeof disciplineEntries[number]
 
     // Générer le CSV des entrées d'addiction
     const csvHeaders = [
@@ -49,7 +56,7 @@ export async function POST(request: NextRequest) {
       'Commentaire',
     ].join(',')
 
-    const csvRows = entries.map((entry) => {
+    const csvRows = entries.map((entry: EntryType) => {
       const date = new Date(entry.date)
       return [
         date.toLocaleDateString('fr-FR'),
@@ -73,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Générer le CSV des objectifs
     const goalsHeaders = ['Date', 'Max joints', 'Intervalle min (min)', 'Note'].join(',')
-    const goalsRows = goals.map((goal) => {
+    const goalsRows = goals.map((goal: GoalType) => {
       return [
         new Date(goal.date).toLocaleDateString('fr-FR'),
         goal.maxJoints,
@@ -85,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Générer le CSV des stratégies
     const strategiesHeaders = ['ID Stratégie', 'Titre', 'Description', 'Catégorie', 'Active', 'Activée le'].join(',')
-    const strategiesRows = strategies.map((strategy) => {
+    const strategiesRows = strategies.map((strategy: StrategyType) => {
       return [
         `"${strategy.strategyId}"`,
         `"${strategy.title}"`,
@@ -111,7 +118,7 @@ export async function POST(request: NextRequest) {
       'Pire moment',
       'Meilleur moment',
     ].join(',')
-    const disciplineRows = disciplineEntries.map((entry) => {
+    const disciplineRows = disciplineEntries.map((entry: DisciplineEntryType) => {
       return [
         new Date(entry.date).toLocaleDateString('fr-FR'),
         entry.wakeUpTime || '',
@@ -145,7 +152,7 @@ export async function POST(request: NextRequest) {
       `q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       {
         headers: {
-          Authorization: `Bearer ${accessToken.value}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     )
@@ -161,7 +168,7 @@ export async function POST(request: NextRequest) {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${accessToken.value}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -200,7 +207,7 @@ export async function POST(request: NextRequest) {
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${accessToken.value}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': `multipart/related; boundary=${boundary}`,
           },
           body: multipartRequestBody,

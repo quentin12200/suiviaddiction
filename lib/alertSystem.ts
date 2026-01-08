@@ -1,5 +1,3 @@
-import { Entry } from '@prisma/client'
-
 export interface RiskAlert {
   type: 'high' | 'medium' | 'low'
   reason: string
@@ -17,6 +15,26 @@ export interface PatternAnalysis {
   averageInterval: number
   lastConsumptionTime: Date | null
   consecutiveCleanDays: number
+}
+
+export interface Entry {
+  id: string
+  date: Date
+  time: string
+  hasSmoked: boolean
+  jointCount: number
+  jointTime: string | null
+  minutesSinceLastJoint: number | null
+  cravingLevel: number
+  emotionalState: string
+  physicalState: string
+  context: string
+  trigger: string
+  alternativeAction: string
+  consciousDecision: boolean
+  comment: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 /**
@@ -148,7 +166,7 @@ export function checkRiskAlert(
 ): RiskAlert | null {
   const { riskPatterns, averageInterval, lastConsumptionTime, consecutiveCleanDays } = patterns
 
-  // Vérifier si on est dans une heure à risque
+  // DÉCLENCHEUR 1: Heure à risque habituelle
   const isHighRiskTime = riskPatterns.highRiskTimes.some(time =>
     time.startsWith(currentHour.split(':')[0])
   )
@@ -161,8 +179,8 @@ export function checkRiskAlert(
     if (averageInterval > 0 && hoursSinceLastConsumption >= averageInterval * 0.8) {
       return {
         type: 'high',
-        reason: `Tu es dans une période à risque. D'habitude, tu consommes vers ${currentHour.split(':')[0]}h.`,
-        suggestion: `Utilise une stratégie alternative : ${getSuggestion(riskPatterns)}`,
+        reason: `⚠️ Moment critique : Tu fumes habituellement vers ${currentHour.split(':')[0]}h`,
+        suggestion: `${getSuggestion(riskPatterns)}`,
         timeWindow: currentHour,
       }
     }
@@ -170,18 +188,105 @@ export function checkRiskAlert(
     // Alerte moyenne pour heure à risque
     return {
       type: 'medium',
-      reason: `Attention, ${currentHour.split(':')[0]}h est souvent un moment délicat pour toi.`,
+      reason: `⏰ ${currentHour.split(':')[0]}h est une heure délicate dans ton historique`,
       suggestion: `Reste vigilant. ${getSuggestion(riskPatterns)}`,
       timeWindow: currentHour,
     }
   }
 
-  // Encouragement pour séries de jours propres
-  if (consecutiveCleanDays >= 3 && currentHour.startsWith('20')) {
+  // DÉCLENCHEUR 2: Fin de journée après une journée propre (moment de tentation)
+  const currentHourNum = parseInt(currentHour.split(':')[0])
+  if (currentHourNum >= 20 && currentHourNum <= 23 && consecutiveCleanDays === 0) {
+    return {
+      type: 'medium',
+      reason: `🌙 Fin de journée : moment où la volonté faiblit`,
+      suggestion: `Tu as presque fini la journée. Tiens bon ! ${getSuggestion(riskPatterns)}`,
+      timeWindow: currentHour,
+    }
+  }
+
+  // DÉCLENCHEUR 3: Début de journée (moment stratégique)
+  if (currentHourNum >= 7 && currentHourNum <= 9) {
     return {
       type: 'low',
-      reason: `Bravo ! ${consecutiveCleanDays} jours sans consommation 🎉`,
-      suggestion: 'Continue comme ça, tu es sur la bonne voie !',
+      reason: `☀️ Nouvelle journée, nouvelle chance`,
+      suggestion: `Commence fort ! Définis ton intention pour aujourd'hui`,
+      timeWindow: currentHour,
+    }
+  }
+
+  // DÉCLENCHEUR 4: Heure de déjeuner (changement de rythme)
+  if (currentHourNum >= 12 && currentHourNum <= 14) {
+    return {
+      type: 'medium',
+      reason: `🍽️ Pause déjeuner : moment de transition à risque`,
+      suggestion: `Profite de cette pause pour une activité saine. ${getSuggestion(riskPatterns)}`,
+      timeWindow: currentHour,
+    }
+  }
+
+  // DÉCLENCHEUR 5: Après le travail (17h-19h - moment très à risque)
+  if (currentHourNum >= 17 && currentHourNum <= 19) {
+    return {
+      type: 'high',
+      reason: `🏠 Sortie du travail : pic de tentation`,
+      suggestion: `Change ta routine habituelle. ${getSuggestion(riskPatterns)}`,
+      timeWindow: currentHour,
+    }
+  }
+
+  // DÉCLENCHEUR 6: Weekend (samedi/dimanche - patterns différents)
+  const dayOfWeek = new Date().getDay()
+  if ((dayOfWeek === 6 || dayOfWeek === 0) && currentHourNum >= 14 && currentHourNum <= 18) {
+    return {
+      type: 'medium',
+      reason: `📅 Weekend : attention aux tentations sociales`,
+      suggestion: `Planifie une activité engageante. ${getSuggestion(riskPatterns)}`,
+      timeWindow: currentHour,
+    }
+  }
+
+  // DÉCLENCHEUR 7: Encouragement pour séries de jours propres
+  if (consecutiveCleanDays >= 1 && currentHourNum === 20) {
+    const emoji = consecutiveCleanDays >= 7 ? '🏆' : consecutiveCleanDays >= 3 ? '🎉' : '💪'
+    return {
+      type: 'low',
+      reason: `${emoji} ${consecutiveCleanDays} jour${consecutiveCleanDays > 1 ? 's' : ''} sans consommation !`,
+      suggestion: `Tu es en train de changer ! Continue comme ça`,
+      timeWindow: currentHour,
+    }
+  }
+
+  // DÉCLENCHEUR 8: Après une longue période (risque de rechute)
+  if (lastConsumptionTime) {
+    const daysSinceLastConsumption = (Date.now() - lastConsumptionTime.getTime()) / (1000 * 60 * 60 * 24)
+
+    if (daysSinceLastConsumption >= 7 && daysSinceLastConsumption < 14 && currentHourNum >= 18) {
+      return {
+        type: 'medium',
+        reason: `🎯 1 semaine passée : attention au "juste une fois"`,
+        suggestion: `Ne gâche pas ta série ! Tu as déjà fait le plus dur`,
+        timeWindow: currentHour,
+      }
+    }
+  }
+
+  // DÉCLENCHEUR 9: Milieu de semaine (mercredi - coup de mou)
+  if (dayOfWeek === 3 && currentHourNum >= 15 && currentHourNum <= 17) {
+    return {
+      type: 'medium',
+      reason: `🐪 Milieu de semaine : fatigue et tentation`,
+      suggestion: `Le weekend arrive. Fais une pause active plutôt`,
+      timeWindow: currentHour,
+    }
+  }
+
+  // DÉCLENCHEUR 10: Tard le soir (solitude, ennui)
+  if (currentHourNum >= 23 || currentHourNum <= 2) {
+    return {
+      type: 'high',
+      reason: `🌃 Tard le soir : solitude et vulnérabilité`,
+      suggestion: `Va dormir. Demain sera meilleur. ${getSuggestion(riskPatterns)}`,
       timeWindow: currentHour,
     }
   }
@@ -190,25 +295,81 @@ export function checkRiskAlert(
 }
 
 function getSuggestion(patterns: { highRiskEmotions: string[], highRiskTriggers: string[] }): string {
-  const suggestions = [
-    'Parle au coach IA',
+  const currentHour = new Date().getHours()
+
+  // Suggestions selon l'heure de la journée
+  if (currentHour >= 6 && currentHour <= 9) {
+    return 'Commence ta journée par 10 min de sport ou une douche froide'
+  }
+  if (currentHour >= 12 && currentHour <= 14) {
+    return 'Sors manger dehors ou appelle quelqu\'un pendant la pause'
+  }
+  if (currentHour >= 17 && currentHour <= 19) {
+    return 'Va direct à la salle de sport ou lance une activité prévue'
+  }
+  if (currentHour >= 20 && currentHour <= 23) {
+    return 'Occupe tes mains : jeu vidéo, dessin, série, cuisine...'
+  }
+  if (currentHour >= 23 || currentHour <= 2) {
+    return 'Éteins les écrans et va dormir. La fatigue amplifie les envies'
+  }
+
+  // Suggestions contextualisées selon les émotions à risque
+  const emotions = patterns.highRiskEmotions.join(' ').toLowerCase()
+
+  if (emotions.includes('stress') || emotions.includes('anxie')) {
+    return 'Respiration : 4 secondes inspire, 7 retiens, 8 expire. Répète 5 fois'
+  }
+  if (emotions.includes('ennui')) {
+    return 'Appelle un ami, sors te promener, lance un projet manuel'
+  }
+  if (emotions.includes('trist') || emotions.includes('déprim')) {
+    return 'Parle au coach IA ou appelle quelqu\'un qui te fait du bien'
+  }
+  if (emotions.includes('colère') || emotions.includes('frustré')) {
+    return 'Défoulement physique : pompes, course, boxe, musique à fond'
+  }
+  if (emotions.includes('fatigu')) {
+    return 'Sieste de 20 min OU café + marche. Pas de fumette "pour te réveiller"'
+  }
+  if (emotions.includes('seul') || emotions.includes('isol')) {
+    return 'Appelle immédiatement quelqu\'un ou va dans un lieu public'
+  }
+
+  // Suggestions selon les déclencheurs fréquents
+  const triggers = patterns.highRiskTriggers.join(' ').toLowerCase()
+
+  if (triggers.includes('ami') || triggers.includes('social')) {
+    return 'Propose une activité alternative : sport, ciné, resto, balade'
+  }
+  if (triggers.includes('maison') || triggers.includes('chez')) {
+    return 'Sors de chez toi immédiatement. N\'importe où sauf là'
+  }
+  if (triggers.includes('travail') || triggers.includes('boulot')) {
+    return 'Décompresse autrement : sport, jeu, musique, pas fumette'
+  }
+  if (triggers.includes('pause') || triggers.includes('rien')) {
+    return 'Remplis tes pauses : podcast, marche, étirements, appels'
+  }
+
+  // Suggestions générales variées
+  const generalSuggestions = [
+    'Parle au coach IA maintenant',
     'Consulte tes stratégies actives',
-    'Fais une pause respiratoire de 5 minutes',
-    'Appelle un ami de confiance',
-    'Sors prendre l\'air',
-    'Bois un grand verre d\'eau',
+    'Respiration profonde 5 minutes',
+    'Appelle ton contact de confiance',
+    'Sors marcher 15 minutes minimum',
+    'Bois 2 grands verres d\'eau d\'affilée',
+    'Fais 20 pompes ou 50 squats',
+    'Lance une série/vidéo/jeu engageant',
+    'Va dans un lieu public (café, bibliothèque)',
+    'Cuisine un vrai repas',
+    'Prends une douche froide',
+    'Écris ce que tu ressens dans ton journal',
+    'Regarde tes progrès dans l\'historique',
+    'Mets la musique à fond et bouge',
+    'Nettoie/range quelque chose',
   ]
 
-  // Suggestion contextualisée selon les émotions à risque
-  if (patterns.highRiskEmotions.includes('Stressé')) {
-    return 'Fais une pause respiratoire ou parle au coach IA'
-  }
-  if (patterns.highRiskEmotions.includes('Anxieux')) {
-    return 'Appelle quelqu\'un de confiance ou sors prendre l\'air'
-  }
-  if (patterns.highRiskEmotions.includes('Ennui')) {
-    return 'Lance une activité alternative ou consulte tes stratégies'
-  }
-
-  return suggestions[Math.floor(Math.random() * suggestions.length)]
+  return generalSuggestions[Math.floor(Math.random() * generalSuggestions.length)]
 }

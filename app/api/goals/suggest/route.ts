@@ -10,10 +10,14 @@ export async function GET(request: NextRequest) {
       take: 60, // 2 mois de données
     })
 
+    type EntryType = typeof entries[number]
+
     const goals = await prisma.dailyGoal.findMany({
       orderBy: { date: 'desc' },
       take: 10,
     })
+
+    type GoalType = typeof goals[number]
 
     if (entries.length < 7) {
       return NextResponse.json({
@@ -29,16 +33,16 @@ export async function GET(request: NextRequest) {
     const last7Days = entries.slice(0, 7)
     const last30Days = entries.slice(0, Math.min(30, entries.length))
 
-    const avg7Days = last7Days.filter(e => e.hasSmoked).length
-    const avg30Days = last30Days.filter(e => e.hasSmoked).length / Math.min(30, last30Days.length) * 7
+    const avg7Days = last7Days.filter((e: EntryType) => e.hasSmoked).length
+    const avg30Days = last30Days.filter((e: EntryType) => e.hasSmoked).length / Math.min(30, last30Days.length) * 7
 
-    const avgCraving7Days = last7Days.reduce((sum, e) => sum + e.cravingLevel, 0) / last7Days.length
+    const avgCraving7Days = last7Days.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / last7Days.length
 
     // Analyser la progression des objectifs précédents
     const recentGoals = goals.slice(0, 5)
-    const goalsAchieved = recentGoals.filter(g => {
+    const goalsAchieved = recentGoals.filter((g: GoalType) => {
       const goalDate = new Date(g.date).toDateString()
-      const entry = entries.find(e => new Date(e.date).toDateString() === goalDate)
+      const entry = entries.find((e: EntryType) => new Date(e.date).toDateString() === goalDate)
       return entry && entry.jointCount <= g.maxJoints
     }).length
 

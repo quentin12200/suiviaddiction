@@ -71,7 +71,15 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/stats/dashboard', { cache: 'no-store' })
+      // Ajouter un timestamp pour éviter le cache du navigateur
+      const timestamp = new Date().getTime()
+      const response = await fetch(`/api/stats/dashboard?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
       const data = await response.json()
       setStats(data)
       setLastFetchDate(new Date().toDateString())

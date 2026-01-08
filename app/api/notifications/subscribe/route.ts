@@ -3,27 +3,42 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    const { subscription, userId } = await request.json()
+    const { subscription } = await request.json()
 
-    if (!subscription) {
+    if (!subscription || !subscription.endpoint) {
       return NextResponse.json(
-        { success: false, error: 'Subscription requise' },
+        { success: false, error: 'Subscription invalide' },
         { status: 400 }
       )
     }
 
-    // Sauvegarder la subscription dans la base de données
-    // Note: Il faudra créer un modèle PushSubscription dans Prisma
-    // Pour l'instant, on stocke dans localStorage côté client
+    const userAgent = request.headers.get('user-agent') || 'unknown'
 
-    console.log('Nouvelle subscription push:', subscription)
+    // Sauvegarder ou mettre à jour la subscription
+    await prisma.pushSubscription.upsert({
+      where: { endpoint: subscription.endpoint },
+      update: {
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+        userAgent,
+        updatedAt: new Date(),
+      },
+      create: {
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth,
+        userAgent,
+      },
+    })
+
+    console.log('✅ Subscription push enregistrée:', subscription.endpoint)
 
     return NextResponse.json({
       success: true,
       message: 'Notifications activées',
     })
   } catch (error) {
-    console.error('Erreur subscription push:', error)
+    console.error('❌ Erreur subscription push:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }

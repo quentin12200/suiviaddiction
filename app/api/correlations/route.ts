@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
       take: 90, // 3 mois de données
     })
 
+    type EntryType = typeof entries[number]
+
     if (entries.length < 7) {
       return NextResponse.json({
         success: false,
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // 1. Corrélation Heure de la journée <-> Consommation
     const timeConsumption = new Map<string, { total: number; consumed: number }>()
-    entries.forEach(entry => {
+    entries.forEach((entry: EntryType) => {
       const hour = entry.time.split(':')[0]
       const existing = timeConsumption.get(hour) || { total: 0, consumed: 0 }
       timeConsumption.set(hour, {
@@ -37,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     // 2. Corrélation Niveau d'envie <-> Consommation effective
     const cravingConsumption = new Map<number, { total: number; consumed: number }>()
-    entries.forEach(entry => {
+    entries.forEach((entry: EntryType) => {
       const level = Math.floor(entry.cravingLevel)
       const existing = cravingConsumption.get(level) || { total: 0, consumed: 0 }
       cravingConsumption.set(level, {
@@ -56,9 +58,9 @@ export async function GET(request: NextRequest) {
 
     // 3. Corrélation États émotionnels <-> Consommation
     const emotionConsumption = new Map<string, { total: number; consumed: number }>()
-    entries.forEach(entry => {
-      const emotions = entry.emotionalState.split(',').map(e => e.trim()).filter(e => e)
-      emotions.forEach(emotion => {
+    entries.forEach((entry: EntryType) => {
+      const emotions = entry.emotionalState.split(',').map((e: string) => e.trim()).filter((e: string) => e)
+      emotions.forEach((emotion: string) => {
         const existing = emotionConsumption.get(emotion) || { total: 0, consumed: 0 }
         emotionConsumption.set(emotion, {
           total: existing.total + 1,
@@ -80,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     // 4. Corrélation Contexte <-> Consommation
     const contextConsumption = new Map<string, { total: number; consumed: number }>()
-    entries.forEach(entry => {
+    entries.forEach((entry: EntryType) => {
       if (entry.context) {
         const existing = contextConsumption.get(entry.context) || { total: 0, consumed: 0 }
         contextConsumption.set(entry.context, {
@@ -97,12 +99,12 @@ export async function GET(request: NextRequest) {
         count: data.consumed,
         occurrences: data.total,
       }))
-      .filter(d => d.occurrences >= 2)
+      .filter((d) => d.occurrences >= 2)
       .sort((a, b) => b.percentage - a.percentage)
 
     // 5. Corrélation Jour de la semaine <-> Consommation
     const weekdayConsumption = new Map<number, { total: number; consumed: number }>()
-    entries.forEach(entry => {
+    entries.forEach((entry: EntryType) => {
       const weekday = new Date(entry.date).getDay()
       const existing = weekdayConsumption.get(weekday) || { total: 0, consumed: 0 }
       weekdayConsumption.set(weekday, {
@@ -121,14 +123,14 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => weekdayNames.indexOf(a.day) - weekdayNames.indexOf(b.day))
 
     // 6. Corrélation Décision consciente <-> Succès (pas de consommation)
-    const consciousEntries = entries.filter(e => e.consciousDecision)
-    const consciousSuccess = consciousEntries.filter(e => !e.hasSmoked).length
+    const consciousEntries = entries.filter((e: EntryType) => e.consciousDecision)
+    const consciousSuccess = consciousEntries.filter((e: EntryType) => !e.hasSmoked).length
     const consciousRate = consciousEntries.length > 0
       ? (consciousSuccess / consciousEntries.length) * 100
       : 0
 
-    const unconsciousEntries = entries.filter(e => !e.consciousDecision)
-    const unconsciousSuccess = unconsciousEntries.filter(e => !e.hasSmoked).length
+    const unconsciousEntries = entries.filter((e: EntryType) => !e.consciousDecision)
+    const unconsciousSuccess = unconsciousEntries.filter((e: EntryType) => !e.hasSmoked).length
     const unconsciousRate = unconsciousEntries.length > 0
       ? (unconsciousSuccess / unconsciousEntries.length) * 100
       : 0

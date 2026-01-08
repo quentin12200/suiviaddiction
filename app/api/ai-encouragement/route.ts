@@ -19,14 +19,16 @@ export async function GET() {
       take: 20,
     })
 
+    type EntryType = typeof recentEntries[number]
+
     // Calculer des statistiques
     const totalJoints = recentEntries
-      .filter(e => e.hasSmoked)
-      .reduce((sum, e) => sum + e.jointCount, 0)
+      .filter((e: EntryType) => e.hasSmoked)
+      .reduce((sum: number, e: EntryType) => sum + e.jointCount, 0)
 
-    const daysWithoutSmoking = recentEntries.filter(e => !e.hasSmoked).length
+    const daysWithoutSmoking = recentEntries.filter((e: EntryType) => !e.hasSmoked).length
     const avgCraving = recentEntries.length > 0
-      ? recentEntries.reduce((sum, e) => sum + e.cravingLevel, 0) / recentEntries.length
+      ? recentEntries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / recentEntries.length
       : 0
 
     // Construire le prompt pour ChatGPT

@@ -1,0 +1,380 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 900;
+  color: #d32f2f;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+}
+
+/* Warning Box */
+.warningBox {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 3px solid #d32f2f;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+}
+
+.warningBox h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #b71c1c;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+}
+
+.warningBox ul {
+  margin: 0;
+  padding-left: 24px;
+  list-style: none;
+}
+
+.warningBox li {
+  font-size: 15px;
+  font-weight: 600;
+  color: #c62828;
+  margin-bottom: 10px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.warningBox li::before {
+  content: '🔥';
+  position: absolute;
+  left: 0;
+}
+
+/* Score Card */
+.scoreCard {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.scoreCard h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bigScore {
+  font-size: 72px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #ffd54f 0%, #ff6f00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bigScore span {
+  font-size: 36px;
+  opacity: 0.7;
+}
+
+.scoreLabel {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+/* Form Section */
+.formSection {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 2px solid #d32f2f;
+}
+
+.formSection h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #d32f2f;
+  margin: 0 0 24px 0;
+  text-transform: uppercase;
+}
+
+.message {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroup label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="time"],
+.formGroup input[type="date"],
+.formGroup input[type="number"],
+.formGroup textarea {
+  padding: 12px 16px;
+  font-size: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: #d32f2f;
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formGroup small {
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
+}
+
+.formGroup input[type="range"] {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #f44336, #ff9800, #4caf50);
+  outline: none;
+}
+
+.ratingValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: #d32f2f;
+  text-align: center;
+}
+
+.submitButton {
+  padding: 18px 32px;
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(211, 47, 47, 0.4);
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(211, 47, 47, 0.6);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* History Section */
+.historySection {
+  margin-top: 40px;
+}
+
+.historySection h2 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #999;
+}
+
+.entriesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.entryCard {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e0e0e0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.entryCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.entryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.entryHeader h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.entryScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.entryScore span {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.entryStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.entryStats div {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.entryReflection,
+.entryCommitment {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.entryReflection {
+  background: #fff3e0;
+  border-left: 4px solid #ff9800;
+}
+
+.entryCommitment {
+  background: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.entryReflection strong,
+.entryCommitment strong {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.entryReflection p,
+.entryCommitment p {
+  margin: 0;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 15px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .entriesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bigScore {
+    font-size: 56px;
+  }
+}

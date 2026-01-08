@@ -10,6 +10,14 @@ interface IntegrationStatus {
   googleDrive: boolean
 }
 
+interface Backup {
+  id: string
+  name: string
+  createdTime: string
+  size: string
+  webViewLink: string
+}
+
 export default function IntegrationsPage() {
   const [status, setStatus] = useState<IntegrationStatus>({
     googleFit: false,
@@ -18,6 +26,9 @@ export default function IntegrationsPage() {
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [backups, setBackups] = useState<Record<string, Backup[]>>({})
+  const [loadingBackups, setLoadingBackups] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     checkIntegrationStatus()
@@ -126,6 +137,71 @@ export default function IntegrationsPage() {
       })
     }
   }
+
+  const loadBackups = async () => {
+    if (!status.googleDrive) return
+
+    try {
+      setLoadingBackups(true)
+      const response = await fetch('/api/google/drive/backups')
+      const data = await response.json()
+
+      if (data.success) {
+        setBackups(data.backups)
+      }
+    } catch (error) {
+      console.error('Erreur chargement backups:', error)
+    } finally {
+      setLoadingBackups(false)
+    }
+  }
+
+  const exportToDrive = async () => {
+    if (!status.googleDrive) {
+      setMessage({
+        type: 'error',
+        text: '❌ Google Drive non connecté',
+      })
+      return
+    }
+
+    try {
+      setExporting(true)
+      setMessage(null)
+
+      const response = await fetch('/api/google/drive/export', {
+        method: 'POST',
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setMessage({
+          type: 'success',
+          text: `✅ Export réussi ! ${data.entriesCount} entrées, ${data.goalsCount} objectifs, ${data.strategiesCount} stratégies, ${data.disciplineCount} disciplines exportés`,
+        })
+        loadBackups()
+      } else {
+        setMessage({
+          type: 'error',
+          text: `❌ ${data.error || 'Erreur lors de l\'export'}`,
+        })
+      }
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: '❌ Erreur lors de l\'export',
+      })
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  useEffect(() => {
+    if (status.googleDrive) {
+      loadBackups()
+    }
+  }, [status.googleDrive])
 
   return (
     <div>
@@ -285,6 +361,71 @@ export default function IntegrationsPage() {
             )}
           </div>
         </div>
+
+        {/* Google Drive Backups Section */}
+        {status.googleDrive && (
+          <div className={styles.backupsSection}>
+            <div className={styles.backupsHeader}>
+              <h2>💾 Sauvegardes Google Drive</h2>
+              <button
+                onClick={exportToDrive}
+                className={styles.exportButton}
+                disabled={exporting}
+              >
+                {exporting ? '⏳ Export en cours...' : '📤 Exporter maintenant'}
+              </button>
+            </div>
+
+            <p className={styles.backupsDescription}>
+              Tes données sont exportées automatiquement dans le dossier &quot;Suivi Addiction Backups&quot; sur Google Drive.
+              Tu peux aussi déclencher un export manuel ci-dessus.
+            </p>
+
+            {loadingBackups ? (
+              <p className={styles.loadingText}>Chargement des sauvegardes...</p>
+            ) : Object.keys(backups).length > 0 ? (
+              <div className={styles.backupsList}>
+                {Object.entries(backups)
+                  .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
+                  .map(([date, files]) => (
+                    <div key={date} className={styles.backupGroup}>
+                      <h3 className={styles.backupDate}>
+                        📅 {new Date(date).toLocaleDateString('fr-FR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </h3>
+                      <div className={styles.backupFiles}>
+                        {files.map((file) => (
+                          <a
+                            key={file.id}
+                            href={file.webViewLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.backupFile}
+                          >
+                            <div className={styles.backupFileIcon}>📄</div>
+                            <div className={styles.backupFileInfo}>
+                              <div className={styles.backupFileName}>{file.name}</div>
+                              <div className={styles.backupFileSize}>
+                                {file.size ? `${(parseInt(file.size) / 1024).toFixed(1)} Ko` : 'N/A'}
+                              </div>
+                            </div>
+                            <div className={styles.backupFileAction}>Ouvrir →</div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <div className={styles.noBackups}>
+                <p>Aucune sauvegarde trouvée. Clique sur &quot;Exporter maintenant&quot; pour créer ta première sauvegarde.</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Instructions détaillées */}
         <div className={styles.instructionsCard}>

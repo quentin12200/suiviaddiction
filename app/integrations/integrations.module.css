@@ -286,6 +286,149 @@
   font-weight: 700;
 }
 
+/* Backups Section */
+.backupsSection {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e0e0e0;
+}
+
+.backupsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.backupsHeader h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.exportButton {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exportButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.exportButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.backupsDescription {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.loadingText {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+}
+
+.backupsList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.backupGroup {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  background: #fafafa;
+}
+
+.backupDate {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.backupFiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.backupFile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.backupFile:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+  transform: translateX(4px);
+}
+
+.backupFileIcon {
+  font-size: 24px;
+}
+
+.backupFileInfo {
+  flex: 1;
+}
+
+.backupFileName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.backupFileSize {
+  font-size: 12px;
+  color: #999;
+}
+
+.backupFileAction {
+  font-size: 14px;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.noBackups {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.noBackups p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -317,5 +460,15 @@
 
   .instructionsCard {
     padding: 20px;
+  }
+
+  .backupsHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .exportButton {
+    width: 100%;
   }
 }

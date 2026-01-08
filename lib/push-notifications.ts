@@ -17,8 +17,16 @@ export interface NotificationPayload {
   data?: any
 }
 
+export interface PushSubscriptionData {
+  endpoint: string
+  keys: {
+    p256dh: string
+    auth: string
+  }
+}
+
 export async function sendPushNotification(
-  subscription: PushSubscription,
+  subscription: PushSubscriptionData,
   payload: NotificationPayload
 ): Promise<void> {
   if (!vapidPublicKey || !vapidPrivateKey) {
@@ -39,7 +47,7 @@ export async function sendPushNotification(
 }
 
 export async function sendNotificationToAll(
-  subscriptions: PushSubscription[],
+  subscriptions: PushSubscriptionData[],
   payload: NotificationPayload
 ): Promise<void> {
   const promises = subscriptions.map((sub) =>

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
               p256dh: sub.p256dh,
               auth: sub.auth,
             },
-          })) as PushSubscription[]
+          }))
 
           await sendNotificationToAll(pushSubscriptions, {
             title: getAlertTitle(alert.type),

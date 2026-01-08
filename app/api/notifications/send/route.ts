@@ -24,14 +24,14 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Convertir en format PushSubscription
+    // Convertir en format PushSubscriptionData
     const pushSubscriptions = subscriptions.map((sub) => ({
       endpoint: sub.endpoint,
       keys: {
         p256dh: sub.p256dh,
         auth: sub.auth,
       },
-    })) as PushSubscription[]
+    }))
 
     // Préparer le payload
     const payload: NotificationPayload = {

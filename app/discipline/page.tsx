@@ -27,6 +27,7 @@ export default function DisciplinePage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+  const [autoSaveMessage, setAutoSaveMessage] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -47,9 +48,36 @@ export default function DisciplinePage() {
     truthfulReflection: '',
   })
 
+  // Charger les données au démarrage
   useEffect(() => {
     fetchEntries()
+
+    // Restaurer depuis localStorage
+    const savedData = localStorage.getItem('disciplineFormDraft')
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData)
+        setFormData(parsed)
+        setAutoSaveMessage('✅ Brouillon restauré')
+        setTimeout(() => setAutoSaveMessage(''), 3000)
+      } catch (error) {
+        console.error('Erreur restauration brouillon:', error)
+      }
+    }
   }, [])
+
+  // Sauvegarder automatiquement à chaque modification
+  useEffect(() => {
+    // Ne pas sauvegarder si c'est la valeur initiale
+    if (formData.worstMoment || formData.bestMoment || formData.truthfulReflection || formData.excuses || formData.tomorrowCommitment) {
+      localStorage.setItem('disciplineFormDraft', JSON.stringify(formData))
+      setAutoSaveMessage('💾 Sauvegardé')
+
+      // Effacer le message après 2 secondes
+      const timer = setTimeout(() => setAutoSaveMessage(''), 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [formData])
 
   const fetchEntries = async () => {
     try {
@@ -81,6 +109,11 @@ export default function DisciplinePage() {
 
       if (data.success) {
         setMessage('✅ Bilan enregistré. Maintenant AGIS en conséquence.')
+
+        // Supprimer la sauvegarde automatique
+        localStorage.removeItem('disciplineFormDraft')
+        setAutoSaveMessage('')
+
         fetchEntries()
         // Réinitialiser pour demain
         setFormData({
@@ -109,8 +142,34 @@ export default function DisciplinePage() {
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
       setFormData((prev) => ({ ...prev, [name]: checked }))
+    } else if (type === 'number' || type === 'range') {
+      setFormData((prev) => ({ ...prev, [name]: parseInt(value, 10) || 0 }))
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
+    }
+  }
+
+  const clearDraft = () => {
+    if (confirm('Effacer le brouillon et recommencer ?')) {
+      localStorage.removeItem('disciplineFormDraft')
+      setFormData({
+        date: today,
+        wakeUpTime: '',
+        sleepTime: '',
+        exerciseDone: false,
+        exerciseDuration: 0,
+        productiveHours: 0,
+        distractionsResisted: 0,
+        promisesKept: 0,
+        selfRating: 5,
+        worstMoment: '',
+        bestMoment: '',
+        tomorrowCommitment: '',
+        excuses: '',
+        truthfulReflection: '',
+      })
+      setAutoSaveMessage('🗑️ Brouillon effacé')
+      setTimeout(() => setAutoSaveMessage(''), 3000)
     }
   }
 
@@ -183,7 +242,21 @@ export default function DisciplinePage() {
 
         {/* Formulaire */}
         <div className={styles.formSection}>
-          <h2>📝 Bilan Quotidien - Sois BRUTAL</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2>📝 Bilan Quotidien - Sois BRUTAL</h2>
+            {autoSaveMessage && (
+              <div style={{
+                fontSize: '14px',
+                color: '#4caf50',
+                padding: '8px 12px',
+                background: '#e8f5e9',
+                borderRadius: '6px',
+                fontWeight: '500'
+              }}>
+                {autoSaveMessage}
+              </div>
+            )}
+          </div>
           {message && <div className={styles.message}>{message}</div>}
 
           <form onSubmit={handleSubmit} className={styles.form}>
@@ -355,9 +428,28 @@ export default function DisciplinePage() {
               />
             </div>
 
-            <button type="submit" className={styles.submitButton} disabled={submitting}>
-              {submitting ? 'Enregistrement...' : '🔥 ENREGISTRER & S\'ENGAGER'}
-            </button>
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <button type="submit" className={styles.submitButton} disabled={submitting}>
+                {submitting ? 'Enregistrement...' : '🔥 ENREGISTRER & S\'ENGAGER'}
+              </button>
+              <button
+                type="button"
+                onClick={clearDraft}
+                className={styles.cancelButton}
+                style={{
+                  flex: '0 0 auto',
+                  padding: '14px 24px',
+                  background: '#f5f5f5',
+                  color: '#333',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                }}
+              >
+                🗑️ Effacer brouillon
+              </button>
+            </div>
           </form>
         </div>
 

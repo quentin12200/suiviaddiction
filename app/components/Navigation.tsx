@@ -22,6 +22,7 @@ export default function Navigation() {
     { href: '/history', label: 'Historique' },
     { href: '/goals', label: 'Objectifs' },
     { href: '/strategies', label: 'Stratégies' },
+    { href: '/coach', label: 'Coach IA' },
     { href: '/import', label: 'Importer CSV' },
   ]
 

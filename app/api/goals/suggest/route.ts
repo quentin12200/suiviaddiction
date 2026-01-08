@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       take: 60, // 2 mois de données
     })
 
-    const goals = await prisma.goal.findMany({
+    const goals = await prisma.dailyGoal.findMany({
       orderBy: { date: 'desc' },
       take: 10,
     })

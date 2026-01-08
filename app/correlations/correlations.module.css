@@ -183,15 +183,3 @@
     min-height: 250px;
   }
 }
-
-/* Tooltip customization */
-:global(.recharts-tooltip-wrapper) {
-  z-index: 1000;
-}
-
-:global(.recharts-default-tooltip) {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 2px solid #667eea !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}

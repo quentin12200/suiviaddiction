@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     })
 
     const strategies = await prisma.activeStrategy.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { activatedAt: 'desc' },
     })
 
     const disciplineEntries = await prisma.disciplineEntry.findMany({

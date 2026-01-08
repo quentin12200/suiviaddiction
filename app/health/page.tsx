@@ -83,8 +83,15 @@ export default function HealthPage() {
     try {
       const response = await fetch('/api/google/fit')
       const data = await response.json()
-      if (data.success) {
-        setHealthData(data.data)
+      if (data.success && data.data) {
+        // S'assurer que toutes les valeurs sont des nombres valides
+        setHealthData({
+          steps: Number(data.data.steps) || 0,
+          activeMinutes: Number(data.data.activeMinutes) || 0,
+          sleepHours: Number(data.data.sleepHours) || 0,
+          heartRate: Number(data.data.heartRate) || 0,
+          calories: Number(data.data.calories) || 0,
+        })
       }
     } catch (error) {
       console.error('Erreur récupération données santé:', error)

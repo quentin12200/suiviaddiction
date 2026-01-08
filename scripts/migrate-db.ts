@@ -3,7 +3,7 @@ import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 
 /**
- * Script de migration pour créer la table ActiveStrategy
+ * Script de migration pour créer les tables ActiveStrategy et DisciplineEntry
  * Exécuté automatiquement au déploiement
  */
 async function migrate() {
@@ -61,7 +61,38 @@ async function migrate() {
       CREATE INDEX IF NOT EXISTS "ActiveStrategy_isActive_idx" ON "ActiveStrategy"("isActive")
     `)
 
-    console.log('✅ Index créés')
+    console.log('✅ Index ActiveStrategy créés')
+
+    // Créer la table DisciplineEntry
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "DisciplineEntry" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "date" DATETIME NOT NULL UNIQUE,
+        "wakeUpTime" TEXT,
+        "sleepTime" TEXT,
+        "exerciseDone" INTEGER NOT NULL DEFAULT 0,
+        "exerciseDuration" INTEGER NOT NULL DEFAULT 0,
+        "productiveHours" INTEGER NOT NULL DEFAULT 0,
+        "distractionsResisted" INTEGER NOT NULL DEFAULT 0,
+        "promisesKept" INTEGER NOT NULL DEFAULT 0,
+        "selfRating" INTEGER NOT NULL DEFAULT 5,
+        "worstMoment" TEXT NOT NULL DEFAULT '',
+        "bestMoment" TEXT NOT NULL DEFAULT '',
+        "tomorrowCommitment" TEXT NOT NULL DEFAULT '',
+        "excuses" TEXT NOT NULL DEFAULT '',
+        "truthfulReflection" TEXT NOT NULL DEFAULT '',
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL
+      )
+    `)
+
+    console.log('✅ Table DisciplineEntry créée')
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "DisciplineEntry_date_idx" ON "DisciplineEntry"("date")
+    `)
+
+    console.log('✅ Index DisciplineEntry créés')
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

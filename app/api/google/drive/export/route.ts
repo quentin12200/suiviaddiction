@@ -15,15 +15,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Récupérer toutes les données d'addiction
-    const entries = await prisma.addictionEntry.findMany({
-      orderBy: { timestamp: 'desc' },
-    })
-
-    const goals = await prisma.goal.findMany({
+    const entries = await prisma.entry.findMany({
       orderBy: { date: 'desc' },
     })
 
-    const strategies = await prisma.copingStrategy.findMany({
+    const goals = await prisma.dailyGoal.findMany({
+      orderBy: { date: 'desc' },
+    })
+
+    const strategies = await prisma.activeStrategy.findMany({
       orderBy: { createdAt: 'desc' },
     })
 
@@ -35,29 +35,37 @@ export async function POST(request: NextRequest) {
     const csvHeaders = [
       'Date',
       'Heure',
-      'Type',
-      'Quantité',
+      'A fumé',
+      'Nb joints',
+      'Heure joint',
+      'Minutes depuis dernier',
+      'Niveau craving',
+      'État émotionnel',
+      'État physique',
       'Contexte',
       'Déclencheur',
-      'Humeur avant',
-      'Humeur après',
-      'Craving',
-      'Note',
+      'Action alternative',
+      'Décision consciente',
+      'Commentaire',
     ].join(',')
 
     const csvRows = entries.map((entry) => {
-      const date = new Date(entry.timestamp)
+      const date = new Date(entry.date)
       return [
         date.toLocaleDateString('fr-FR'),
-        date.toLocaleTimeString('fr-FR'),
-        entry.type,
-        entry.quantity,
-        `"${entry.context || ''}"`,
-        `"${entry.trigger || ''}"`,
-        entry.moodBefore,
-        entry.moodAfter,
-        entry.craving,
-        `"${entry.note || ''}"`,
+        entry.time,
+        entry.hasSmoked ? 'Oui' : 'Non',
+        entry.jointCount,
+        entry.jointTime || '',
+        entry.minutesSinceLastJoint || '',
+        entry.cravingLevel,
+        `"${entry.emotionalState}"`,
+        `"${entry.physicalState}"`,
+        `"${entry.context}"`,
+        `"${entry.trigger}"`,
+        `"${entry.alternativeAction}"`,
+        entry.consciousDecision ? 'Oui' : 'Non',
+        `"${entry.comment}"`,
       ].join(',')
     })
 
@@ -76,14 +84,15 @@ export async function POST(request: NextRequest) {
     const goalsCsvContent = [goalsHeaders, ...goalsRows].join('\n')
 
     // Générer le CSV des stratégies
-    const strategiesHeaders = ['Nom', 'Description', 'Catégorie', 'Utilisations', 'Efficacité'].join(',')
+    const strategiesHeaders = ['ID Stratégie', 'Titre', 'Description', 'Catégorie', 'Active', 'Activée le'].join(',')
     const strategiesRows = strategies.map((strategy) => {
       return [
-        `"${strategy.name}"`,
+        `"${strategy.strategyId}"`,
+        `"${strategy.title}"`,
         `"${strategy.description}"`,
         strategy.category,
-        strategy.usageCount,
-        strategy.effectiveness.toFixed(1),
+        strategy.isActive ? 'Oui' : 'Non',
+        new Date(strategy.activatedAt).toLocaleDateString('fr-FR'),
       ].join(',')
     })
     const strategiesCsvContent = [strategiesHeaders, ...strategiesRows].join('\n')

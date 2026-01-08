@@ -61,3 +61,26 @@ model ActiveStrategy {
   @@index([strategyId])
   @@index([isActive])
 }
+
+// Modèle pour le suivi de discipline et responsabilité personnelle
+model DisciplineEntry {
+  id                  String   @id @default(cuid())
+  date                DateTime @unique
+  wakeUpTime          String?  // Heure de réveil réelle
+  sleepTime           String?  // Heure de coucher réelle
+  exerciseDone        Boolean  @default(false)
+  exerciseDuration    Int      @default(0) // En minutes
+  productiveHours     Int      @default(0) // Heures vraiment productives
+  distractionsResisted Int     @default(0) // Nombre de fois où tu as résisté
+  promisesKept        Int      @default(0) // Promesses tenues sur X
+  selfRating          Int      @default(5) // Auto-évaluation 0-10
+  worstMoment         String   @default("") // Le pire moment de ta journée
+  bestMoment          String   @default("") // Le meilleur moment
+  tomorrowCommitment  String   @default("") // Engagement pour demain
+  excuses             String   @default("") // Tes excuses d'aujourd'hui
+  truthfulReflection  String   @default("") // Réflexion brutalement honnête
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([date])
+}

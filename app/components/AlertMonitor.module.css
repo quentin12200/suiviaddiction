@@ -1,0 +1,158 @@
+.alertCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  animation: slideDown 0.4s ease-out;
+  border-left: 4px solid;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alertHigh {
+  border-left-color: #f44336;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+.alertMedium {
+  border-left-color: #ff9800;
+  background: linear-gradient(135deg, #fff8f0 0%, #ffffff 100%);
+}
+
+.alertLow {
+  border-left-color: #4caf50;
+  background: linear-gradient(135deg, #f1f8f4 0%, #ffffff 100%);
+}
+
+.alertHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.alertHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #333;
+}
+
+.alertMessage {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.suggestionBox {
+  background: rgba(102, 126, 234, 0.08);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.suggestionBox strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #667eea;
+  font-size: 14px;
+}
+
+.suggestionBox p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.alertActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: center;
+}
+
+.actionBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.dismissBtn {
+  padding: 10px 16px;
+  background: transparent;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dismissBtn:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.cleanDaysBadge {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+@media (max-width: 768px) {
+  .alertCard {
+    padding: 16px;
+  }
+
+  .alertActions {
+    flex-direction: column;
+  }
+
+  .actionBtn,
+  .dismissBtn {
+    width: 100%;
+  }
+}

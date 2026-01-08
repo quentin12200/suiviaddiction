@@ -6,6 +6,8 @@ import Navigation from './components/Navigation'
 import FreedomScore from './components/FreedomScore'
 import AIEncouragement from './components/AIEncouragement'
 import ActiveStrategies from './components/ActiveStrategies'
+import AlertMonitor from './components/AlertMonitor'
+import NotificationSettings from './components/NotificationSettings'
 import {
   LineChart,
   Line,
@@ -145,6 +147,12 @@ export default function DashboardPage() {
             {loading ? '🔄 Rafraîchissement...' : '🔄 Rafraîchir'}
           </button>
         </div>
+
+        {/* Alertes Préventives */}
+        <AlertMonitor key={`alert-${refreshKey}`} />
+
+        {/* Notifications */}
+        <NotificationSettings />
 
         {/* Score de Liberté */}
         <FreedomScore key={`freedom-${refreshKey}`} />

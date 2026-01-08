@@ -24,6 +24,7 @@ export default function Navigation() {
     { href: '/strategies', label: 'Stratégies' },
     { href: '/correlations', label: 'Corrélations' },
     { href: '/discipline', label: 'Discipline' },
+    { href: '/health', label: 'Santé' },
     { href: '/coach', label: 'Coach IA' },
     { href: '/integrations', label: 'Intégrations' },
     { href: '/import', label: 'Importer CSV' },

@@ -8,6 +8,7 @@ import AIEncouragement from './components/AIEncouragement'
 import ActiveStrategies from './components/ActiveStrategies'
 import AlertMonitor from './components/AlertMonitor'
 import NotificationSettings from './components/NotificationSettings'
+import HealthWidget from './components/HealthWidget'
 import {
   LineChart,
   Line,
@@ -162,6 +163,9 @@ export default function DashboardPage() {
 
         {/* Stratégies Actives */}
         <ActiveStrategies key={`strategies-${refreshKey}`} />
+
+        {/* Santé & Agenda */}
+        <HealthWidget key={`health-${refreshKey}`} />
 
         {/* Résumé du jour */}
         <div className={styles.grid}>

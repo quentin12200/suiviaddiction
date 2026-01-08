@@ -152,6 +152,207 @@
   margin: 0;
 }
 
+/* Health Correlations Section */
+.healthSection {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e0e7ff;
+}
+
+.healthIntro {
+  font-size: 15px;
+  color: #666;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.healthGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.healthCard {
+  background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+  border: 2px solid #e0e7ff;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.healthCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+}
+
+.healthCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e0e7ff;
+}
+
+.healthCardIcon {
+  font-size: 32px;
+}
+
+.healthCardHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
+  margin: 0 0 4px 0;
+}
+
+.healthCardValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: #667eea;
+}
+
+.healthCardContent {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.healthCorrelation {
+  margin: 0;
+}
+
+.warning {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.moderate {
+  color: #f57c00;
+  font-weight: 500;
+}
+
+.positive {
+  color: #388e3c;
+  font-weight: 500;
+}
+
+.healthInsights {
+  background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+  border: 2px solid #ffc107;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.healthInsights h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.insightsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insightItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.insightIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.insightItem p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.healthCta {
+  text-align: center;
+  padding: 16px;
+  background: #f5f7ff;
+  border-radius: 8px;
+}
+
+.healthCta p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.healthCta a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.healthCta a:hover {
+  text-decoration: underline;
+}
+
+/* Health Prompt (when not connected) */
+.healthPrompt {
+  background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+  border: 2px solid #667eea;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.healthPromptIcon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.healthPrompt h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.healthPrompt p {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.healthPromptButton {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.healthPromptButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -181,5 +382,17 @@
 
   .chartContainer {
     min-height: 250px;
+  }
+
+  .healthGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .healthPrompt {
+    padding: 30px 20px;
+  }
+
+  .healthPromptIcon {
+    font-size: 48px;
   }
 }

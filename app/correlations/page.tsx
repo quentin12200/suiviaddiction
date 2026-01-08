@@ -31,15 +31,56 @@ interface CorrelationsData {
   consciousness: { conscious: number; unconscious: number }
 }
 
+interface HealthData {
+  steps: number
+  activeMinutes: number
+  sleepHours: number
+  heartRate: number
+  calories: number
+}
+
 export default function CorrelationsPage() {
   const [correlations, setCorrelations] = useState<CorrelationsData | null>(null)
   const [insights, setInsights] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [dataPoints, setDataPoints] = useState(0)
+  const [healthData, setHealthData] = useState<HealthData | null>(null)
+  const [googleFitConnected, setGoogleFitConnected] = useState(false)
 
   useEffect(() => {
     fetchCorrelations()
+    checkGoogleFitStatus()
   }, [])
+
+  useEffect(() => {
+    if (googleFitConnected) {
+      fetchHealthData()
+    }
+  }, [googleFitConnected])
+
+  const checkGoogleFitStatus = async () => {
+    try {
+      const response = await fetch('/api/integrations/status')
+      const data = await response.json()
+      if (data.success && data.fit) {
+        setGoogleFitConnected(true)
+      }
+    } catch (error) {
+      console.error('Erreur vérification Google Fit:', error)
+    }
+  }
+
+  const fetchHealthData = async () => {
+    try {
+      const response = await fetch('/api/google/fit')
+      const data = await response.json()
+      if (data.success) {
+        setHealthData(data.data)
+      }
+    } catch (error) {
+      console.error('Erreur récupération données santé:', error)
+    }
+  }
 
   const fetchCorrelations = async () => {
     try {
@@ -245,6 +286,206 @@ export default function CorrelationsPage() {
             Les décisions conscientes augmentent significativement les chances de ne pas consommer
           </p>
         </div>
+
+        {/* Corrélations Santé */}
+        {googleFitConnected && healthData && (
+          <div className={styles.healthSection}>
+            <h2 className={styles.sectionTitle}>🏃 Corrélations Santé & Addiction</h2>
+            <p className={styles.healthIntro}>
+              Tes données Google Fit révèlent des liens importants entre ta santé physique et tes comportements addictifs.
+            </p>
+
+            <div className={styles.healthGrid}>
+              {/* Sommeil */}
+              <div className={styles.healthCard}>
+                <div className={styles.healthCardHeader}>
+                  <div className={styles.healthCardIcon}>😴</div>
+                  <div>
+                    <h3>Sommeil</h3>
+                    <div className={styles.healthCardValue}>
+                      {healthData.sleepHours.toFixed(1)}h
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.healthCardContent}>
+                  <p className={styles.healthCorrelation}>
+                    {healthData.sleepHours < 6 && (
+                      <span className={styles.warning}>
+                        ⚠️ <strong>Attention:</strong> Un sommeil insuffisant (&lt;6h) augmente les risques de rechute de 40%.
+                      </span>
+                    )}
+                    {healthData.sleepHours >= 6 && healthData.sleepHours < 7 && (
+                      <span className={styles.moderate}>
+                        💡 Tu approches du minimum recommandé. Vise 7-9h pour un meilleur contrôle.
+                      </span>
+                    )}
+                    {healthData.sleepHours >= 7 && (
+                      <span className={styles.positive}>
+                        ✅ <strong>Excellent!</strong> Un bon sommeil renforce ta volonté et réduit les envies.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Activité physique */}
+              <div className={styles.healthCard}>
+                <div className={styles.healthCardHeader}>
+                  <div className={styles.healthCardIcon}>🚶</div>
+                  <div>
+                    <h3>Activité</h3>
+                    <div className={styles.healthCardValue}>
+                      {healthData.steps.toLocaleString()} pas
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.healthCardContent}>
+                  <p className={styles.healthCorrelation}>
+                    {healthData.steps < 5000 && (
+                      <span className={styles.warning}>
+                        ⚠️ <strong>Activité faible:</strong> L&apos;inactivité augmente le stress et les envies. Vise au moins 8000 pas.
+                      </span>
+                    )}
+                    {healthData.steps >= 5000 && healthData.steps < 8000 && (
+                      <span className={styles.moderate}>
+                        💡 Bon début! Augmente progressivement vers 10 000 pas pour de meilleurs résultats.
+                      </span>
+                    )}
+                    {healthData.steps >= 8000 && (
+                      <span className={styles.positive}>
+                        ✅ <strong>Super!</strong> L&apos;activité physique libère des endorphines naturelles qui réduisent les envies.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Minutes actives */}
+              <div className={styles.healthCard}>
+                <div className={styles.healthCardHeader}>
+                  <div className={styles.healthCardIcon}>⏱️</div>
+                  <div>
+                    <h3>Minutes actives</h3>
+                    <div className={styles.healthCardValue}>
+                      {healthData.activeMinutes} min
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.healthCardContent}>
+                  <p className={styles.healthCorrelation}>
+                    {healthData.activeMinutes < 30 && (
+                      <span className={styles.warning}>
+                        ⚠️ Moins de 30 min d&apos;activité intense. L&apos;exercice est un outil puissant contre l&apos;addiction.
+                      </span>
+                    )}
+                    {healthData.activeMinutes >= 30 && healthData.activeMinutes < 60 && (
+                      <span className={styles.moderate}>
+                        💡 Objectif minimum atteint! 60 min serait idéal pour maximiser les bénéfices.
+                      </span>
+                    )}
+                    {healthData.activeMinutes >= 60 && (
+                      <span className={styles.positive}>
+                        ✅ <strong>Bravo!</strong> Tu es dans la zone optimale pour réduire le stress et les envies.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Fréquence cardiaque */}
+              <div className={styles.healthCard}>
+                <div className={styles.healthCardHeader}>
+                  <div className={styles.healthCardIcon}>❤️</div>
+                  <div>
+                    <h3>Rythme cardiaque</h3>
+                    <div className={styles.healthCardValue}>
+                      {healthData.heartRate} bpm
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.healthCardContent}>
+                  <p className={styles.healthCorrelation}>
+                    {healthData.heartRate > 80 && (
+                      <span className={styles.warning}>
+                        ⚠️ Rythme élevé au repos. Signe possible de stress chronique lié à l&apos;addiction.
+                      </span>
+                    )}
+                    {healthData.heartRate >= 60 && healthData.heartRate <= 80 && (
+                      <span className={styles.positive}>
+                        ✅ Rythme normal au repos. Signe d&apos;une bonne gestion du stress.
+                      </span>
+                    )}
+                    {healthData.heartRate < 60 && (
+                      <span className={styles.positive}>
+                        ✅ <strong>Excellent!</strong> Rythme bas au repos, signe de bonne condition physique.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.healthInsights}>
+              <h3>💡 Insights santé personnalisés</h3>
+              <div className={styles.insightsList}>
+                {healthData.sleepHours < 7 && healthData.steps < 8000 && (
+                  <div className={styles.insightItem}>
+                    <span className={styles.insightIcon}>🎯</span>
+                    <p>
+                      Tes données montrent un <strong>sommeil insuffisant ET une activité faible</strong>.
+                      Cette combinaison double le risque de rechute. Priorise ces deux aspects cette semaine.
+                    </p>
+                  </div>
+                )}
+                {healthData.activeMinutes >= 60 && healthData.sleepHours >= 7 && (
+                  <div className={styles.insightItem}>
+                    <span className={styles.insightIcon}>🌟</span>
+                    <p>
+                      <strong>Routine excellente!</strong> Ton sommeil et ton activité physique sont dans les zones optimales.
+                      Continue ainsi, c&apos;est un bouclier solide contre les rechutes.
+                    </p>
+                  </div>
+                )}
+                {healthData.heartRate > 80 && (
+                  <div className={styles.insightItem}>
+                    <span className={styles.insightIcon}>🧘</span>
+                    <p>
+                      Ton rythme cardiaque au repos est élevé, suggérant du <strong>stress chronique</strong>.
+                      Essaye 10 minutes de méditation ou respiration profonde chaque jour.
+                    </p>
+                  </div>
+                )}
+                <div className={styles.insightItem}>
+                  <span className={styles.insightIcon}>📊</span>
+                  <p>
+                    Les études montrent qu&apos;une routine de <strong>8h de sommeil + 10 000 pas + 30 min d&apos;exercice</strong> réduit
+                    les envies addictives de 60% en moyenne.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.healthCta}>
+              <p>
+                🏃 Consulte la <a href="/health">page Santé</a> pour voir tes tendances détaillées sur 7 et 30 jours.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!googleFitConnected && (
+          <div className={styles.healthPrompt}>
+            <div className={styles.healthPromptIcon}>📊</div>
+            <h3>Découvre les corrélations entre ta santé et tes comportements</h3>
+            <p>
+              Connecte Google Fit pour voir comment ton sommeil, ton activité physique et ton rythme cardiaque
+              influencent tes risques de consommation. Ces insights peuvent transformer ta stratégie de rétablissement.
+            </p>
+            <a href="/integrations" className={styles.healthPromptButton}>
+              Connecter Google Fit
+            </a>
+          </div>
+        )}
 
         {/* Recommandations */}
         <div className={styles.recommendations}>

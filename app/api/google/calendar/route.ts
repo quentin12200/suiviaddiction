@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getValidAccessToken } from '@/lib/google-refresh'
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const accessToken = cookieStore.get('google_calendar_access_token')
+    const accessToken = await getValidAccessToken('calendar')
 
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, error: 'Google Calendar non connecté' },
+        { success: false, error: 'Google Calendar non connecté ou session expirée' },
         { status: 401 }
       )
     }
@@ -29,7 +28,7 @@ export async function GET(request: NextRequest) {
       `maxResults=10`,
       {
         headers: {
-          'Authorization': `Bearer ${accessToken.value}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
       }
     )

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getValidAccessToken } from '@/lib/google-refresh'
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const accessToken = cookieStore.get('google_drive_access_token')
+    const accessToken = await getValidAccessToken('drive')
 
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, error: 'Google Drive non connecté' },
+        { success: false, error: 'Google Drive non connecté ou session expirée' },
         { status: 401 }
       )
     }
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
       `q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       {
         headers: {
-          Authorization: `Bearer ${accessToken.value}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     )
@@ -46,7 +45,7 @@ export async function GET(request: NextRequest) {
       `orderBy=createdTime desc`,
       {
         headers: {
-          Authorization: `Bearer ${accessToken.value}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       }
     )

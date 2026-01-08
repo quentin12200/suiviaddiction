@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getValidAccessToken } from '@/lib/google-refresh'
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const accessToken = cookieStore.get('google_fit_access_token')
+    const accessToken = await getValidAccessToken('fit')
 
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, error: 'Google Fit non connecté' },
+        { success: false, error: 'Google Fit non connecté ou session expirée' },
         { status: 401 }
       )
     }
@@ -24,7 +23,7 @@ export async function GET(request: NextRequest) {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken.value}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -54,7 +53,7 @@ export async function GET(request: NextRequest) {
       `https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=${new Date(startTime - 86400000).toISOString()}&endTime=${new Date(now).toISOString()}&activityType=72`,
       {
         headers: {
-          'Authorization': `Bearer ${accessToken.value}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
       }
     )
@@ -67,7 +66,7 @@ export async function GET(request: NextRequest) {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken.value}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

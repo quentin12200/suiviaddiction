@@ -17,62 +17,114 @@ export default function IntegrationsPage() {
     googleDrive: false,
   })
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     checkIntegrationStatus()
+
+    // Vérifier les paramètres URL (success/error après callback OAuth)
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const success = params.get('success')
+      const error = params.get('error')
+
+      if (success) {
+        setMessage({
+          type: 'success',
+          text: `✅ ${success === 'fit' ? 'Google Fit' : success === 'calendar' ? 'Google Calendar' : success === 'drive' ? 'Google Drive' : 'Google'} connecté avec succès !`,
+        })
+        checkIntegrationStatus()
+        // Nettoyer l'URL
+        window.history.replaceState({}, '', '/integrations')
+      } else if (error) {
+        const errorMessages: Record<string, string> = {
+          access_denied: 'Accès refusé. Tu as annulé la connexion.',
+          no_code: 'Erreur: Code d\'autorisation manquant.',
+          config_missing: 'Configuration OAuth incomplète. Vérifie les variables d\'environnement.',
+          token_exchange_failed: 'Échec de l\'échange de token.',
+          server_error: 'Erreur serveur lors de la connexion.',
+        }
+        setMessage({
+          type: 'error',
+          text: `❌ ${errorMessages[error] || 'Erreur de connexion'}`,
+        })
+        // Nettoyer l'URL
+        window.history.replaceState({}, '', '/integrations')
+      }
+    }
   }, [])
 
   const checkIntegrationStatus = async () => {
-    // TODO: Vérifier si les tokens OAuth sont présents
-    const hasGoogleFit = localStorage.getItem('googleFitToken') !== null
-    const hasGoogleCalendar = localStorage.getItem('googleCalendarToken') !== null
-    const hasGoogleDrive = localStorage.getItem('googleDriveToken') !== null
+    // Vérifier les cookies pour voir si les services sont connectés
+    try {
+      const response = await fetch('/api/integrations/status')
+      const data = await response.json()
 
-    setStatus({
-      googleFit: hasGoogleFit,
-      googleCalendar: hasGoogleCalendar,
-      googleDrive: hasGoogleDrive,
-    })
+      if (data.success) {
+        setStatus({
+          googleFit: data.fit || false,
+          googleCalendar: data.calendar || false,
+          googleDrive: data.drive || false,
+        })
+      }
+    } catch (error) {
+      console.error('Erreur vérification status:', error)
+    }
   }
 
   const connectGoogle = async (service: string) => {
     setLoading(true)
+    setMessage(null)
 
-    // TODO: Implémenter OAuth 2.0 flow
-    // Pour l'instant, on affiche les instructions
+    // Vérifier si les credentials sont configurés
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
-    alert(`Pour connecter ${service}:
-
-1. Va sur Google Cloud Console: https://console.cloud.google.com/
-2. Crée un nouveau projet ou sélectionne un projet existant
-3. Active les APIs nécessaires:
-   - Google Fit API (pour les données de santé)
-   - Google Calendar API (pour le calendrier)
-   - Google Drive API (pour l'export automatique)
-4. Crée des credentials OAuth 2.0
-5. Ajoute l'URL de redirection: ${window.location.origin}/api/auth/google/callback
-6. Configure les variables d'environnement sur Vercel:
-   - GOOGLE_CLIENT_ID
-   - GOOGLE_CLIENT_SECRET
-
-Une fois configuré, l'intégration sera automatique.`)
-
-    setLoading(false)
-  }
-
-  const disconnectService = (service: string) => {
-    if (!confirm(`Déconnecter ${service} ?`)) return
-
-    // Supprimer les tokens du localStorage
-    if (service === 'Google Fit') {
-      localStorage.removeItem('googleFitToken')
-    } else if (service === 'Google Calendar') {
-      localStorage.removeItem('googleCalendarToken')
-    } else if (service === 'Google Drive') {
-      localStorage.removeItem('googleDriveToken')
+    if (!clientId) {
+      setMessage({
+        type: 'error',
+        text: '❌ Configuration OAuth manquante. Consulte les instructions ci-dessous.',
+      })
+      setLoading(false)
+      return
     }
 
-    checkIntegrationStatus()
+    // Rediriger vers l'OAuth flow
+    const serviceMap: Record<string, string> = {
+      'Google Fit': 'fit',
+      'Google Calendar': 'calendar',
+      'Google Drive': 'drive',
+    }
+
+    const serviceKey = serviceMap[service] || 'fit'
+    window.location.href = `/api/auth/google?service=${serviceKey}`
+  }
+
+  const disconnectService = async (service: string) => {
+    if (!confirm(`Déconnecter ${service} ?`)) return
+
+    const serviceMap: Record<string, string> = {
+      'Google Fit': 'fit',
+      'Google Calendar': 'calendar',
+      'Google Drive': 'drive',
+    }
+
+    const serviceKey = serviceMap[service] || 'fit'
+
+    try {
+      await fetch(`/api/integrations/disconnect?service=${serviceKey}`, {
+        method: 'POST',
+      })
+      setMessage({
+        type: 'success',
+        text: `✅ ${service} déconnecté`,
+      })
+      checkIntegrationStatus()
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: `❌ Erreur lors de la déconnexion`,
+      })
+    }
   }
 
   return (
@@ -85,6 +137,13 @@ Une fois configuré, l'intégration sera automatique.`)
             Connecte tes services Google pour enrichir ton suivi
           </p>
         </div>
+
+        {/* Message de statut */}
+        {message && (
+          <div className={message.type === 'success' ? styles.successMessage : styles.errorMessage}>
+            {message.text}
+          </div>
+        )}
 
         {/* Google Fit */}
         <div className={styles.integrationCard}>

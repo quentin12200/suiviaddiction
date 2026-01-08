@@ -1,0 +1,197 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  color: #999;
+}
+
+.error {
+  color: #f44336;
+}
+
+/* Insights Section */
+.insightsSection {
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #667eea;
+}
+
+.insightsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.insightCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.insightCard p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* Chart Sections */
+.chartSection {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.chartSection .sectionTitle {
+  margin-top: 0;
+}
+
+.chartContainer {
+  margin-top: 20px;
+  min-height: 300px;
+}
+
+.chartNote {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f5f7ff;
+  border-left: 4px solid #667eea;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #555;
+  font-style: italic;
+}
+
+/* Recommendations */
+.recommendations {
+  margin-top: 40px;
+}
+
+.recommendationsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.recommendationCard {
+  background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 24px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.recommendationCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+.recommendationCard h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.recommendationCard p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 15px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .chartSection {
+    padding: 20px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+  }
+
+  .insightsGrid,
+  .recommendationsList {
+    grid-template-columns: 1fr;
+  }
+
+  .chartContainer {
+    min-height: 250px;
+  }
+}
+
+/* Tooltip customization */
+:global(.recharts-tooltip-wrapper) {
+  z-index: 1000;
+}
+
+:global(.recharts-default-tooltip) {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 2px solid #667eea !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}

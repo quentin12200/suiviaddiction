@@ -1,0 +1,49 @@
+{
+  "name": "Suivi d'Addiction - Coach Personnel",
+  "short_name": "SuiviAddiction",
+  "description": "Application de suivi et accompagnement pour la liberté face aux addictions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "lifestyle", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Nouvelle entrée",
+      "short_name": "Entrée",
+      "description": "Ajouter une nouvelle entrée",
+      "url": "/new",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Coach IA",
+      "short_name": "Coach",
+      "description": "Parler avec le coach IA",
+      "url": "/coach",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tableau de bord",
+      "short_name": "Dashboard",
+      "description": "Voir le tableau de bord",
+      "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

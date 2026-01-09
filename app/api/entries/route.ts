@@ -56,10 +56,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Parser la date en UTC pour éviter les problèmes de fuseau horaire
+    // Si body.date est "2026-01-09", on crée une date UTC à minuit
+    const entryDate = new Date(body.date + 'T00:00:00.000Z')
+
+    console.log('🔍 Creating entry:')
+    console.log('  Input date:', body.date)
+    console.log('  Parsed date (UTC):', entryDate.toISOString())
+    console.log('  Has smoked:', body.hasSmoked)
+    console.log('  Joint count:', body.hasSmoked ? body.jointCount : 0)
+
     // Créer l'entrée
     const entry = await prisma.entry.create({
       data: {
-        date: new Date(body.date),
+        date: entryDate,
         time: body.time,
         hasSmoked: body.hasSmoked,
         jointCount: body.hasSmoked ? body.jointCount : 0,
@@ -75,6 +85,8 @@ export async function POST(request: NextRequest) {
         comment: body.comment || '',
       },
     })
+
+    console.log('✅ Entry created with ID:', entry.id)
 
     return NextResponse.json({ success: true, entry })
   } catch (error) {

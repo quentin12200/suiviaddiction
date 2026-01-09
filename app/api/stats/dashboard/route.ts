@@ -28,22 +28,36 @@ export async function GET() {
   try {
     console.log('Dashboard API called - Starting...')
     const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    // Créer les dates en UTC pour éviter les problèmes de fuseau horaire
+    const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0))
+    const tomorrow = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0))
     const sevenDaysAgo = new Date(today)
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
     const thirtyDaysAgo = new Date(today)
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
+    console.log('🔍 Dashboard Debug - Dates:')
+    console.log('  Today (UTC):', today.toISOString())
+    console.log('  Tomorrow (UTC):', tomorrow.toISOString())
+    console.log('  Now:', now.toISOString())
+
     console.log('Fetching today entries...')
-    // Entrées d'aujourd'hui
+    // Entrées d'aujourd'hui (entre minuit aujourd'hui et minuit demain en UTC)
     const todayEntries = await prisma.entry.findMany({
       where: {
         date: {
           gte: today,
+          lt: tomorrow,
         },
       },
       orderBy: { date: 'desc' },
     })
+
+    console.log(`📊 Found ${todayEntries.length} entries for today`)
+    if (todayEntries.length > 0) {
+      console.log('  First entry date:', todayEntries[0].date.toISOString())
+    }
 
     // Objectif du jour
     const todayGoal = await prisma.dailyGoal.findUnique({
@@ -55,10 +69,13 @@ export async function GET() {
       where: {
         date: {
           gte: today,
+          lt: tomorrow,
         },
       },
       orderBy: { date: 'desc' },
     })
+
+    console.log('Discipline entry for today:', todayDiscipline ? 'Found' : 'Not found')
 
     // Statistiques sur 7 jours
     const last7DaysEntries = await prisma.entry.findMany({
@@ -85,9 +102,17 @@ export async function GET() {
 
     // Calculer le nombre de joints aujourd'hui
     const todayJointsCount = todayEntries.reduce(
-      (sum: number, entry: Entry) => sum + (entry.hasSmoked ? entry.jointCount : 0),
+      (sum: number, entry: Entry) => {
+        const count = entry.hasSmoked ? entry.jointCount : 0
+        if (count > 0) {
+          console.log(`  Entry ${entry.id}: ${count} joint(s) at ${entry.time}`)
+        }
+        return sum + count
+      },
       0
     )
+
+    console.log(`✅ Total joints today: ${todayJointsCount}`)
 
     // Grouper par jour pour les graphiques
     const groupByDay = (entries: Entry[]) => {
@@ -122,7 +147,7 @@ export async function GET() {
       last7DaysEntries.reduce((sum: number, e: Entry) => sum + e.cravingLevel, 0) /
       Math.max(last7DaysEntries.length, 1)
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       today: {
         jointsCount: todayJointsCount,
         entriesCount: todayEntries.length,
@@ -146,6 +171,13 @@ export async function GET() {
         average: avgHistorical,
       },
     })
+
+    // Ajouter des headers pour empêcher tout cache
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+
+    return response
   } catch (error) {
     console.error('Erreur dashboard stats:', error)
     return NextResponse.json(

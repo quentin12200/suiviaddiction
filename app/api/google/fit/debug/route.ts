@@ -12,68 +12,63 @@ export async function GET(request: NextRequest) {
     }
 
     const now = Date.now()
-    const startOfDay = new Date()
-    startOfDay.setHours(0, 0, 0, 0)
-    const startTime = startOfDay.getTime()
 
-    // Récupérer les données d'activité
-    const activityResponse = await fetch(
-      `https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate`,
+    // Tester plusieurs périodes
+    const periodes = [
       {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          aggregateBy: [
-            {
-              dataTypeName: 'com.google.step_count.delta',
-            },
-            {
-              dataTypeName: 'com.google.active_minutes',
-            },
-            {
-              dataTypeName: 'com.google.calories.expended',
-            },
-          ],
-          bucketByTime: { durationMillis: now - startTime },
-          startTimeMillis: startTime,
-          endTimeMillis: now,
-        }),
-      }
-    )
+        nom: "Aujourd'hui (depuis minuit)",
+        start: new Date(new Date().setHours(0, 0, 0, 0)).getTime(),
+        end: now,
+      },
+      {
+        nom: "Dernières 24 heures",
+        start: now - (24 * 60 * 60 * 1000),
+        end: now,
+      },
+      {
+        nom: "Hier (journée complète)",
+        start: new Date(new Date().setHours(0, 0, 0, 0)).getTime() - (24 * 60 * 60 * 1000),
+        end: new Date(new Date().setHours(0, 0, 0, 0)).getTime(),
+      },
+      {
+        nom: "7 derniers jours",
+        start: now - (7 * 24 * 60 * 60 * 1000),
+        end: now,
+      },
+    ]
 
-    const activityData = await activityResponse.json()
+    const resultats = []
 
-    // Renvoyer les données brutes pour debug
+    for (const periode of periodes) {
+      const startNanos = periode.start * 1000000
+      const endNanos = periode.end * 1000000
+
+      // Tester la source HONOR Health
+      const response = await fetch(
+        `https://www.googleapis.com/fitness/v1/users/me/dataSources/raw:com.google.step_count.delta:com.hihonor.health:health_platform/datasets/${startNanos}-${endNanos}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        }
+      )
+
+      const data = await response.json()
+
+      resultats.push({
+        periode: periode.nom,
+        start: new Date(periode.start).toISOString(),
+        end: new Date(periode.end).toISOString(),
+        nombrePoints: data.point?.length || 0,
+        totalPas: data.point?.reduce((sum: number, p: any) => sum + (p.value?.[0]?.intVal || 0), 0) || 0,
+        donnees: data,
+      })
+    }
+
     return NextResponse.json({
       success: true,
-      debug: {
-        periode: {
-          start: new Date(startTime).toISOString(),
-          end: new Date(now).toISOString(),
-          dureeMinutes: (now - startTime) / 1000 / 60,
-        },
-        donneesbrutesGoogleFit: activityData,
-        structure: {
-          nombreBuckets: activityData.bucket?.length || 0,
-          buckets: activityData.bucket?.map((b: any, i: number) => ({
-            index: i,
-            nombreDatasets: b.dataset?.length || 0,
-            datasets: b.dataset?.map((d: any, j: number) => ({
-              index: j,
-              sourceId: d.dataSourceId,
-              nombrePoints: d.point?.length || 0,
-              points: d.point?.map((p: any) => ({
-                value: p.value,
-                startTime: p.startTimeNanos ? new Date(parseInt(p.startTimeNanos) / 1000000).toISOString() : null,
-                endTime: p.endTimeNanos ? new Date(parseInt(p.endTimeNanos) / 1000000).toISOString() : null,
-              })) || [],
-            })) || [],
-          })) || [],
-        },
-      },
+      message: "Test de différentes périodes pour trouver où sont les données",
+      resultats,
     })
   } catch (error: any) {
     return NextResponse.json({

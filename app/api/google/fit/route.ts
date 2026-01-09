@@ -25,7 +25,63 @@ export async function GET(request: NextRequest) {
     console.log('📅 End:', new Date(now).toISOString())
     console.log('📅 Durée:', (now - startTime) / 1000 / 60, 'minutes')
 
-    // Récupérer les données d'activité (pas, calories) DEPUIS MINUIT AUJOURD'HUI
+    // NOUVELLE APPROCHE : Utiliser l'API dataset directe au lieu de aggregate
+    // Cela permet d'avoir les données même si l'agrégation échoue
+    // Essayer plusieurs dataSources car chaque appareil peut utiliser une source différente
+    const dataSourcesSteps = [
+      'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
+      'derived:com.google.step_count.delta:com.google.android.gms:merge_step_deltas',
+      'derived:com.google.step_count.delta:com.google.android.gms:aggregated',
+    ]
+
+    let steps = 0
+    let stepsFound = false
+
+    // Convertir en nanosecondes (multiplier par 1000000, pas concaténer)
+    const startTimeNanos = startTime * 1000000
+    const nowNanos = now * 1000000
+
+    console.log('🔍 Timestamps (nanosecondes):', startTimeNanos, '-', nowNanos)
+
+    // Essayer chaque source jusqu'à trouver des données
+    for (const dataSourceSteps of dataSourcesSteps) {
+      console.log(`🔍 Essai dataSource: ${dataSourceSteps}`)
+
+      const stepsResponse = await fetch(
+        `https://www.googleapis.com/fitness/v1/users/me/dataSources/${dataSourceSteps}/datasets/${startTimeNanos}-${nowNanos}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        }
+      )
+
+      if (stepsResponse.ok) {
+        const stepsData = await stepsResponse.json()
+        console.log('📦 Données pas:', JSON.stringify(stepsData, null, 2))
+
+        if (stepsData.point && stepsData.point.length > 0) {
+          stepsData.point.forEach((point: any) => {
+            const stepValue = point.value?.[0]?.intVal || 0
+            console.log(`  🚶 Pas trouvés: ${stepValue}`)
+            steps += stepValue
+          })
+          stepsFound = true
+          console.log(`✅ Source utilisée: ${dataSourceSteps}`)
+          break // On a trouvé des données, pas besoin d'essayer les autres sources
+        } else {
+          console.log(`  ⚠️ Aucune donnée dans cette source`)
+        }
+      } else {
+        console.log(`  ❌ Erreur ${stepsResponse.status}:`, await stepsResponse.text())
+      }
+    }
+
+    if (!stepsFound) {
+      console.log('⚠️ Aucune source de pas n\'a retourné de données')
+    }
+
+    // Récupérer les données d'activité avec aggregate (pour calories et minutes)
     const activityResponse = await fetch(
       `https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate`,
       {
@@ -100,10 +156,11 @@ export async function GET(request: NextRequest) {
 
     console.log('📦 Données brutes fréquence cardiaque:', JSON.stringify(heartRateData, null, 2))
 
-    // Parser les données - essayer plusieurs sources
-    let steps = 0
+    // Parser les données aggregate pour calories et minutes actives
     let activeMinutes = 0
     let calories = 0
+
+    // Les pas sont déjà calculés avec l'API dataset directe ci-dessus
 
     // Pour les pas, parcourir tous les datasets et tous les points
     if (activityData.bucket && activityData.bucket.length > 0) {
@@ -115,16 +172,8 @@ export async function GET(request: NextRequest) {
 
             if (dataset.point && dataset.point.length > 0) {
               dataset.point.forEach((point: any) => {
-                // Pas - chercher dans toutes les sources contenant "step"
-                if (sourceId.toLowerCase().includes('step')) {
-                  const stepValue = point.value?.[0]?.intVal || 0
-                  if (stepValue > 0) {
-                    console.log(`  🚶 Pas trouvés: ${stepValue} (source: ${sourceId})`)
-                    steps += stepValue
-                  }
-                }
                 // Minutes actives
-                else if (sourceId.toLowerCase().includes('active') || sourceId.toLowerCase().includes('minute')) {
+                if (sourceId.toLowerCase().includes('active') || sourceId.toLowerCase().includes('minute')) {
                   const minutesValue = point.value?.[0]?.intVal || 0
                   if (minutesValue > 0) {
                     console.log(`  ⏱️ Minutes actives trouvées: ${minutesValue}`)
@@ -151,7 +200,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('✅ Totaux calculés:')
-    console.log(`  🚶 Pas: ${steps}`)
+    console.log(`  🚶 Pas (API dataset directe): ${steps}`)
     console.log(`  ⏱️ Minutes actives: ${activeMinutes}`)
     console.log(`  🔥 Calories: ${calories}`)
 

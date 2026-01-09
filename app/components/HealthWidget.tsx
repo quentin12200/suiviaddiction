@@ -9,6 +9,8 @@ interface HealthData {
   calories: number
   sleepHours: number
   heartRate: number
+  distanceKm: string
+  lastUpdate: string
 }
 
 interface CalendarEvent {
@@ -28,6 +30,14 @@ export default function HealthWidget() {
   useEffect(() => {
     fetchHealthData()
     fetchCalendarEvents()
+
+    // Auto-refresh toutes les 5 minutes (300000ms)
+    const interval = setInterval(() => {
+      fetchHealthData()
+      fetchCalendarEvents()
+    }, 300000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const fetchHealthData = async () => {
@@ -43,6 +53,8 @@ export default function HealthWidget() {
           sleepHours: Number(data.data.sleepHours) || 0,
           heartRate: Number(data.data.heartRate) || 0,
           calories: Number(data.data.calories) || 0,
+          distanceKm: data.data.distanceKm || '0.00',
+          lastUpdate: data.data.lastUpdate || new Date().toISOString(),
         })
         setFitConnected(true)
       } else {
@@ -106,12 +118,23 @@ export default function HealthWidget() {
       {/* Google Fit */}
       {fitConnected && healthData && (
         <div className={styles.healthSection}>
-          <h3>😴 Données du jour</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h3>📊 Dernières 24h (temps réel)</h3>
+            <span style={{ fontSize: '12px', color: '#666' }}>
+              Mis à jour: {new Date(healthData.lastUpdate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
               <div className={styles.statIcon}>🚶</div>
               <div className={styles.statValue}>{healthData.steps.toLocaleString()}</div>
               <div className={styles.statLabel}>pas</div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>📏</div>
+              <div className={styles.statValue}>{healthData.distanceKm}</div>
+              <div className={styles.statLabel}>km</div>
             </div>
 
             <div className={styles.statCard}>
@@ -133,6 +156,12 @@ export default function HealthWidget() {
                 <div className={styles.statLabel}>bpm</div>
               </div>
             )}
+
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>🔥</div>
+              <div className={styles.statValue}>{healthData.calories}</div>
+              <div className={styles.statLabel}>calories</div>
+            </div>
           </div>
         </div>
       )}

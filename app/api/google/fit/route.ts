@@ -14,16 +14,15 @@ export async function GET(request: NextRequest) {
 
     const now = Date.now()
 
-    // Calculer le début de la journée AUJOURD'HUI
-    const startOfDay = new Date()
-    startOfDay.setHours(0, 0, 0, 0)
-    const startTime = startOfDay.getTime()
+    // Utiliser les dernières 24 heures glissantes au lieu de "depuis minuit"
+    // Cela garantit d'avoir des données même si la synchronisation a du retard
+    const startTime = now - (24 * 60 * 60 * 1000)
 
     console.log('🔍 Récupération données Google Fit')
-    console.log('📅 Période: Depuis minuit aujourd\'hui')
+    console.log('📅 Période: Dernières 24 heures glissantes (temps réel)')
     console.log('📅 Start:', new Date(startTime).toISOString())
     console.log('📅 End:', new Date(now).toISOString())
-    console.log('📅 Durée:', (now - startTime) / 1000 / 60, 'minutes')
+    console.log('📅 Durée:', (now - startTime) / 1000 / 60 / 60, 'heures')
 
     // NOUVELLE APPROCHE : Utiliser l'API dataset directe au lieu de aggregate
     // Cela permet d'avoir les données même si l'agrégation échoue
@@ -224,12 +223,17 @@ export async function GET(request: NextRequest) {
       avgHeartRate = Math.round(sum / heartRatePoints.length)
     }
 
+    // Calculer la distance en km (moyenne: 1 pas = 0.762 mètres)
+    const distanceKm = (steps * 0.762) / 1000
+
     const result = {
       steps,
       activeMinutes,
       calories: Math.round(calories),
       sleepHours: sleepHours.toFixed(1),
       heartRate: avgHeartRate,
+      distanceKm: distanceKm.toFixed(2),
+      lastUpdate: new Date().toISOString(),
     }
 
     console.log('📤 Données renvoyées:', result)

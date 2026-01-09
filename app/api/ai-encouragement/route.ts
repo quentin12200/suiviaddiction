@@ -21,11 +21,12 @@ export async function GET() {
 
     type EntryType = typeof recentEntries[number]
 
-    // Calculer des statistiques
+    // Calculer des statistiques précises
     const totalJoints = recentEntries
       .filter((e: EntryType) => e.hasSmoked)
       .reduce((sum: number, e: EntryType) => sum + e.jointCount, 0)
 
+    const daysWithSmoking = recentEntries.filter((e: EntryType) => e.hasSmoked).length
     const daysWithoutSmoking = recentEntries.filter((e: EntryType) => !e.hasSmoked).length
     const avgCraving = recentEntries.length > 0
       ? recentEntries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / recentEntries.length
@@ -34,13 +35,16 @@ export async function GET() {
     // Construire le prompt pour ChatGPT
     const prompt = `Tu es un coach bienveillant qui aide les personnes à réduire leur consommation de cannabis.
 
-Voici les statistiques des 7 derniers jours de l'utilisateur :
-- Nombre total de joints : ${totalJoints}
-- Jours sans fumer : ${daysWithoutSmoking}
+Voici les statistiques RÉELLES des 7 derniers jours de l'utilisateur :
+- Nombre total de joints consommés : ${totalJoints}
+- Nombre de jours OÙ il a fumé : ${daysWithSmoking} jour(s)
+- Nombre de jours SANS fumer : ${daysWithoutSmoking} jour(s)
 - Niveau moyen d'envie : ${avgCraving.toFixed(1)}/10
 - Nombre d'entrées enregistrées : ${recentEntries.length}
 
-Génère un message d'encouragement personnalisé et motivant (maximum 3 phrases courtes). Sois positif, reconnaissant des efforts, et donne un conseil pratique basé sur ces statistiques.`
+IMPORTANT : Base ton message UNIQUEMENT sur ces chiffres réels. Si l'utilisateur a fumé tous les jours (${daysWithSmoking} jours avec consommation), ne dis PAS qu'il n'a pas fumé. Sois honnête et encourage les progrès réels ou la conscience de suivre sa consommation.
+
+Génère un message d'encouragement personnalisé et motivant (maximum 3 phrases courtes). Sois positif, reconnaissant des efforts RÉELS, et donne un conseil pratique basé sur ces statistiques.`
 
     // Appeler l'API OpenAI
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {

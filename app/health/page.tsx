@@ -81,7 +81,8 @@ export default function HealthPage() {
 
   const fetchHealthData = async () => {
     try {
-      const response = await fetch('/api/google/fit')
+      // Ajouter timestamp pour éviter le cache du navigateur
+      const response = await fetch(`/api/google/fit?t=${Date.now()}`)
       const data = await response.json()
       if (data.success && data.data) {
         // S'assurer que toutes les valeurs sont des nombres valides
@@ -100,7 +101,8 @@ export default function HealthPage() {
 
   const fetchCalendarEvents = async () => {
     try {
-      const response = await fetch('/api/google/calendar')
+      // Ajouter timestamp pour éviter le cache du navigateur
+      const response = await fetch(`/api/google/calendar?t=${Date.now()}`)
       const data = await response.json()
       if (data.success) {
         setEvents(data.events)
@@ -229,7 +231,16 @@ export default function HealthPage() {
         {/* Résumé aujourd'hui */}
         {connected.fit && healthData && (
           <div className={styles.todaySection}>
-            <h2>Aujourd&apos;hui</h2>
+            <div className={styles.todayHeader}>
+              <h2>Aujourd&apos;hui</h2>
+              <button
+                onClick={fetchHealthData}
+                className={styles.refreshButton}
+                title="Actualiser les données"
+              >
+                🔄 Rafraîchir
+              </button>
+            </div>
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>🚶</div>

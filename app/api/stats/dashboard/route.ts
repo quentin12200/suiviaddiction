@@ -37,12 +37,16 @@ export async function GET() {
     const thirtyDaysAgo = new Date(today)
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    console.log('🔍 Dashboard Debug - Dates:')
-    console.log('  Today (UTC):', today.toISOString())
-    console.log('  Tomorrow (UTC):', tomorrow.toISOString())
-    console.log('  Now:', now.toISOString())
+    console.log('\n========== DASHBOARD DEBUG START ==========')
+    console.log('🔍 Current time info:')
+    console.log('  Server time (now):', now.toISOString())
+    console.log('  Server timezone offset:', now.getTimezoneOffset(), 'minutes')
+    console.log('  Today (UTC 00:00):', today.toISOString())
+    console.log('  Tomorrow (UTC 00:00):', tomorrow.toISOString())
 
-    console.log('Fetching today entries...')
+    console.log('\n📥 Fetching today entries...')
+    console.log('  Query: date >= ', today.toISOString(), 'AND date <', tomorrow.toISOString())
+
     // Entrées d'aujourd'hui (entre minuit aujourd'hui et minuit demain en UTC)
     const todayEntries = await prisma.entry.findMany({
       where: {
@@ -54,10 +58,37 @@ export async function GET() {
       orderBy: { date: 'desc' },
     })
 
-    console.log(`📊 Found ${todayEntries.length} entries for today`)
+    console.log(`\n📊 Entries found for today: ${todayEntries.length}`)
+
     if (todayEntries.length > 0) {
-      console.log('  First entry date:', todayEntries[0].date.toISOString())
+      console.log('\n📋 Details of TODAY entries:')
+      todayEntries.forEach((entry, index) => {
+        console.log(`  Entry ${index + 1}:`)
+        console.log(`    ID: ${entry.id}`)
+        console.log(`    Date (stored): ${entry.date.toISOString()}`)
+        console.log(`    Time: ${entry.time}`)
+        console.log(`    hasSmoked: ${entry.hasSmoked}`)
+        console.log(`    jointCount: ${entry.jointCount}`)
+      })
+    } else {
+      console.log('  ⚠️ NO ENTRIES FOUND for today range!')
+
+      // Essayons de voir toutes les entrées récentes pour comprendre
+      const recentEntries = await prisma.entry.findMany({
+        orderBy: { date: 'desc' },
+        take: 5,
+      })
+      console.log(`\n📋 Last 5 entries in database (for debugging):`)
+      recentEntries.forEach((entry, index) => {
+        console.log(`  Entry ${index + 1}:`)
+        console.log(`    Date: ${entry.date.toISOString()}`)
+        console.log(`    Time: ${entry.time}`)
+        console.log(`    hasSmoked: ${entry.hasSmoked}`)
+        console.log(`    jointCount: ${entry.jointCount}`)
+        console.log(`    createdAt: ${entry.createdAt.toISOString()}`)
+      })
     }
+    console.log('========== DASHBOARD DEBUG END ==========\n')
 
     // Objectif du jour
     const todayGoal = await prisma.dailyGoal.findUnique({

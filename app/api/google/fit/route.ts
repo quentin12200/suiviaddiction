@@ -27,31 +27,58 @@ export async function GET(request: NextRequest) {
 
     // NOUVELLE APPROCHE : Utiliser l'API dataset directe au lieu de aggregate
     // Cela permet d'avoir les données même si l'agrégation échoue
-    const dataSourceSteps = 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps'
-
-    const stepsResponse = await fetch(
-      `https://www.googleapis.com/fitness/v1/users/me/dataSources/${dataSourceSteps}/datasets/${startTime}000000-${now}000000`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      }
-    )
+    // Essayer plusieurs dataSources car chaque appareil peut utiliser une source différente
+    const dataSourcesSteps = [
+      'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
+      'derived:com.google.step_count.delta:com.google.android.gms:merge_step_deltas',
+      'derived:com.google.step_count.delta:com.google.android.gms:aggregated',
+    ]
 
     let steps = 0
-    if (stepsResponse.ok) {
-      const stepsData = await stepsResponse.json()
-      console.log('📦 Données pas (API dataset):', JSON.stringify(stepsData, null, 2))
+    let stepsFound = false
 
-      if (stepsData.point && stepsData.point.length > 0) {
-        stepsData.point.forEach((point: any) => {
-          const stepValue = point.value?.[0]?.intVal || 0
-          console.log(`  🚶 Pas trouvés: ${stepValue}`)
-          steps += stepValue
-        })
+    // Convertir en nanosecondes (multiplier par 1000000, pas concaténer)
+    const startTimeNanos = startTime * 1000000
+    const nowNanos = now * 1000000
+
+    console.log('🔍 Timestamps (nanosecondes):', startTimeNanos, '-', nowNanos)
+
+    // Essayer chaque source jusqu'à trouver des données
+    for (const dataSourceSteps of dataSourcesSteps) {
+      console.log(`🔍 Essai dataSource: ${dataSourceSteps}`)
+
+      const stepsResponse = await fetch(
+        `https://www.googleapis.com/fitness/v1/users/me/dataSources/${dataSourceSteps}/datasets/${startTimeNanos}-${nowNanos}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        }
+      )
+
+      if (stepsResponse.ok) {
+        const stepsData = await stepsResponse.json()
+        console.log('📦 Données pas:', JSON.stringify(stepsData, null, 2))
+
+        if (stepsData.point && stepsData.point.length > 0) {
+          stepsData.point.forEach((point: any) => {
+            const stepValue = point.value?.[0]?.intVal || 0
+            console.log(`  🚶 Pas trouvés: ${stepValue}`)
+            steps += stepValue
+          })
+          stepsFound = true
+          console.log(`✅ Source utilisée: ${dataSourceSteps}`)
+          break // On a trouvé des données, pas besoin d'essayer les autres sources
+        } else {
+          console.log(`  ⚠️ Aucune donnée dans cette source`)
+        }
+      } else {
+        console.log(`  ❌ Erreur ${stepsResponse.status}:`, await stepsResponse.text())
       }
-    } else {
-      console.log('⚠️ Erreur récupération pas:', stepsResponse.status, await stepsResponse.text())
+    }
+
+    if (!stepsFound) {
+      console.log('⚠️ Aucune source de pas n\'a retourné de données')
     }
 
     // Récupérer les données d'activité avec aggregate (pour calories et minutes)

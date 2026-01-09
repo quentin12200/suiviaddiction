@@ -114,6 +114,24 @@ async function migrate() {
     `)
 
     console.log('✅ Index PushSubscription créés')
+
+    // Créer la table Thought
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Thought" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "content" TEXT NOT NULL,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+
+    console.log('✅ Table Thought créée')
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "Thought_createdAt_idx" ON "Thought"("createdAt")
+    `)
+
+    console.log('✅ Index Thought créés')
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

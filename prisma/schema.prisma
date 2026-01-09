@@ -97,3 +97,13 @@ model PushSubscription {
 
   @@index([endpoint])
 }
+
+// Modèle pour noter des pensées avec horodatage
+model Thought {
+  id        String   @id @default(cuid())
+  content   String   // La pensée en elle-même
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}

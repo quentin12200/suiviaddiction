@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import PWAInstaller from './components/PWAInstaller'
+import QuickThoughtButton from './components/QuickThoughtButton'
 
 export const metadata: Metadata = {
   title: 'Suivi d\'Addiction - Coach Personnel',
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body>
         {children}
         <PWAInstaller />
+        <QuickThoughtButton />
       </body>
     </html>
   )

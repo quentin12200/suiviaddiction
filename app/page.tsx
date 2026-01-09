@@ -87,16 +87,18 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       setLoading(true)
-      // Ajouter un timestamp pour éviter le cache du navigateur
+      // Ajouter un timestamp pour éviter le cache du navigateur ET du serveur
       const timestamp = new Date().getTime()
-      const response = await fetch(`/api/stats/dashboard?t=${timestamp}`, {
+      const response = await fetch(`/api/stats/dashboard?t=${timestamp}&nocache=${Math.random()}`, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       })
       const data = await response.json()
+      console.log('📊 Dashboard data received:', data)
       setStats(data)
     } catch (error) {
       console.error('Erreur chargement stats:', error)
@@ -106,8 +108,14 @@ export default function DashboardPage() {
   }
 
   const handleRefresh = () => {
+    console.log('🔄 Manual refresh triggered')
     setRefreshKey(prev => prev + 1)
-    fetchStats()
+    // Forcer le rafraîchissement même si le state ne change pas
+    setStats(null)
+    setLoading(true)
+    setTimeout(() => {
+      fetchStats()
+    }, 100)
   }
 
   if (loading) {

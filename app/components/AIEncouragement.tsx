@@ -15,7 +15,8 @@ export default function AIEncouragement() {
   const loadEncouragement = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/ai-encouragement')
+      // Ajouter un timestamp pour éviter le cache du navigateur
+      const response = await fetch(`/api/ai-encouragement?t=${Date.now()}`)
       const data = await response.json()
 
       if (data.success) {

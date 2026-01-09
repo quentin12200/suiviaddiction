@@ -130,7 +130,8 @@ export default function GoalsPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/goals/suggest')
+      // Ajouter un timestamp pour éviter le cache du navigateur
+      const response = await fetch(`/api/goals/suggest?t=${Date.now()}`)
       const data = await response.json()
 
       if (data.success) {

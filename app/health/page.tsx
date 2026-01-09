@@ -24,6 +24,8 @@ interface HealthData {
   calories: number
   sleepHours: number
   heartRate: number
+  distanceKm: string
+  lastUpdate: string
 }
 
 interface CalendarEvent {
@@ -58,6 +60,14 @@ export default function HealthPage() {
     fetchHealthData()
     fetchCalendarEvents()
     fetchHistoricalData()
+
+    // Auto-refresh des données toutes les 5 minutes
+    const interval = setInterval(() => {
+      fetchHealthData()
+      fetchCalendarEvents()
+    }, 300000)
+
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -92,6 +102,8 @@ export default function HealthPage() {
           sleepHours: Number(data.data.sleepHours) || 0,
           heartRate: Number(data.data.heartRate) || 0,
           calories: Number(data.data.calories) || 0,
+          distanceKm: data.data.distanceKm || '0.00',
+          lastUpdate: data.data.lastUpdate || new Date().toISOString(),
         })
       }
     } catch (error) {
@@ -232,14 +244,24 @@ export default function HealthPage() {
         {connected.fit && healthData && (
           <div className={styles.todaySection}>
             <div className={styles.todayHeader}>
-              <h2>Aujourd&apos;hui</h2>
-              <button
-                onClick={fetchHealthData}
-                className={styles.refreshButton}
-                title="Actualiser les données"
-              >
-                🔄 Rafraîchir
-              </button>
+              <h2>📊 Dernières 24h (temps réel)</h2>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>
+                  Mis à jour: {new Date(healthData.lastUpdate).toLocaleString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit'
+                  })}
+                </span>
+                <button
+                  onClick={fetchHealthData}
+                  className={styles.refreshButton}
+                  title="Actualiser les données"
+                >
+                  🔄 Rafraîchir
+                </button>
+              </div>
             </div>
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
@@ -249,6 +271,13 @@ export default function HealthPage() {
                 </div>
                 <div className={styles.statLabel}>pas</div>
                 <div className={styles.statGoal}>Objectif: 10 000</div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>📏</div>
+                <div className={styles.statValue}>{healthData.distanceKm}</div>
+                <div className={styles.statLabel}>kilomètres</div>
+                <div className={styles.statGoal}>Distance parcourue</div>
               </div>
 
               <div className={styles.statCard}>
@@ -280,7 +309,7 @@ export default function HealthPage() {
                   {healthData.calories.toLocaleString()}
                 </div>
                 <div className={styles.statLabel}>calories</div>
-                <div className={styles.statGoal}>Brûlées aujourd&apos;hui</div>
+                <div className={styles.statGoal}>Brûlées</div>
               </div>
             </div>
           </div>

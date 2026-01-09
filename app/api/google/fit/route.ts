@@ -29,9 +29,10 @@ export async function GET(request: NextRequest) {
     // Cela permet d'avoir les données même si l'agrégation échoue
     // Essayer plusieurs dataSources car chaque appareil peut utiliser une source différente
     const dataSourcesSteps = [
-      'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
-      'derived:com.google.step_count.delta:com.google.android.gms:merge_step_deltas',
-      'derived:com.google.step_count.delta:com.google.android.gms:aggregated',
+      'raw:com.google.step_count.delta:com.hihonor.health:health_platform', // HONOR Health (source prioritaire pour HONOR)
+      'derived:com.google.step_count.delta:com.google.android.fit:HONOR:PGT-N19:114bb7e3:top_level', // HONOR spécifique
+      'derived:com.google.step_count.delta:com.google.android.gms:merge_step_deltas', // Fusion toutes sources
+      'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps', // Estimation Google
     ]
 
     let steps = 0

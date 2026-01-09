@@ -20,6 +20,13 @@ body {
   background-color: #f5f7fa;
   color: #333;
   line-height: 1.6;
+  margin-left: 260px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Quand la sidebar est collapsed */
+body:has(.sidebar.collapsed) {
+  margin-left: 70px;
 }
 
 a {
@@ -44,6 +51,14 @@ button {
 /* Desktop: > 1024px */
 
 @media (max-width: 768px) {
+  body {
+    margin-left: 0;
+  }
+
+  body:has(.sidebar.collapsed) {
+    margin-left: 0;
+  }
+
   .container {
     padding: 0 15px;
   }

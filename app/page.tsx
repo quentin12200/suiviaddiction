@@ -32,6 +32,12 @@ interface DashboardStats {
       minIntervalMinutes: number
       note: string
     } | null
+    discipline: {
+      wakeUpTime: string | null
+      sleepTime: string | null
+      exerciseDone: boolean
+      selfRating: number
+    } | null
   }
   last7Days: {
     data: { date: string; count: number }[]
@@ -50,23 +56,33 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [lastFetchDate, setLastFetchDate] = useState<string>('')
 
   useEffect(() => {
+    // Vérifier au chargement si on a changé de jour depuis la dernière visite
+    const lastVisitDate = localStorage.getItem('lastDashboardVisit')
+    const today = new Date().toDateString()
+
+    if (lastVisitDate && lastVisitDate !== today) {
+      console.log('🔄 Nouveau jour détecté au chargement, rafraîchissement...')
+    }
+
+    localStorage.setItem('lastDashboardVisit', today)
     fetchStats()
 
     // Vérifier toutes les minutes si on a changé de jour
     const interval = setInterval(() => {
-      const today = new Date().toDateString()
-      if (lastFetchDate && lastFetchDate !== today) {
+      const currentDay = new Date().toDateString()
+      const storedDay = localStorage.getItem('lastDashboardVisit')
+
+      if (storedDay && storedDay !== currentDay) {
         console.log('🔄 Nouveau jour détecté, rafraîchissement automatique...')
-        setRefreshKey(prev => prev + 1)
+        localStorage.setItem('lastDashboardVisit', currentDay)
         fetchStats()
       }
     }, 60000) // Toutes les 60 secondes
 
     return () => clearInterval(interval)
-  }, [lastFetchDate])
+  }, []) // Seulement au montage
 
   const fetchStats = async () => {
     try {
@@ -82,7 +98,6 @@ export default function DashboardPage() {
       })
       const data = await response.json()
       setStats(data)
-      setLastFetchDate(new Date().toDateString())
     } catch (error) {
       console.error('Erreur chargement stats:', error)
     } finally {
@@ -204,6 +219,45 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
+
+          {today.discipline && (
+            <div className={styles.card}>
+              <h2>⚔️ Discipline du jour</h2>
+              <div className={styles.disciplineInfo}>
+                {today.discipline.wakeUpTime && (
+                  <div className={styles.disciplineItem}>
+                    <span className={styles.disciplineLabel}>⏰ Réveil :</span>
+                    <span className={styles.disciplineValue}>
+                      {today.discipline.wakeUpTime}
+                    </span>
+                  </div>
+                )}
+                {today.discipline.sleepTime && (
+                  <div className={styles.disciplineItem}>
+                    <span className={styles.disciplineLabel}>😴 Coucher :</span>
+                    <span className={styles.disciplineValue}>
+                      {today.discipline.sleepTime}
+                    </span>
+                  </div>
+                )}
+                <div className={styles.disciplineItem}>
+                  <span className={styles.disciplineLabel}>💪 Sport :</span>
+                  <span className={styles.disciplineValue}>
+                    {today.discipline.exerciseDone ? '✅ Fait' : '❌ Pas fait'}
+                  </span>
+                </div>
+                <div className={styles.disciplineItem}>
+                  <span className={styles.disciplineLabel}>🎯 Auto-éval :</span>
+                  <span className={styles.disciplineValue}>
+                    {today.discipline.selfRating}/10
+                  </span>
+                </div>
+              </div>
+              <Link href="/discipline" className={styles.disciplineLink}>
+                → Voir la page Discipline
+              </Link>
+            </div>
+          )}
 
           <div className={styles.card}>
             <h2>Progression</h2>

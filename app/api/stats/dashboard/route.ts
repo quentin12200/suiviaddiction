@@ -50,6 +50,16 @@ export async function GET() {
       where: { date: today },
     })
 
+    // Entrée discipline d'aujourd'hui pour les heures de lever/coucher
+    const todayDiscipline = await prisma.disciplineEntry.findFirst({
+      where: {
+        date: {
+          gte: today,
+        },
+      },
+      orderBy: { date: 'desc' },
+    })
+
     // Statistiques sur 7 jours
     const last7DaysEntries = await prisma.entry.findMany({
       where: {
@@ -117,6 +127,12 @@ export async function GET() {
         jointsCount: todayJointsCount,
         entriesCount: todayEntries.length,
         goal: todayGoal,
+        discipline: todayDiscipline ? {
+          wakeUpTime: todayDiscipline.wakeUpTime,
+          sleepTime: todayDiscipline.sleepTime,
+          exerciseDone: todayDiscipline.exerciseDone,
+          selfRating: todayDiscipline.selfRating,
+        } : null,
       },
       last7Days: {
         data: last7DaysData,

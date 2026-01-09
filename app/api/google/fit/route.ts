@@ -13,11 +13,21 @@ export async function GET(request: NextRequest) {
     }
 
     const now = Date.now()
+
+    // Essayer d'abord les dernières 24h (plus fiable que "depuis minuit")
+    const last24Hours = now - (24 * 60 * 60 * 1000)
+
+    // Aussi calculer le début de la journée pour comparaison
     const startOfDay = new Date()
     startOfDay.setHours(0, 0, 0, 0)
     const startTime = startOfDay.getTime()
 
+    console.log('🔍 Récupération données Google Fit')
+    console.log('📅 Dernières 24h:', new Date(last24Hours).toISOString(), 'à', new Date(now).toISOString())
+    console.log('📅 Depuis minuit:', new Date(startTime).toISOString(), 'à', new Date(now).toISOString())
+
     // Récupérer les données d'activité (pas, calories)
+    // Utiliser les dernières 24h pour être sûr d'avoir les données
     const activityResponse = await fetch(
       `https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate`,
       {
@@ -30,7 +40,6 @@ export async function GET(request: NextRequest) {
           aggregateBy: [
             {
               dataTypeName: 'com.google.step_count.delta',
-              dataSourceId: 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',
             },
             {
               dataTypeName: 'com.google.active_minutes',
@@ -39,14 +48,21 @@ export async function GET(request: NextRequest) {
               dataTypeName: 'com.google.calories.expended',
             },
           ],
-          bucketByTime: { durationMillis: now - startTime },
-          startTimeMillis: startTime,
+          bucketByTime: { durationMillis: 24 * 60 * 60 * 1000 }, // 24h en ms
+          startTimeMillis: last24Hours,
           endTimeMillis: now,
         }),
       }
     )
 
+    if (!activityResponse.ok) {
+      const errorText = await activityResponse.text()
+      console.error('❌ Erreur API Google Fit:', activityResponse.status, errorText)
+      throw new Error(`API Google Fit erreur ${activityResponse.status}`)
+    }
+
     const activityData = await activityResponse.json()
+    console.log('📦 Données brutes activité:', JSON.stringify(activityData, null, 2))
 
     // Récupérer les données de sommeil
     const sleepResponse = await fetch(
@@ -75,8 +91,8 @@ export async function GET(request: NextRequest) {
               dataTypeName: 'com.google.heart_rate.bpm',
             },
           ],
-          bucketByTime: { durationMillis: now - startTime },
-          startTimeMillis: startTime,
+          bucketByTime: { durationMillis: 24 * 60 * 60 * 1000 }, // 24h en ms
+          startTimeMillis: last24Hours,
           endTimeMillis: now,
         }),
       }
@@ -84,10 +100,50 @@ export async function GET(request: NextRequest) {
 
     const heartRateData = await heartRateResponse.json()
 
-    // Parser les données
-    const steps = activityData.bucket?.[0]?.dataset?.[0]?.point?.[0]?.value?.[0]?.intVal || 0
-    const activeMinutes = activityData.bucket?.[0]?.dataset?.[1]?.point?.[0]?.value?.[0]?.intVal || 0
-    const calories = activityData.bucket?.[0]?.dataset?.[2]?.point?.[0]?.value?.[0]?.fpVal || 0
+    console.log('📦 Données brutes fréquence cardiaque:', JSON.stringify(heartRateData, null, 2))
+
+    // Parser les données - essayer plusieurs sources
+    let steps = 0
+    let activeMinutes = 0
+    let calories = 0
+
+    // Pour les pas, parcourir tous les datasets et tous les points
+    if (activityData.bucket && activityData.bucket.length > 0) {
+      activityData.bucket.forEach((bucket: any) => {
+        if (bucket.dataset && bucket.dataset.length > 0) {
+          bucket.dataset.forEach((dataset: any, index: number) => {
+            console.log(`📊 Dataset ${index}:`, dataset.dataSourceId)
+            if (dataset.point && dataset.point.length > 0) {
+              dataset.point.forEach((point: any) => {
+                // Pas
+                if (dataset.dataSourceId?.includes('step_count') || index === 0) {
+                  const stepValue = point.value?.[0]?.intVal || 0
+                  console.log(`  🚶 Pas trouvés: ${stepValue}`)
+                  steps += stepValue
+                }
+                // Minutes actives
+                if (dataset.dataSourceId?.includes('active_minutes') || index === 1) {
+                  const minutesValue = point.value?.[0]?.intVal || 0
+                  console.log(`  ⏱️ Minutes actives trouvées: ${minutesValue}`)
+                  activeMinutes += minutesValue
+                }
+                // Calories
+                if (dataset.dataSourceId?.includes('calories') || index === 2) {
+                  const caloriesValue = point.value?.[0]?.fpVal || 0
+                  console.log(`  🔥 Calories trouvées: ${caloriesValue}`)
+                  calories += caloriesValue
+                }
+              })
+            }
+          })
+        }
+      })
+    }
+
+    console.log('✅ Totaux calculés:')
+    console.log(`  🚶 Pas: ${steps}`)
+    console.log(`  ⏱️ Minutes actives: ${activeMinutes}`)
+    console.log(`  🔥 Calories: ${calories}`)
 
     // Calculer les heures de sommeil
     let sleepHours = 0
@@ -108,15 +164,19 @@ export async function GET(request: NextRequest) {
       avgHeartRate = Math.round(sum / heartRatePoints.length)
     }
 
+    const result = {
+      steps,
+      activeMinutes,
+      calories: Math.round(calories),
+      sleepHours: sleepHours.toFixed(1),
+      heartRate: avgHeartRate,
+    }
+
+    console.log('📤 Données renvoyées:', result)
+
     return NextResponse.json({
       success: true,
-      data: {
-        steps,
-        activeMinutes,
-        calories: Math.round(calories),
-        sleepHours: sleepHours.toFixed(1),
-        heartRate: avgHeartRate,
-      },
+      data: result,
     })
   } catch (error: any) {
     console.error('Erreur Google Fit:', error)

@@ -13,14 +13,21 @@ export async function GET(request: NextRequest) {
     }
 
     const now = Date.now()
+
+    // Essayer d'abord les dernières 24h (plus fiable que "depuis minuit")
+    const last24Hours = now - (24 * 60 * 60 * 1000)
+
+    // Aussi calculer le début de la journée pour comparaison
     const startOfDay = new Date()
     startOfDay.setHours(0, 0, 0, 0)
     const startTime = startOfDay.getTime()
 
     console.log('🔍 Récupération données Google Fit')
-    console.log('📅 Période:', new Date(startTime).toISOString(), 'à', new Date(now).toISOString())
+    console.log('📅 Dernières 24h:', new Date(last24Hours).toISOString(), 'à', new Date(now).toISOString())
+    console.log('📅 Depuis minuit:', new Date(startTime).toISOString(), 'à', new Date(now).toISOString())
 
     // Récupérer les données d'activité (pas, calories)
+    // Utiliser les dernières 24h pour être sûr d'avoir les données
     const activityResponse = await fetch(
       `https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate`,
       {
@@ -41,8 +48,8 @@ export async function GET(request: NextRequest) {
               dataTypeName: 'com.google.calories.expended',
             },
           ],
-          bucketByTime: { durationMillis: now - startTime },
-          startTimeMillis: startTime,
+          bucketByTime: { durationMillis: 24 * 60 * 60 * 1000 }, // 24h en ms
+          startTimeMillis: last24Hours,
           endTimeMillis: now,
         }),
       }
@@ -84,8 +91,8 @@ export async function GET(request: NextRequest) {
               dataTypeName: 'com.google.heart_rate.bpm',
             },
           ],
-          bucketByTime: { durationMillis: now - startTime },
-          startTimeMillis: startTime,
+          bucketByTime: { durationMillis: 24 * 60 * 60 * 1000 }, // 24h en ms
+          startTimeMillis: last24Hours,
           endTimeMillis: now,
         }),
       }

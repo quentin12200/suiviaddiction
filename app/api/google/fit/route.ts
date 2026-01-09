@@ -109,33 +109,45 @@ export async function GET(request: NextRequest) {
     if (activityData.bucket && activityData.bucket.length > 0) {
       activityData.bucket.forEach((bucket: any) => {
         if (bucket.dataset && bucket.dataset.length > 0) {
-          bucket.dataset.forEach((dataset: any, index: number) => {
-            console.log(`📊 Dataset ${index}:`, dataset.dataSourceId)
+          bucket.dataset.forEach((dataset: any) => {
+            const sourceId = dataset.dataSourceId || ''
+            console.log(`📊 Dataset trouvé:`, sourceId)
+
             if (dataset.point && dataset.point.length > 0) {
               dataset.point.forEach((point: any) => {
-                // Pas
-                if (dataset.dataSourceId?.includes('step_count') || index === 0) {
+                // Pas - chercher dans toutes les sources contenant "step"
+                if (sourceId.toLowerCase().includes('step')) {
                   const stepValue = point.value?.[0]?.intVal || 0
-                  console.log(`  🚶 Pas trouvés: ${stepValue}`)
-                  steps += stepValue
+                  if (stepValue > 0) {
+                    console.log(`  🚶 Pas trouvés: ${stepValue} (source: ${sourceId})`)
+                    steps += stepValue
+                  }
                 }
                 // Minutes actives
-                if (dataset.dataSourceId?.includes('active_minutes') || index === 1) {
+                else if (sourceId.toLowerCase().includes('active') || sourceId.toLowerCase().includes('minute')) {
                   const minutesValue = point.value?.[0]?.intVal || 0
-                  console.log(`  ⏱️ Minutes actives trouvées: ${minutesValue}`)
-                  activeMinutes += minutesValue
+                  if (minutesValue > 0) {
+                    console.log(`  ⏱️ Minutes actives trouvées: ${minutesValue}`)
+                    activeMinutes += minutesValue
+                  }
                 }
                 // Calories
-                if (dataset.dataSourceId?.includes('calories') || index === 2) {
-                  const caloriesValue = point.value?.[0]?.fpVal || 0
-                  console.log(`  🔥 Calories trouvées: ${caloriesValue}`)
-                  calories += caloriesValue
+                else if (sourceId.toLowerCase().includes('calorie')) {
+                  const caloriesValue = point.value?.[0]?.fpVal || point.value?.[0]?.intVal || 0
+                  if (caloriesValue > 0) {
+                    console.log(`  🔥 Calories trouvées: ${caloriesValue}`)
+                    calories += caloriesValue
+                  }
                 }
               })
+            } else {
+              console.log(`  ⚠️ Aucun point de données dans ce dataset`)
             }
           })
         }
       })
+    } else {
+      console.log('⚠️ Aucun bucket de données trouvé dans la réponse')
     }
 
     console.log('✅ Totaux calculés:')

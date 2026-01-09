@@ -14,20 +14,18 @@ export async function GET(request: NextRequest) {
 
     const now = Date.now()
 
-    // Essayer d'abord les dernières 24h (plus fiable que "depuis minuit")
-    const last24Hours = now - (24 * 60 * 60 * 1000)
-
-    // Aussi calculer le début de la journée pour comparaison
+    // Calculer le début de la journée AUJOURD'HUI
     const startOfDay = new Date()
     startOfDay.setHours(0, 0, 0, 0)
     const startTime = startOfDay.getTime()
 
     console.log('🔍 Récupération données Google Fit')
-    console.log('📅 Dernières 24h:', new Date(last24Hours).toISOString(), 'à', new Date(now).toISOString())
-    console.log('📅 Depuis minuit:', new Date(startTime).toISOString(), 'à', new Date(now).toISOString())
+    console.log('📅 Période: Depuis minuit aujourd\'hui')
+    console.log('📅 Start:', new Date(startTime).toISOString())
+    console.log('📅 End:', new Date(now).toISOString())
+    console.log('📅 Durée:', (now - startTime) / 1000 / 60, 'minutes')
 
-    // Récupérer les données d'activité (pas, calories)
-    // Utiliser les dernières 24h pour être sûr d'avoir les données
+    // Récupérer les données d'activité (pas, calories) DEPUIS MINUIT AUJOURD'HUI
     const activityResponse = await fetch(
       `https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate`,
       {
@@ -48,8 +46,8 @@ export async function GET(request: NextRequest) {
               dataTypeName: 'com.google.calories.expended',
             },
           ],
-          bucketByTime: { durationMillis: 24 * 60 * 60 * 1000 }, // 24h en ms
-          startTimeMillis: last24Hours,
+          bucketByTime: { durationMillis: now - startTime },
+          startTimeMillis: startTime,
           endTimeMillis: now,
         }),
       }
@@ -91,8 +89,8 @@ export async function GET(request: NextRequest) {
               dataTypeName: 'com.google.heart_rate.bpm',
             },
           ],
-          bucketByTime: { durationMillis: 24 * 60 * 60 * 1000 }, // 24h en ms
-          startTimeMillis: last24Hours,
+          bucketByTime: { durationMillis: now - startTime },
+          startTimeMillis: startTime,
           endTimeMillis: now,
         }),
       }

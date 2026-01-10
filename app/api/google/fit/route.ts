@@ -238,10 +238,18 @@ export async function GET(request: NextRequest) {
 
     console.log('📤 Données renvoyées:', result)
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: result,
     })
+
+    // Headers anti-cache CRITIQUES
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    response.headers.set('Surrogate-Control', 'no-store')
+
+    return response
   } catch (error: any) {
     console.error('Erreur Google Fit:', error)
 

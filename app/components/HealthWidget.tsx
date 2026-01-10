@@ -133,7 +133,7 @@ export default function HealthWidget() {
       {fitConnected && healthData && (
         <div className={styles.healthSection}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-            <h3 style={{ margin: 0 }}>📊 Dernières 24h (temps réel)</h3>
+            <h3 style={{ margin: 0 }}>📊 Aujourd'hui (depuis 00:00)</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '12px', color: '#666' }}>
                 Mis à jour: {new Date(healthData.lastUpdate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}

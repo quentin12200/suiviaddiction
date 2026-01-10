@@ -14,14 +14,17 @@ export async function GET(request: NextRequest) {
 
     const now = Date.now()
 
-    // Utiliser les dernières 24 heures glissantes au lieu de "depuis minuit"
-    // Cela garantit d'avoir des données même si la synchronisation a du retard
-    const startTime = now - (24 * 60 * 60 * 1000)
+    // Calculer le début de la journée AUJOURD'HUI à 00:00 heure locale
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const startTime = today.getTime()
 
     console.log('🔍 Récupération données Google Fit')
-    console.log('📅 Période: Dernières 24 heures glissantes (temps réel)')
+    console.log('📅 Période: Depuis minuit aujourd\'hui (00:00)')
     console.log('📅 Start:', new Date(startTime).toISOString())
+    console.log('📅 Start (local):', new Date(startTime).toLocaleString('fr-FR'))
     console.log('📅 End:', new Date(now).toISOString())
+    console.log('📅 End (local):', new Date(now).toLocaleString('fr-FR'))
     console.log('📅 Durée:', (now - startTime) / 1000 / 60 / 60, 'heures')
 
     // NOUVELLE APPROCHE : Utiliser l'API dataset directe au lieu de aggregate

@@ -54,30 +54,43 @@ export async function PUT(
   try {
     const data = await request.json()
 
+    console.log('🔄 PUT /api/entries/[id] - Mise à jour')
+    console.log('  ID:', params.id)
+    console.log('  Données reçues:', data)
+
+    // Construire l'objet de mise à jour en n'incluant que les champs fournis
+    const updateData: any = {}
+
+    if (data.date !== undefined) {
+      updateData.date = new Date(data.date)
+    }
+    if (data.time !== undefined) updateData.time = data.time
+    if (data.hasSmoked !== undefined) updateData.hasSmoked = data.hasSmoked
+    if (data.jointCount !== undefined) updateData.jointCount = data.jointCount
+    if (data.jointTime !== undefined) updateData.jointTime = data.jointTime
+    if (data.minutesSinceLastJoint !== undefined) updateData.minutesSinceLastJoint = data.minutesSinceLastJoint
+    if (data.cravingLevel !== undefined) updateData.cravingLevel = data.cravingLevel
+    if (data.emotionalState !== undefined) updateData.emotionalState = data.emotionalState
+    if (data.physicalState !== undefined) updateData.physicalState = data.physicalState
+    if (data.context !== undefined) updateData.context = data.context
+    if (data.trigger !== undefined) updateData.trigger = data.trigger
+    if (data.alternativeAction !== undefined) updateData.alternativeAction = data.alternativeAction
+    if (data.consciousDecision !== undefined) updateData.consciousDecision = data.consciousDecision
+    if (data.comment !== undefined) updateData.comment = data.comment
+
+    console.log('  Données à mettre à jour:', updateData)
+
     // Mise à jour de l'entrée
     const entry = await prisma.entry.update({
       where: { id: params.id },
-      data: {
-        date: data.date ? new Date(data.date) : undefined,
-        time: data.time,
-        hasSmoked: data.hasSmoked,
-        jointCount: data.jointCount,
-        jointTime: data.jointTime,
-        minutesSinceLastJoint: data.minutesSinceLastJoint,
-        cravingLevel: data.cravingLevel,
-        emotionalState: data.emotionalState,
-        physicalState: data.physicalState,
-        context: data.context,
-        trigger: data.trigger,
-        alternativeAction: data.alternativeAction,
-        consciousDecision: data.consciousDecision,
-        comment: data.comment,
-      },
+      data: updateData,
     })
+
+    console.log('  ✅ Mise à jour réussie')
 
     return NextResponse.json({ success: true, entry })
   } catch (error) {
-    console.error('Erreur mise à jour entrée:', error)
+    console.error('❌ Erreur mise à jour entrée:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la mise à jour de l\'entrée' },
       { status: 500 }

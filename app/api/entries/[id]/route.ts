@@ -9,22 +9,36 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('🔍 GET /api/entries/[id] - Recherche entrée')
+    console.log('  ID reçu:', params.id)
+    console.log('  Type ID:', typeof params.id)
+    console.log('  Longueur ID:', params.id?.length)
+
     const entry = await prisma.entry.findUnique({
       where: { id: params.id },
     })
 
+    console.log('  Entrée trouvée?', entry ? 'OUI' : 'NON')
+
     if (!entry) {
+      // Cherchons dans toutes les entrées pour voir si l'ID existe
+      const allIds = await prisma.entry.findMany({
+        select: { id: true },
+        take: 10,
+      })
+      console.log('  IDs existants (10 premiers):', allIds.map(e => e.id))
+
       return NextResponse.json(
-        { error: 'Entrée non trouvée' },
+        { success: false, error: 'Entrée non trouvée', searchedId: params.id },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ entry })
+    return NextResponse.json({ success: true, entry })
   } catch (error) {
-    console.error('Erreur récupération entrée:', error)
+    console.error('❌ Erreur récupération entrée:', error)
     return NextResponse.json(
-      { error: 'Erreur lors de la récupération de l\'entrée' },
+      { success: false, error: 'Erreur lors de la récupération de l\'entrée' },
       { status: 500 }
     )
   }

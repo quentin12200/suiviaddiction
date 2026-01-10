@@ -66,10 +66,10 @@ export async function PUT(
     }
     if (data.time !== undefined) updateData.time = data.time
     if (data.hasSmoked !== undefined) updateData.hasSmoked = data.hasSmoked
-    if (data.jointCount !== undefined) updateData.jointCount = data.jointCount
+    if (data.jointCount !== undefined) updateData.jointCount = parseInt(data.jointCount) || 0
     if (data.jointTime !== undefined) updateData.jointTime = data.jointTime
-    if (data.minutesSinceLastJoint !== undefined) updateData.minutesSinceLastJoint = data.minutesSinceLastJoint
-    if (data.cravingLevel !== undefined) updateData.cravingLevel = data.cravingLevel
+    if (data.minutesSinceLastJoint !== undefined) updateData.minutesSinceLastJoint = parseInt(data.minutesSinceLastJoint) || null
+    if (data.cravingLevel !== undefined) updateData.cravingLevel = parseInt(data.cravingLevel) || 0
     if (data.emotionalState !== undefined) updateData.emotionalState = data.emotionalState
     if (data.physicalState !== undefined) updateData.physicalState = data.physicalState
     if (data.context !== undefined) updateData.context = data.context

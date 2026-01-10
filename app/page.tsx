@@ -120,15 +120,18 @@ export default function DashboardPage() {
     }
   }
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     console.log('🔄 Manual refresh triggered')
     setRefreshKey(prev => prev + 1)
     // Forcer le rafraîchissement même si le state ne change pas
     setStats(null)
     setLoading(true)
-    setTimeout(() => {
-      fetchStats()
-    }, 100)
+
+    // Attendre un peu pour s'assurer que l'UI se met à jour
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    // Fetcher avec un nouveau cache buster
+    await fetchStats()
   }
 
   if (loading) {

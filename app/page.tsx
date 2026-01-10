@@ -69,6 +69,16 @@ export default function DashboardPage() {
     localStorage.setItem('lastDashboardVisit', today)
     fetchStats()
 
+    // Rafraîchir automatiquement quand la page devient visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('🔄 Page visible, rafraîchissement automatique...')
+        fetchStats()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     // Vérifier toutes les minutes si on a changé de jour
     const interval = setInterval(() => {
       const currentDay = new Date().toDateString()
@@ -81,7 +91,10 @@ export default function DashboardPage() {
       }
     }, 60000) // Toutes les 60 secondes
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, []) // Seulement au montage
 
   const fetchStats = async () => {
@@ -107,15 +120,18 @@ export default function DashboardPage() {
     }
   }
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     console.log('🔄 Manual refresh triggered')
     setRefreshKey(prev => prev + 1)
     // Forcer le rafraîchissement même si le state ne change pas
     setStats(null)
     setLoading(true)
-    setTimeout(() => {
-      fetchStats()
-    }, 100)
+
+    // Attendre un peu pour s'assurer que l'UI se met à jour
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    // Fetcher avec un nouveau cache buster
+    await fetchStats()
   }
 
   if (loading) {

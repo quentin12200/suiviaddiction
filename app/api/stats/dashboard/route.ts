@@ -203,10 +203,11 @@ export async function GET() {
       },
     })
 
-    // Ajouter des headers pour empêcher tout cache
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    // Ajouter des headers pour empêcher tout cache (navigateur + Vercel CDN)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
+    response.headers.set('Surrogate-Control', 'no-store')
 
     return response
   } catch (error) {

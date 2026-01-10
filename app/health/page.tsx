@@ -91,8 +91,14 @@ export default function HealthPage() {
 
   const fetchHealthData = async () => {
     try {
-      // Ajouter timestamp pour éviter le cache du navigateur
-      const response = await fetch(`/api/google/fit?t=${Date.now()}`)
+      // Cache-busting fort : timestamp + random
+      const cacheBuster = `t=${Date.now()}&r=${Math.random()}`
+      const response = await fetch(`/api/google/fit?${cacheBuster}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        }
+      })
       const data = await response.json()
       if (data.success && data.data) {
         // S'assurer que toutes les valeurs sont des nombres valides

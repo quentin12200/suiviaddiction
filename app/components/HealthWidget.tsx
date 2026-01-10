@@ -24,6 +24,7 @@ export default function HealthWidget() {
   const [healthData, setHealthData] = useState<HealthData | null>(null)
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [fitConnected, setFitConnected] = useState(false)
   const [calendarConnected, setCalendarConnected] = useState(false)
 
@@ -42,7 +43,14 @@ export default function HealthWidget() {
 
   const fetchHealthData = async () => {
     try {
-      const response = await fetch('/api/google/fit')
+      // Cache-busting fort : timestamp + random
+      const cacheBuster = `t=${Date.now()}&r=${Math.random()}`
+      const response = await fetch(`/api/google/fit?${cacheBuster}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        }
+      })
       const data = await response.json()
 
       if (data.success && data.data) {
@@ -90,6 +98,12 @@ export default function HealthWidget() {
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
   }
 
+  const handleManualRefresh = async () => {
+    setRefreshing(true)
+    await Promise.all([fetchHealthData(), fetchCalendarEvents()])
+    setRefreshing(false)
+  }
+
   if (!fitConnected && !calendarConnected) {
     return (
       <div className={styles.widget}>
@@ -118,11 +132,32 @@ export default function HealthWidget() {
       {/* Google Fit */}
       {fitConnected && healthData && (
         <div className={styles.healthSection}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h3>📊 Dernières 24h (temps réel)</h3>
-            <span style={{ fontSize: '12px', color: '#666' }}>
-              Mis à jour: {new Date(healthData.lastUpdate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-            </span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+            <h3 style={{ margin: 0 }}>📊 Dernières 24h (temps réel)</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '12px', color: '#666' }}>
+                Mis à jour: {new Date(healthData.lastUpdate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <button
+                onClick={handleManualRefresh}
+                disabled={refreshing}
+                style={{
+                  padding: '6px 12px',
+                  background: refreshing ? '#ccc' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: refreshing ? 'not-allowed' : 'pointer',
+                  transition: 'transform 0.2s',
+                }}
+                onMouseEnter={(e) => !refreshing && (e.currentTarget.style.transform = 'translateY(-1px)')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
+              >
+                {refreshing ? '🔄 Actualisation...' : '🔄 Actualiser'}
+              </button>
+            </div>
           </div>
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>

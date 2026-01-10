@@ -1,4 +1,4 @@
-const CACHE_NAME = 'suiviaddiction-v1'
+const CACHE_NAME = 'suiviaddiction-v2'
 const urlsToCache = [
   '/',
   '/new',
@@ -38,6 +38,13 @@ self.addEventListener('activate', (event) => {
 
 // Stratégie de cache: Network First, fallback to Cache
 self.addEventListener('fetch', (event) => {
+  // NE PAS CACHER LES REQUÊTES API - Toujours aller chercher les données fraîches
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(fetch(event.request))
+    return
+  }
+
+  // Pour les autres requêtes (pages, assets), utiliser le cache
   event.respondWith(
     fetch(event.request)
       .then((response) => {

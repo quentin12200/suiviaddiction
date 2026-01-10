@@ -250,7 +250,7 @@ export default function HealthPage() {
         {connected.fit && healthData && (
           <div className={styles.todaySection}>
             <div className={styles.todayHeader}>
-              <h2>📊 Dernières 24h (temps réel)</h2>
+              <h2>📊 Aujourd'hui (depuis 00:00)</h2>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', color: '#666' }}>
                   Mis à jour: {new Date(healthData.lastUpdate).toLocaleString('fr-FR', {

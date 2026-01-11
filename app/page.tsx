@@ -100,9 +100,17 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       setLoading(true)
-      // Ajouter un timestamp pour éviter le cache du navigateur ET du serveur
+
+      // Calculer la date LOCALE de l'utilisateur (PAS UTC !)
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const todayLocal = `${year}-${month}-${day}`
+
+      // Envoyer la date locale au serveur pour qu'il filtre correctement
       const timestamp = new Date().getTime()
-      const response = await fetch(`/api/stats/dashboard?t=${timestamp}&nocache=${Math.random()}`, {
+      const response = await fetch(`/api/stats/dashboard?today=${todayLocal}&t=${timestamp}&nocache=${Math.random()}`, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',

@@ -11,9 +11,12 @@ export default function NewEntryPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  // Pré-remplir avec la date et l'heure actuelles
+  // Pré-remplir avec la date et l'heure actuelles (HEURE LOCALE, PAS UTC !)
   const now = new Date()
-  const dateStr = now.toISOString().split('T')[0]
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const dateStr = `${year}-${month}-${day}`
   const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(
     now.getMinutes()
   ).padStart(2, '0')}`

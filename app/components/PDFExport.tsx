@@ -29,7 +29,9 @@ export default function PDFExport() {
 
       const data = result.data
 
-      if (!data || data.summary.totalDays === 0) {
+      console.log('Données reçues pour PDF:', data)
+
+      if (!data || !data.summary || data.summary.totalDays === 0) {
         alert('Aucune entrée trouvée pour cette période. Ajoute des entrées d\'abord.')
         return
       }
@@ -65,14 +67,14 @@ export default function PDFExport() {
       pdf.setFont('helvetica', 'normal')
 
       const summaryData = [
-        ['Période de suivi', `${data.summary.totalDays} jours`],
-        ['Jours sans fumer', `${data.summary.cleanDays} (${Math.round(data.summary.cleanPercentage)}%)`],
-        ['Jours avec consommation', `${data.summary.smokingDays}`],
-        ['Total joints fumés', `${data.summary.totalJoints}`],
-        ['Moyenne / jour', `${data.summary.avgJointsPerDay} joints`],
-        ['Niveau d\'envie moyen', `${data.summary.avgCraving} / 10`],
-        ['Streak actuel', `${data.summary.currentStreak} jours`],
-        ['Meilleur streak (période)', `${data.summary.bestStreak} jours`],
+        ['Période de suivi', `${data.summary.totalDays || 0} jours`],
+        ['Jours sans fumer', `${data.summary.cleanDays || 0} (${Math.round(data.summary.cleanPercentage || 0)}%)`],
+        ['Jours avec consommation', `${data.summary.smokingDays || 0}`],
+        ['Total joints fumés', `${data.summary.totalJoints || 0}`],
+        ['Moyenne / jour', `${data.summary.avgJointsPerDay || 0} joints`],
+        ['Niveau d\'envie moyen', `${data.summary.avgCraving || 0} / 10`],
+        ['Streak actuel', `${data.summary.currentStreak || 0} jours`],
+        ['Meilleur streak (période)', `${data.summary.bestStreak || 0} jours`],
       ]
 
       pdf.autoTable({
@@ -97,8 +99,8 @@ export default function PDFExport() {
       yPos += 8
 
       const progressData = [
-        ['Alternatives constructives réussies', `${data.summary.constructiveAlternatives}`],
-        ['Moments d\'isolement ressourçants', `${data.summary.successfulIsolations}`],
+        ['Alternatives constructives réussies', `${data.summary.constructiveAlternatives || 0}`],
+        ['Moments d\'isolement ressourçants', `${data.summary.successfulIsolations || 0}`],
       ]
 
       pdf.autoTable({
@@ -119,7 +121,7 @@ export default function PDFExport() {
       }
 
       // Triggers
-      if (data.triggers.length > 0) {
+      if (data.triggers && data.triggers.length > 0) {
         pdf.setFontSize(14)
         pdf.setFont('helvetica', 'bold')
         pdf.text('⚠️ Déclencheurs Principaux', 15, yPos)
@@ -143,7 +145,7 @@ export default function PDFExport() {
       }
 
       // Émotions
-      if (data.emotions.length > 0 && yPos < pageHeight - 60) {
+      if (data.emotions && data.emotions.length > 0 && yPos < pageHeight - 60) {
         pdf.setFontSize(14)
         pdf.setFont('helvetica', 'bold')
         pdf.text('💭 États Émotionnels Récurrents', 15, yPos)

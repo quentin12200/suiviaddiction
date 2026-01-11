@@ -10,6 +10,8 @@ import AlertMonitor from './components/AlertMonitor'
 import NotificationSettings from './components/NotificationSettings'
 import HealthWidget from './components/HealthWidget'
 import SobrietyCounter from './components/SobrietyCounter'
+import PeriodStats from './components/PeriodStats'
+import SmartReminders from './components/SmartReminders'
 import {
   LineChart,
   Line,
@@ -209,6 +211,9 @@ export default function DashboardPage() {
         <div className={styles.dashboardGrid}>
           {/* LEFT COLUMN - Stats & Actions */}
           <div className={styles.leftColumn}>
+            {/* Rappels Intelligents */}
+            <SmartReminders key={`reminders-${refreshKey}`} />
+
             {/* Alertes Préventives */}
             <AlertMonitor key={`alert-${refreshKey}`} />
 
@@ -329,6 +334,9 @@ export default function DashboardPage() {
           <div className={styles.centerColumn}>
             {/* Compteur de Sobriété */}
             <SobrietyCounter key={`sobriety-${refreshKey}`} />
+
+            {/* Statistiques par période */}
+            <PeriodStats key={`periods-${refreshKey}`} />
 
             {/* Graphiques */}
             <div className={styles.chartSection}>

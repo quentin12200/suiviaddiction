@@ -46,6 +46,7 @@ export default function Navigation() {
       items: [
         { href: '/goals', label: 'Objectifs', icon: '🎯' },
         { href: '/discipline', label: 'Discipline', icon: '⚔️' },
+        { href: '/badges', label: 'Badges', icon: '🏆' },
         { href: '/strategies', label: 'Stratégies', icon: '🛡️' },
         { href: '/reading', label: 'Lectures', icon: '📚' },
       ],
@@ -63,6 +64,7 @@ export default function Navigation() {
       items: [
         { href: '/integrations', label: 'Intégrations', icon: '🔗' },
         { href: '/import', label: 'Import CSV', icon: '📥' },
+        { href: '/export', label: 'Export PDF', icon: '📄' },
       ],
     },
   ]

@@ -21,26 +21,20 @@ export default function SobrietyCounter() {
 
   // Charger les données
   useEffect(() => {
-    console.log('🔄 SobrietyCounter: Initial mount, fetching data...')
     fetchData()
 
     // Rafraîchir les données toutes les 5 secondes
-    const refreshInterval = setInterval(() => {
-      console.log('⏱️ SobrietyCounter: 5s interval refresh')
-      fetchData()
-    }, 5000)
+    const refreshInterval = setInterval(fetchData, 5000)
 
     // Rafraîchir quand la page redevient visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('👁️ Page visible, rafraîchissement du compteur...')
         fetchData()
       }
     }
 
     // Rafraîchir quand on focus la fenêtre
     const handleFocus = () => {
-      console.log('🎯 Window focused, rafraîchissement du compteur...')
       fetchData()
     }
 
@@ -81,13 +75,10 @@ export default function SobrietyCounter() {
 
   const fetchData = async () => {
     try {
-      // Cache-busting fort : timestamp + random
+      // Cache-busting : timestamp + random pour éviter le cache
       const cacheBuster = `t=${Date.now()}&r=${Math.random()}`
-      const url = `/api/sobriety/stats?${cacheBuster}`
 
-      console.log('🔍 Fetching sobriety stats from:', url)
-
-      const response = await fetch(url, {
+      const response = await fetch(`/api/sobriety/stats?${cacheBuster}`, {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -96,23 +87,13 @@ export default function SobrietyCounter() {
         }
       })
 
-      console.log('📡 Response status:', response.status)
-
       const result = await response.json()
 
-      console.log('📦 Response data:', JSON.stringify(result, null, 2))
-
       if (result.success) {
-        console.log('✅ Sobriety data updated:', {
-          date: result.data.lastJointDate,
-          time: result.data.lastJointTime,
-        })
         setData(result.data)
-      } else {
-        console.error('❌ API returned success=false:', result)
       }
     } catch (error) {
-      console.error('❌ Erreur chargement stats sobriété:', error)
+      console.error('Erreur chargement stats sobriété:', error)
     }
   }
 
@@ -172,27 +153,7 @@ export default function SobrietyCounter() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 className={styles.title} style={{ margin: 0 }}>⏱️ Temps Sans Fumer</h2>
-          <button
-            onClick={() => {
-              console.log('🔄 Manual refresh button clicked')
-              fetchData()
-            }}
-            style={{
-              padding: '8px 16px',
-              background: '#667eea',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 600,
-            }}
-          >
-            🔄 Rafraîchir
-          </button>
-        </div>
+        <h2 className={styles.title}>⏱️ Temps Sans Fumer</h2>
 
         {/* Compteur principal */}
         <div className={styles.mainCounter}>

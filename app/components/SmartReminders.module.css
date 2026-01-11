@@ -1,0 +1,152 @@
+.container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.urgent {
+  background: #fc8181;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.reminders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reminder {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.reminder:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.high {
+  background: #fff5f5;
+  border-color: #fc8181;
+}
+
+.medium {
+  background: #fffaf0;
+  border-color: #f6ad55;
+}
+
+.low {
+  background: #f7fafc;
+  border-color: #63b3ed;
+}
+
+.reminderContent {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+}
+
+.reminderIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.reminderText {
+  flex: 1;
+}
+
+.reminderText p {
+  margin: 0;
+  color: #2d3748;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.action {
+  display: inline-block;
+  margin-top: 8px;
+  color: #667eea;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action:hover {
+  color: #764ba2;
+  transform: translateX(4px);
+}
+
+.dismissButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #a0aec0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.dismissButton:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #4a5568;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .reminder {
+    padding: 12px;
+  }
+
+  .reminderIcon {
+    font-size: 1.2rem;
+  }
+
+  .reminderText p {
+    font-size: 0.9rem;
+  }
+}

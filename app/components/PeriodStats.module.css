@@ -1,0 +1,224 @@
+.container {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.periodSelector {
+  display: flex;
+  gap: 8px;
+  background: #f7fafc;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.periodButton {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #4a5568;
+}
+
+.periodButton:hover {
+  background: #e2e8f0;
+}
+
+.periodButton.active {
+  background: #667eea;
+  color: white;
+}
+
+/* Streaks */
+.streaksCard {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.streak {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: white;
+}
+
+.streakIcon {
+  font-size: 2.5rem;
+}
+
+.streakContent {
+  flex: 1;
+}
+
+.streakValue {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.streakLabel {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.statCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.statHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.statTitle {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.statSubtext {
+  font-size: 0.85rem;
+  color: #a0aec0;
+}
+
+.comparison {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+/* Tendances */
+.positive {
+  color: #48bb78;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.negative {
+  color: #f56565;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.neutral {
+  color: #a0aec0;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Interprétation */
+.interpretation {
+  background: #f7fafc;
+  border-left: 4px solid #667eea;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.interpretation h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  color: #1a202c;
+}
+
+.interpretation p {
+  margin: 10px 0;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.positiveNote {
+  background: #c6f6d5;
+  color: #22543d;
+  border-left: 3px solid #48bb78;
+}
+
+.warningNote {
+  background: #fed7d7;
+  color: #742a2a;
+  border-left: 3px solid #f56565;
+}
+
+.neutralNote {
+  background: #e2e8f0;
+  color: #2d3748;
+  border-left: 3px solid #a0aec0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .streaksCard {
+    grid-template-columns: 1fr;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .periodSelector {
+    width: 100%;
+  }
+
+  .periodButton {
+    flex: 1;
+  }
+}

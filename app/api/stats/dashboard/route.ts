@@ -56,6 +56,9 @@ export async function GET(request: NextRequest) {
       return entryDateString === todayString
     })
 
+    // Pour calculer les périodes (7 jours, 30 jours)
+    const now = new Date()
+
     console.log(`\n✅ Entries found for today (${todayString}): ${todayEntries.length}`)
 
     if (todayEntries.length > 0) {

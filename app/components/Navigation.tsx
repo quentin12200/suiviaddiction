@@ -47,6 +47,7 @@ export default function Navigation() {
         { href: '/goals', label: 'Objectifs', icon: '🎯' },
         { href: '/discipline', label: 'Discipline', icon: '⚔️' },
         { href: '/strategies', label: 'Stratégies', icon: '🛡️' },
+        { href: '/reading', label: 'Lectures', icon: '📚' },
       ],
     },
     {

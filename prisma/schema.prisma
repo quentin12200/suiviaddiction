@@ -124,3 +124,22 @@ model Thought {
 
   @@index([createdAt])
 }
+
+// Modèle pour tracker les lectures
+model Reading {
+  id          String   @id @default(cuid())
+  title       String   // Titre du livre
+  author      String   // Auteur
+  category    String   // stoïcisme, psychologie, discipline, etc.
+  description String   // Pourquoi ce livre
+  priority    Int      @default(0) // 0=normal, 1=top priority
+  status      String   @default("non_commencé") // non_commencé, en_cours, terminé
+  notes       String   @default("") // Notes personnelles
+  startedAt   DateTime? // Date de début de lecture
+  finishedAt  DateTime? // Date de fin
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+}

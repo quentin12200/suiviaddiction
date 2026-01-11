@@ -41,6 +41,12 @@ export default function NewEntryPage() {
     adrenalineTrigger: '',
     adrenalineAlternative: '',
     adrenalineOutcome: '',
+    // Gestion Isolement (discret)
+    isolationEvent: false,
+    isolationPlanned: false,
+    isolationActivity: '',
+    isolationReason: '',
+    isolationOutcome: '',
   })
 
   const handleSubmit = async (e: FormEvent) => {
@@ -542,6 +548,100 @@ export default function NewEntryPage() {
                   <option value="réussi">✅ Envie partie</option>
                   <option value="réduit">🟡 Envie réduite</option>
                   <option value="échoué">❌ Envie toujours là</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          {/* GESTION ISOLEMENT (Section discrète) */}
+          <div className={styles.formGroup} style={{ borderTop: '2px solid #e0e0e0', paddingTop: '24px', marginTop: '24px' }}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                name="isolationEvent"
+                checked={formData.isolationEvent}
+                onChange={handleChange}
+                className={styles.checkbox}
+              />
+              <span>🏠 Moment d'isolement</span>
+            </label>
+            <small style={{ color: '#666', fontSize: '13px', display: 'block', marginTop: '8px' }}>
+              Optionnel : Pour comprendre si ton temps seul est constructif ou destructif
+            </small>
+          </div>
+
+          {/* Si tracking isolement activé */}
+          {formData.isolationEvent && (
+            <>
+              {/* Avais-tu un plan ? */}
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    name="isolationPlanned"
+                    checked={formData.isolationPlanned}
+                    onChange={handleChange}
+                    className={styles.checkbox}
+                  />
+                  <span>Avais-tu un projet/activité prévu(e) ?</span>
+                </label>
+              </div>
+
+              {/* Activité prévue/faite */}
+              <div className={styles.formGroup}>
+                <label htmlFor="isolationActivity" className={styles.label}>
+                  Quelle activité ? {formData.isolationPlanned ? '(prévue/faite)' : '(as-tu fini par faire ?)'}
+                </label>
+                <input
+                  id="isolationActivity"
+                  type="text"
+                  name="isolationActivity"
+                  value={formData.isolationActivity}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="Ex: Créer, sport, lire, projet perso, bricolage..."
+                />
+              </div>
+
+              {/* Raison de l'isolement */}
+              <div className={styles.formGroup}>
+                <label htmlFor="isolationReason" className={styles.label}>
+                  Pourquoi tu t'isoles ? *
+                </label>
+                <select
+                  id="isolationReason"
+                  name="isolationReason"
+                  value={formData.isolationReason}
+                  onChange={handleChange}
+                  className={styles.select}
+                  required
+                >
+                  <option value="">-- Sélectionner --</option>
+                  <option value="choix">✅ Par choix (me ressourcer)</option>
+                  <option value="fuite">⚠️ Pour fuir quelque chose</option>
+                  <option value="ennui">💭 Ennui/Rien d'autre à faire</option>
+                  <option value="fatigue">😴 Fatigue/Besoin de repos</option>
+                  <option value="concentration">🎯 Besoin de concentration</option>
+                </select>
+              </div>
+
+              {/* Résultat après coup */}
+              <div className={styles.formGroup}>
+                <label htmlFor="isolationOutcome" className={styles.label}>
+                  Résultat (après coup)
+                </label>
+                <select
+                  id="isolationOutcome"
+                  name="isolationOutcome"
+                  value={formData.isolationOutcome}
+                  onChange={handleChange}
+                  className={styles.select}
+                >
+                  <option value="">-- Sélectionner --</option>
+                  <option value="rechargé">✅ Rechargé/Satisfait</option>
+                  <option value="neutre">😐 Neutre</option>
+                  <option value="addictions">❌ Tombé dans les addictions</option>
+                  <option value="vide">💭 Toujours ce sentiment de vide</option>
                 </select>
               </div>
             </>

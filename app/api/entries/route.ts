@@ -89,6 +89,12 @@ export async function POST(request: NextRequest) {
         adrenalineTrigger: body.adrenalineTrigger || '',
         adrenalineAlternative: body.adrenalineAlternative || '',
         adrenalineOutcome: body.adrenalineOutcome || '',
+        // Gestion Isolement
+        isolationEvent: body.isolationEvent || false,
+        isolationPlanned: body.isolationPlanned || false,
+        isolationActivity: body.isolationActivity || '',
+        isolationReason: body.isolationReason || '',
+        isolationOutcome: body.isolationOutcome || '',
       },
     })
 

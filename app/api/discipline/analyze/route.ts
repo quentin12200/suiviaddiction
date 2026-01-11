@@ -46,6 +46,59 @@ export async function POST(request: NextRequest) {
     const challenges: any[] = []
 
     todayEntries.forEach((entry: any) => {
+      // QUESTIONS ISOLEMENT (si event isolement)
+      if (entry.isolationEvent) {
+        // Si isolement SANS plan → Destructif
+        if (!entry.isolationPlanned) {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu t'es isolé SANS PLAN. Qu'est-ce que tu aurais pu faire pendant ce temps qui t'aurait REMPLI au lieu de te laisser tomber dans le vide ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si isolement pour FUIR
+        if (entry.isolationReason === 'fuite') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu t'es isolé pour FUIR quelque chose. Qu'est-ce que tu évitais vraiment ? Et est-ce que ça a résolu le problème ou juste repoussé l'échéance ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si résultat = addictions
+        if (entry.isolationOutcome === 'addictions') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Ton isolement a mené aux addictions. C'était prévisible ? Qu'est-ce que tu aurais pu mettre en place AVANT de t'isoler pour éviter ça ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si résultat = vide
+        if (entry.isolationOutcome === 'vide') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu as fini avec un sentiment de VIDE. L'isolement sans projet mène toujours là. Qu'est-ce qui pourrait donner du SENS à ton temps seul la prochaine fois ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si résultat = rechargé + activité → SUCCÈS
+        if (entry.isolationOutcome === 'rechargé' && entry.isolationActivity) {
+          challenges.push({
+            entryId: entry.id,
+            question: `BRAVO ! Tu t'es isolé avec un plan ("${entry.isolationActivity}") et ça t'a rechargé. Décris précisément ce qui a marché pour pouvoir le REPRODUIRE.`,
+            answered: false,
+            answer: '',
+          })
+        }
+      }
+
       // QUESTIONS ADRÉNALINE (si event adrénaline)
       if (entry.adrenalineEvent) {
         if (entry.adrenalineType === 'risque') {

@@ -2,14 +2,8 @@
 
 import { useState } from 'react'
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 import styles from './PDFExport.module.css'
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF
-  }
-}
 
 export default function PDFExport() {
   const [loading, setLoading] = useState(false)
@@ -28,8 +22,6 @@ export default function PDFExport() {
       }
 
       const data = result.data
-
-      console.log('Données reçues pour PDF:', data)
 
       if (!data || !data.summary || data.summary.totalDays === 0) {
         alert('Aucune entrée trouvée pour cette période. Ajoute des entrées d\'abord.')
@@ -77,7 +69,7 @@ export default function PDFExport() {
         ['Meilleur streak (période)', `${data.summary.bestStreak || 0} jours`],
       ]
 
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: yPos,
         head: [['Indicateur', 'Valeur']],
         body: summaryData,
@@ -103,7 +95,7 @@ export default function PDFExport() {
         ['Moments d\'isolement ressourçants', `${data.summary.successfulIsolations || 0}`],
       ]
 
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: yPos,
         head: [['Réalisation', 'Nombre']],
         body: progressData,
@@ -132,7 +124,7 @@ export default function PDFExport() {
           `${t.count} fois`,
         ])
 
-        pdf.autoTable({
+        autoTable(pdf, {
           startY: yPos,
           head: [['Déclencheur', 'Fréquence']],
           body: triggerData,
@@ -156,7 +148,7 @@ export default function PDFExport() {
           `${e.count} fois`,
         ])
 
-        pdf.autoTable({
+        autoTable(pdf, {
           startY: yPos,
           head: [['État émotionnel', 'Fréquence']],
           body: emotionData,

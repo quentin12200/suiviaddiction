@@ -46,6 +46,8 @@ export default function Badges() {
       const result = await response.json()
       if (result.success) {
         setData(result.data)
+        // Debug: afficher les stats dans la console navigateur
+        console.log('📊 Stats badges:', result.data.stats)
       }
     } catch (error) {
       console.error('Erreur chargement badges:', error)

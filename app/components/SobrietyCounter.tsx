@@ -30,6 +30,26 @@ export default function SobrietyCounter() {
     if (savedPrice) {
       setPricePerJoint(parseFloat(savedPrice))
     }
+
+    // Rafraîchir les données toutes les 10 secondes
+    const refreshInterval = setInterval(() => {
+      fetchData()
+    }, 10000)
+
+    // Rafraîchir quand la page redevient visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('🔄 Page visible, rafraîchissement du compteur...')
+        fetchData()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(refreshInterval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   // Mettre à jour le compteur chaque seconde

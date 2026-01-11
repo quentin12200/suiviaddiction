@@ -23,10 +23,10 @@ export default function SobrietyCounter() {
   useEffect(() => {
     fetchData()
 
-    // Rafraîchir les données toutes les 10 secondes
+    // Rafraîchir les données toutes les 5 secondes
     const refreshInterval = setInterval(() => {
       fetchData()
-    }, 10000)
+    }, 5000)
 
     // Rafraîchir quand la page redevient visible
     const handleVisibilityChange = () => {
@@ -71,9 +71,19 @@ export default function SobrietyCounter() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/sobriety/stats')
+      // Cache-busting fort : timestamp + random
+      const cacheBuster = `t=${Date.now()}&r=${Math.random()}`
+      const response = await fetch(`/api/sobriety/stats?${cacheBuster}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
       const result = await response.json()
       if (result.success) {
+        console.log('📊 Sobriety data updated:', result.data)
         setData(result.data)
       }
     } catch (error) {

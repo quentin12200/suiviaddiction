@@ -26,25 +26,12 @@ export async function GET() {
       },
     })
 
-    // Compter le nombre total de joints
-    const allJoints = await prisma.entry.findMany({
-      where: {
-        hasSmoked: true,
-      },
-      select: {
-        jointCount: true,
-      },
-    })
-
-    const totalJoints = allJoints.reduce((sum, entry) => sum + entry.jointCount, 0)
-
     if (!lastJoint) {
       return NextResponse.json({
         success: true,
         data: {
           lastJointDate: null,
           lastJointTime: null,
-          totalJoints: 0,
         },
       })
     }
@@ -57,7 +44,6 @@ export async function GET() {
       data: {
         lastJointDate,
         lastJointTime,
-        totalJoints,
       },
     })
   } catch (error) {

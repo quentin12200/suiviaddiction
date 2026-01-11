@@ -7,7 +7,6 @@ interface CounterData {
   lastJointDate: string | null
   lastJointTime: string | null
   totalJoints: number
-  pricePerJoint: number
 }
 
 export default function SobrietyCounter() {
@@ -19,17 +18,10 @@ export default function SobrietyCounter() {
     seconds: 0,
     totalMinutes: 0,
   })
-  const [pricePerJoint, setPricePerJoint] = useState(10) // Prix par défaut
-  const [editingPrice, setEditingPrice] = useState(false)
 
   // Charger les données
   useEffect(() => {
     fetchData()
-    // Charger le prix depuis localStorage
-    const savedPrice = localStorage.getItem('jointPrice')
-    if (savedPrice) {
-      setPricePerJoint(parseFloat(savedPrice))
-    }
 
     // Rafraîchir les données toutes les 10 secondes
     const refreshInterval = setInterval(() => {
@@ -89,11 +81,6 @@ export default function SobrietyCounter() {
     }
   }
 
-  const savePrice = () => {
-    localStorage.setItem('jointPrice', pricePerJoint.toString())
-    setEditingPrice(false)
-  }
-
   if (!data || !data.lastJointDate || !data.lastJointTime) {
     return (
       <div className={styles.container}>
@@ -123,7 +110,6 @@ export default function SobrietyCounter() {
     lungFunction: timeElapsed.days >= 30,
   }
 
-  const moneySaved = data.totalJoints * pricePerJoint
   const lungRecovery = Math.min(100, (timeElapsed.days / 365) * 100) // Récupération complète en 1 an
 
   return (
@@ -155,33 +141,6 @@ export default function SobrietyCounter() {
 
         <div className={styles.lastJoint}>
           Dernier joint : {new Date(data.lastJointDate + 'T' + data.lastJointTime).toLocaleString('fr-FR')}
-        </div>
-
-        {/* Argent économisé */}
-        <div className={styles.moneyCard}>
-          <div className={styles.moneyHeader}>
-            <h3>💰 Argent Économisé</h3>
-            {!editingPrice ? (
-              <button onClick={() => setEditingPrice(true)} className={styles.editButton}>
-                ✏️
-              </button>
-            ) : (
-              <div className={styles.priceEdit}>
-                <input
-                  type="number"
-                  value={pricePerJoint}
-                  onChange={(e) => setPricePerJoint(parseFloat(e.target.value) || 0)}
-                  className={styles.priceInput}
-                  step="0.5"
-                />
-                <button onClick={savePrice} className={styles.saveButton}>✓</button>
-              </div>
-            )}
-          </div>
-          <div className={styles.moneyAmount}>{moneySaved.toFixed(2)}€</div>
-          <div className={styles.moneyDetails}>
-            Basé sur {data.totalJoints} joints à {pricePerJoint}€ pièce
-          </div>
         </div>
 
         {/* Santé récupérée */}

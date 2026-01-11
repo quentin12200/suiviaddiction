@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 interface Entry {
@@ -22,12 +22,26 @@ interface Entry {
 }
 
 /**
- * NOUVEAU SYSTÈME DE COMPTAGE SIMPLIFIÉ
- * Utilise des comparaisons de strings de dates au lieu de Date objects complexes
+ * SYSTÈME DE COMPTAGE BASÉ SUR LA DATE LOCALE DU CLIENT
+ * Le client envoie sa date locale via ?today=2026-01-10
+ * Plus de problèmes de timezone UTC vs local !
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    console.log('\n========== DASHBOARD API v2 START ==========')
+    console.log('\n========== DASHBOARD API v3 (CLIENT DATE) START ==========')
+
+    // Récupérer la date locale du client depuis les query params
+    const searchParams = request.nextUrl.searchParams
+    const todayString = searchParams.get('today')
+
+    if (!todayString) {
+      return NextResponse.json(
+        { error: 'Paramètre "today" manquant' },
+        { status: 400 }
+      )
+    }
+
+    console.log(`📅 Today's date (CLIENT LOCAL): ${todayString}`)
 
     // Récupérer TOUTES les entrées (on filtre en mémoire avec des strings)
     const allEntries = await prisma.entry.findMany({
@@ -36,19 +50,14 @@ export async function GET() {
 
     console.log(`📊 Total entries in database: ${allEntries.length}`)
 
-    // Date d'aujourd'hui en format string "2026-01-10"
-    const now = new Date()
-    const todayString = now.toISOString().split('T')[0]
-
-    console.log(`📅 Today's date (string): ${todayString}`)
-    console.log(`🕐 Server time: ${now.toISOString()}`)
-    console.log(`⏰ Server timezone offset: ${now.getTimezoneOffset()} minutes`)
-
     // Filtrer les entrées d'aujourd'hui en comparant les strings
     const todayEntries = allEntries.filter(entry => {
       const entryDateString = entry.date.toISOString().split('T')[0]
       return entryDateString === todayString
     })
+
+    // Pour calculer les périodes (7 jours, 30 jours)
+    const now = new Date()
 
     console.log(`\n✅ Entries found for today (${todayString}): ${todayEntries.length}`)
 

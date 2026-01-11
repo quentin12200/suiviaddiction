@@ -32,6 +32,13 @@ export async function GET() {
       },
     })
 
+    // Debug - vérifier les données
+    console.log('📊 Badge stats debug:')
+    console.log('  Total entries:', allEntries.length)
+    console.log('  Clean entries (hasSmoked === false):', allEntries.filter(e => e.hasSmoked === false).length)
+    console.log('  Smoking entries (hasSmoked === true):', allEntries.filter(e => e.hasSmoked === true).length)
+    console.log('  Null/undefined hasSmoked:', allEntries.filter(e => e.hasSmoked == null).length)
+
     // Calculer les streaks
     let currentStreak = 0
     let bestStreak = 0
@@ -41,7 +48,8 @@ export async function GET() {
     )
 
     for (const entry of sortedEntries) {
-      if (!entry.hasSmoked) {
+      // Vérification stricte : doit être explicitement false
+      if (entry.hasSmoked === false) {
         tempStreak++
         bestStreak = Math.max(bestStreak, tempStreak)
       } else {
@@ -52,7 +60,8 @@ export async function GET() {
     // Streak actuel (du plus récent vers le passé)
     const reversedEntries = [...sortedEntries].reverse()
     for (const entry of reversedEntries) {
-      if (!entry.hasSmoked) {
+      // Vérification stricte : doit être explicitement false
+      if (entry.hasSmoked === false) {
         currentStreak++
       } else {
         break
@@ -69,11 +78,17 @@ export async function GET() {
       e => e.isolationEvent && e.isolationOutcome === 'rechargé'
     ).length
 
-    // Compter les jours propres totaux
-    const totalCleanDays = allEntries.filter(e => !e.hasSmoked).length
+    // Compter les jours propres totaux (vérification stricte)
+    const totalCleanDays = allEntries.filter(e => e.hasSmoked === false).length
 
     // Compter les jours d'entrées
     const totalDaysLogged = allEntries.length
+
+    // Debug streaks
+    console.log('  Current streak:', currentStreak)
+    console.log('  Best streak:', bestStreak)
+    console.log('  Total clean days:', totalCleanDays)
+    console.log('  Total days logged:', totalDaysLogged)
 
     // Définir tous les badges
     const badges: Badge[] = [

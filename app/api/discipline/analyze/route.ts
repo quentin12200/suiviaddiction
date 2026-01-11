@@ -47,6 +47,14 @@ export async function POST(request: NextRequest) {
 
     todayEntries.forEach((entry: any) => {
       if (entry.hasSmoked) {
+        // NOUVELLE QUESTION : Challenge sur le patch nicotine + tabac
+        challenges.push({
+          entryId: entry.id,
+          question: `Tu portes un patch 14mg de nicotine. Pourquoi as-tu fumé du TABAC alors que ton besoin de nicotine est déjà satisfait ? C'était juste pour le THC, non ? Pourquoi ne pas passer aux joints SANS tabac ?`,
+          answered: false,
+          answer: '',
+        })
+
         // Question sur le déclencheur
         if (entry.trigger) {
           challenges.push({

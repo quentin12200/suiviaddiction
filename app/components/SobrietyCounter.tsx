@@ -92,25 +92,47 @@ export default function SobrietyCounter() {
     )
   }
 
-  // Calculs santé (basés sur des données médicales approximatives)
-  const healthBenefits = {
-    // Après 20 minutes : rythme cardiaque normal
+  // COMBAT 1 : NICOTINE (déjà géré par patch 14mg)
+  // Tu rajoutes de la nicotine inutilement avec le tabac du joint
+  const nicotineBenefits = {
+    // Après 20 min : rythme cardiaque normal (nicotine)
     heartRate: timeElapsed.totalMinutes >= 20,
-    // Après 12 heures : niveau CO2 normal
+    // Après 2h : pression artérielle normale
+    bloodPressure: timeElapsed.totalMinutes >= 120,
+    // Après 12h : niveau CO2 normal (combustion)
     co2Normal: timeElapsed.totalMinutes >= 720,
-    // Après 1 jour : risque crise cardiaque diminue
-    heartAttackRisk: timeElapsed.days >= 1,
+  }
+
+  // COMBAT 2 : CANNABIS/THC (le VRAI combat psychologique)
+  const cannabisBenefits = {
+    // Après 1h : clarté mentale revient
+    mentalClarity: timeElapsed.totalMinutes >= 60,
+    // Après 24h : THC commence à quitter le système
+    thcElimination: timeElapsed.days >= 1,
+    // Après 2-3 jours : mémoire court terme s'améliore
+    memoryImprovement: timeElapsed.days >= 2,
+    // Après 1 semaine : sommeil REM se normalise
+    sleepQuality: timeElapsed.days >= 7,
+    // Après 2 semaines : motivation naturelle revient
+    motivationBoost: timeElapsed.days >= 14,
+    // Après 1 mois : récepteurs cannabinoïdes se régénèrent
+    receptorsHealing: timeElapsed.days >= 30,
+  }
+
+  // COMBAT 3 : COMBUSTION (commun tabac + cannabis)
+  const combustionBenefits = {
     // Après 2 jours : goût et odorat s'améliorent
     sensesImprove: timeElapsed.days >= 2,
     // Après 3 jours : respiration s'améliore
     breathingImproves: timeElapsed.days >= 3,
-    // Après 1 semaine : énergie augmente
-    energyBoost: timeElapsed.days >= 7,
-    // Après 1 mois : fonction pulmonaire améliore de 30%
+    // Après 1 semaine : toux diminue
+    coughReduction: timeElapsed.days >= 7,
+    // Après 1 mois : fonction pulmonaire +30%
     lungFunction: timeElapsed.days >= 30,
   }
 
   const lungRecovery = Math.min(100, (timeElapsed.days / 365) * 100) // Récupération complète en 1 an
+  const thcDetox = Math.min(100, (timeElapsed.days / 30) * 100) // Récepteurs CB1 en 30 jours
 
   return (
     <div className={styles.container}>
@@ -143,9 +165,108 @@ export default function SobrietyCounter() {
           Dernier joint : {new Date(data.lastJointDate + 'T' + data.lastJointTime).toLocaleString('fr-FR')}
         </div>
 
-        {/* Santé récupérée */}
+        {/* ALERTE PATCH */}
+        <div className={styles.warningCard}>
+          <h3>⚠️ Rappel Important</h3>
+          <p className={styles.warningText}>
+            Tu portes un patch <strong>14mg de nicotine</strong>. Quand tu fumes un joint avec du tabac,
+            tu RAJOUTES de la nicotine alors que ton corps en a déjà assez.
+            <br/><br/>
+            <strong>Résultat :</strong> Surdosage = anxiété, palpitations, nausées.
+            <br/>
+            <strong>Solution :</strong> Ton vrai combat c'est le THC, pas la nicotine. Passe aux joints SANS tabac.
+          </p>
+        </div>
+
+        {/* COMBAT 1 : Nicotine (déjà géré par patch) */}
         <div className={styles.healthCard}>
-          <h3>🫁 Santé Récupérée</h3>
+          <h3>💊 Combat Nicotine (Patch 14mg)</h3>
+          <p className={styles.subtitle}>Tu as déjà ce qu'il faut avec le patch. Le tabac du joint est INUTILE.</p>
+
+          <div className={styles.benefits}>
+            {nicotineBenefits.heartRate && (
+              <div className={styles.benefit}>✅ Rythme cardiaque normalisé (sans surdosage)</div>
+            )}
+            {nicotineBenefits.bloodPressure && (
+              <div className={styles.benefit}>✅ Pression artérielle stable</div>
+            )}
+            {nicotineBenefits.co2Normal && (
+              <div className={styles.benefit}>✅ Niveau de CO2 normal</div>
+            )}
+          </div>
+
+          {!nicotineBenefits.heartRate && timeElapsed.totalMinutes < 20 && (
+            <div className={styles.nextMilestone}>
+              Dans {20 - timeElapsed.totalMinutes} min : Rythme cardiaque normal
+            </div>
+          )}
+        </div>
+
+        {/* COMBAT 2 : Cannabis/THC (le VRAI combat) */}
+        <div className={styles.healthCard}>
+          <h3>🧠 Combat Cannabis/THC (Ton VRAI Défi)</h3>
+          <p className={styles.subtitle}>C'est ça que tu combats vraiment. La défonce, pas la nicotine.</p>
+
+          <div className={styles.lungProgress}>
+            <div className={styles.progressLabel}>
+              Régénération récepteurs CB1 : {thcDetox.toFixed(0)}%
+            </div>
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${thcDetox}%` }}
+              />
+            </div>
+          </div>
+
+          <div className={styles.benefits}>
+            {cannabisBenefits.mentalClarity && (
+              <div className={styles.benefit}>✅ Clarté mentale revenue</div>
+            )}
+            {cannabisBenefits.thcElimination && (
+              <div className={styles.benefit}>✅ THC quitte le système</div>
+            )}
+            {cannabisBenefits.memoryImprovement && (
+              <div className={styles.benefit}>✅ Mémoire court terme améliorée</div>
+            )}
+            {cannabisBenefits.sleepQuality && (
+              <div className={styles.benefit}>✅ Sommeil REM normalisé</div>
+            )}
+            {cannabisBenefits.motivationBoost && (
+              <div className={styles.benefit}>✅ Motivation naturelle revenue</div>
+            )}
+            {cannabisBenefits.receptorsHealing && (
+              <div className={styles.benefit}>✅ Récepteurs cannabinoïdes régénérés</div>
+            )}
+          </div>
+
+          <div className={styles.nextMilestones}>
+            <h4>🎯 Prochains Paliers THC</h4>
+            {!cannabisBenefits.mentalClarity && timeElapsed.totalMinutes < 60 && (
+              <div className={styles.milestone}>Dans {60 - timeElapsed.totalMinutes} min : Clarté mentale</div>
+            )}
+            {!cannabisBenefits.thcElimination && timeElapsed.days < 1 && (
+              <div className={styles.milestone}>Dans {1 - timeElapsed.days} jour : THC éliminé</div>
+            )}
+            {!cannabisBenefits.memoryImprovement && timeElapsed.days < 2 && (
+              <div className={styles.milestone}>Dans {2 - timeElapsed.days} jours : Mémoire améliorée</div>
+            )}
+            {!cannabisBenefits.sleepQuality && timeElapsed.days < 7 && (
+              <div className={styles.milestone}>Dans {7 - timeElapsed.days} jours : Sommeil normalisé</div>
+            )}
+            {!cannabisBenefits.motivationBoost && timeElapsed.days < 14 && (
+              <div className={styles.milestone}>Dans {14 - timeElapsed.days} jours : Motivation revenue</div>
+            )}
+            {!cannabisBenefits.receptorsHealing && timeElapsed.days < 30 && (
+              <div className={styles.milestone}>Dans {30 - timeElapsed.days} jours : Récepteurs guéris</div>
+            )}
+          </div>
+        </div>
+
+        {/* COMBAT 3 : Combustion (commun aux deux) */}
+        <div className={styles.healthCard}>
+          <h3>🫁 Combat Combustion (Fumée)</h3>
+          <p className={styles.subtitle}>Tabac + Cannabis = même combat contre la fumée.</p>
 
           <div className={styles.lungProgress}>
             <div className={styles.progressLabel}>
@@ -160,51 +281,32 @@ export default function SobrietyCounter() {
           </div>
 
           <div className={styles.benefits}>
-            {healthBenefits.heartRate && (
-              <div className={styles.benefit}>✅ Rythme cardiaque normalisé</div>
-            )}
-            {healthBenefits.co2Normal && (
-              <div className={styles.benefit}>✅ Niveau de CO2 normal</div>
-            )}
-            {healthBenefits.heartAttackRisk && (
-              <div className={styles.benefit}>✅ Risque cardiaque réduit</div>
-            )}
-            {healthBenefits.sensesImprove && (
+            {combustionBenefits.sensesImprove && (
               <div className={styles.benefit}>✅ Goût et odorat améliorés</div>
             )}
-            {healthBenefits.breathingImproves && (
+            {combustionBenefits.breathingImproves && (
               <div className={styles.benefit}>✅ Respiration améliorée</div>
             )}
-            {healthBenefits.energyBoost && (
-              <div className={styles.benefit}>✅ Énergie augmentée</div>
+            {combustionBenefits.coughReduction && (
+              <div className={styles.benefit}>✅ Toux réduite</div>
             )}
-            {healthBenefits.lungFunction && (
+            {combustionBenefits.lungFunction && (
               <div className={styles.benefit}>✅ Fonction pulmonaire +30%</div>
             )}
           </div>
 
-          {/* Prochains paliers */}
           <div className={styles.nextMilestones}>
-            <h4>🎯 Prochains Paliers</h4>
-            {!healthBenefits.heartRate && (
-              <div className={styles.milestone}>Dans {20 - timeElapsed.totalMinutes} min : Rythme cardiaque normal</div>
+            <h4>🎯 Prochains Paliers Poumons</h4>
+            {!combustionBenefits.sensesImprove && timeElapsed.days < 2 && (
+              <div className={styles.milestone}>Dans {2 - timeElapsed.days} jours : Goût/odorat</div>
             )}
-            {!healthBenefits.co2Normal && timeElapsed.totalMinutes < 720 && (
-              <div className={styles.milestone}>Dans {Math.floor((720 - timeElapsed.totalMinutes) / 60)}h : CO2 normal</div>
+            {!combustionBenefits.breathingImproves && timeElapsed.days < 3 && (
+              <div className={styles.milestone}>Dans {3 - timeElapsed.days} jours : Respiration</div>
             )}
-            {!healthBenefits.heartAttackRisk && (
-              <div className={styles.milestone}>Dans {1 - timeElapsed.days} jour : Risque cardiaque réduit</div>
+            {!combustionBenefits.coughReduction && timeElapsed.days < 7 && (
+              <div className={styles.milestone}>Dans {7 - timeElapsed.days} jours : Toux réduite</div>
             )}
-            {!healthBenefits.sensesImprove && (
-              <div className={styles.milestone}>Dans {2 - timeElapsed.days} jours : Goût/odorat améliorés</div>
-            )}
-            {!healthBenefits.breathingImproves && (
-              <div className={styles.milestone}>Dans {3 - timeElapsed.days} jours : Respiration améliorée</div>
-            )}
-            {!healthBenefits.energyBoost && (
-              <div className={styles.milestone}>Dans {7 - timeElapsed.days} jours : Boost d'énergie</div>
-            )}
-            {!healthBenefits.lungFunction && (
+            {!combustionBenefits.lungFunction && timeElapsed.days < 30 && (
               <div className={styles.milestone}>Dans {30 - timeElapsed.days} jours : Poumons +30%</div>
             )}
           </div>

@@ -5,7 +5,7 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import styles from './PDFExport.module.css'
 
-declare module 'jspDF' {
+declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF
   }

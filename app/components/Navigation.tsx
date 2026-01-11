@@ -46,7 +46,6 @@ export default function Navigation() {
       items: [
         { href: '/goals', label: 'Objectifs', icon: '🎯' },
         { href: '/discipline', label: 'Discipline', icon: '⚔️' },
-        { href: '/badges', label: 'Badges', icon: '🏆' },
         { href: '/strategies', label: 'Stratégies', icon: '🛡️' },
         { href: '/reading', label: 'Lectures', icon: '📚' },
       ],

@@ -83,6 +83,18 @@ export async function POST(request: NextRequest) {
         alternativeAction: body.alternativeAction || '',
         consciousDecision: body.consciousDecision || false,
         comment: body.comment || '',
+        // Gestion Adrénaline
+        adrenalineEvent: body.adrenalineEvent || false,
+        adrenalineType: body.adrenalineType || '',
+        adrenalineTrigger: body.adrenalineTrigger || '',
+        adrenalineAlternative: body.adrenalineAlternative || '',
+        adrenalineOutcome: body.adrenalineOutcome || '',
+        // Gestion Isolement
+        isolationEvent: body.isolationEvent || false,
+        isolationPlanned: body.isolationPlanned || false,
+        isolationActivity: body.isolationActivity || '',
+        isolationReason: body.isolationReason || '',
+        isolationOutcome: body.isolationOutcome || '',
       },
     })
 

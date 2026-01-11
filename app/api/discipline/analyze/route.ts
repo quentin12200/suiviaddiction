@@ -46,7 +46,126 @@ export async function POST(request: NextRequest) {
     const challenges: any[] = []
 
     todayEntries.forEach((entry: any) => {
+      // QUESTIONS ISOLEMENT (si event isolement)
+      if (entry.isolationEvent) {
+        // Si isolement SANS plan → Destructif
+        if (!entry.isolationPlanned) {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu t'es isolé SANS PLAN. Qu'est-ce que tu aurais pu faire pendant ce temps qui t'aurait REMPLI au lieu de te laisser tomber dans le vide ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si isolement pour FUIR
+        if (entry.isolationReason === 'fuite') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu t'es isolé pour FUIR quelque chose. Qu'est-ce que tu évitais vraiment ? Et est-ce que ça a résolu le problème ou juste repoussé l'échéance ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si résultat = addictions
+        if (entry.isolationOutcome === 'addictions') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Ton isolement a mené aux addictions. C'était prévisible ? Qu'est-ce que tu aurais pu mettre en place AVANT de t'isoler pour éviter ça ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si résultat = vide
+        if (entry.isolationOutcome === 'vide') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu as fini avec un sentiment de VIDE. L'isolement sans projet mène toujours là. Qu'est-ce qui pourrait donner du SENS à ton temps seul la prochaine fois ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        // Si résultat = rechargé + activité → SUCCÈS
+        if (entry.isolationOutcome === 'rechargé' && entry.isolationActivity) {
+          challenges.push({
+            entryId: entry.id,
+            question: `BRAVO ! Tu t'es isolé avec un plan ("${entry.isolationActivity}") et ça t'a rechargé. Décris précisément ce qui a marché pour pouvoir le REPRODUIRE.`,
+            answered: false,
+            answer: '',
+          })
+        }
+      }
+
+      // QUESTIONS ADRÉNALINE (si event adrénaline)
+      if (entry.adrenalineEvent) {
+        if (entry.adrenalineType === 'risque') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu as cherché l'adrénaline dans quelque chose de RISQUÉ. Qu'est-ce que tu FUYAIS à ce moment-là ? Qu'est-ce qui MANQUE dans ta vie pour que tu aies besoin de franchir cette limite ?`,
+            answered: false,
+            answer: '',
+          })
+
+          // Question sur le déclencheur spécifique
+          if (entry.adrenalineTrigger === 'transgression') {
+            challenges.push({
+              entryId: entry.id,
+              question: `Le frisson de la transgression. C'est vraiment ça que tu cherchais ? Liste 3 choses qui pourraient te donner la MÊME intensité sans détruire ce qui compte pour toi.`,
+              answered: false,
+              answer: '',
+            })
+          }
+
+          if (entry.adrenalineTrigger === 'vide') {
+            challenges.push({
+              entryId: entry.id,
+              question: `Tu as ressenti un VIDE. Au lieu de le remplir avec du risque, qu'est-ce qui pourrait donner du SENS à ta vie en ce moment ?`,
+              answered: false,
+              answer: '',
+            })
+          }
+
+          if (entry.adrenalineTrigger === 'routine') {
+            challenges.push({
+              entryId: entry.id,
+              question: `La routine t'étouffe. Mais prendre des risques qui détruisent ta vie, c'est la solution ? Qu'est-ce que tu pourrais CHANGER dans ta vie pour sortir de cette monotonie ?`,
+              answered: false,
+              answer: '',
+            })
+          }
+        }
+
+        if (entry.adrenalineType === 'échappatoire') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu as choisi l'échappatoire passive. C'est mieux que le risque, mais est-ce que ça RÉSOUT vraiment le problème ? Qu'est-ce que tu évites de faire ou de ressentir ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        if (entry.adrenalineType === 'alternative' && entry.adrenalineOutcome === 'réussi') {
+          challenges.push({
+            entryId: entry.id,
+            question: `BRAVO ! Tu as trouvé une alternative qui a MARCHÉ. Décris précisément ce que tu as fait pour pouvoir le REPRODUIRE la prochaine fois.`,
+            answered: false,
+            answer: '',
+          })
+        }
+      }
+
       if (entry.hasSmoked) {
+        // NOUVELLE QUESTION : Challenge sur le patch nicotine + tabac
+        challenges.push({
+          entryId: entry.id,
+          question: `Tu portes un patch 14mg de nicotine. Pourquoi as-tu fumé du TABAC alors que ton besoin de nicotine est déjà satisfait ? C'était juste pour le THC, non ? Pourquoi ne pas passer aux joints SANS tabac ?`,
+          answered: false,
+          answer: '',
+        })
+
         // Question sur le déclencheur
         if (entry.trigger) {
           challenges.push({

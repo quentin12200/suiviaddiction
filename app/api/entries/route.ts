@@ -64,13 +64,23 @@ export async function POST(request: NextRequest) {
     const jointCount = body.hasSmoked ? (parseInt(body.jointCount) || 1) : 0
 
     // Créer l'entrée
+    const jointTimeValue = body.jointTime || body.time
+    console.log('🔍 Creating entry:', {
+      date: entryDate,
+      time: body.time,
+      hasSmoked: body.hasSmoked,
+      jointCount: jointCount,
+      jointTime: jointTimeValue,
+      bodyJointTime: body.jointTime,
+    })
+
     const entry = await prisma.entry.create({
       data: {
         date: entryDate,
         time: body.time,
         hasSmoked: body.hasSmoked,
         jointCount: jointCount,
-        jointTime: body.jointTime || body.time,
+        jointTime: jointTimeValue,
         minutesSinceLastJoint,
         cravingLevel: body.cravingLevel,
         emotionalState: body.emotionalState || '',

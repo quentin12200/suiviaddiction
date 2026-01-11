@@ -24,9 +24,22 @@ export async function GET() {
         date: true,
         jointTime: true,
         time: true,
+        hasSmoked: true,
+        jointCount: true,
       },
       take: 50,
     })
+
+    console.log('🔍 Sobriety stats - Total joints found:', allJoints.length)
+    if (allJoints.length > 0) {
+      console.log('🔍 First 3 joints:', allJoints.slice(0, 3).map(j => ({
+        date: j.date,
+        jointTime: j.jointTime,
+        time: j.time,
+        hasSmoked: j.hasSmoked,
+        jointCount: j.jointCount
+      })))
+    }
 
     if (allJoints.length === 0) {
       return NextResponse.json(
@@ -67,6 +80,12 @@ export async function GET() {
       .sort((a, b) => b.timestamp - a.timestamp)
 
     const lastJoint = sortedJoints[0]
+
+    console.log('✅ Last joint selected:', {
+      date: lastJoint.dateStr,
+      time: lastJoint.timeStr,
+      timestamp: new Date(lastJoint.timestamp).toLocaleString('fr-FR')
+    })
 
     return NextResponse.json(
       {

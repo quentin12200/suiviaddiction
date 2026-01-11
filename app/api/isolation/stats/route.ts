@@ -23,6 +23,7 @@ export async function GET() {
       orderBy: { date: 'desc' },
       select: {
         date: true,
+        isolationEvent: true,
         isolationPlanned: true,
         isolationActivity: true,
         isolationReason: true,

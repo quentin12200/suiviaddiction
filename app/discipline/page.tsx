@@ -1,90 +1,60 @@
 'use client'
 
-import { useEffect, useState, FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import Navigation from '../components/Navigation'
 import styles from './discipline.module.css'
 
-interface DisciplineEntry {
+interface Entry {
   id: string
   date: string
-  wakeUpTime: string | null
-  sleepTime: string | null
-  exerciseDone: boolean
-  exerciseDuration: number
-  productiveHours: number
-  distractionsResisted: number
-  promisesKept: number
-  selfRating: number
-  worstMoment: string
-  bestMoment: string
-  tomorrowCommitment: string
-  excuses: string
-  truthfulReflection: string
+  time: string
+  hasSmoked: boolean
+  jointCount: number
+  cravingLevel: number
+  emotionalState: string
+  physicalState: string
+  context: string
+  trigger: string
+  alternativeAction: string
+  comment: string
+}
+
+interface Challenge {
+  entryId: string
+  question: string
+  answered: boolean
+  answer: string
 }
 
 export default function DisciplinePage() {
-  const [entries, setEntries] = useState<DisciplineEntry[]>([])
+  const [todayEntries, setTodayEntries] = useState<Entry[]>([])
+  const [challenges, setChallenges] = useState<Challenge[]>([])
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [message, setMessage] = useState('')
-  const [autoSaveMessage, setAutoSaveMessage] = useState('')
+  const [currentChallenge, setCurrentChallenge] = useState(0)
 
-  const today = new Date().toISOString().split('T')[0]
-
-  const [formData, setFormData] = useState({
-    date: today,
-    wakeUpTime: '',
-    sleepTime: '',
-    exerciseDone: false,
-    exerciseDuration: 0,
-    productiveHours: 0,
-    distractionsResisted: 0,
-    promisesKept: 0,
-    selfRating: 5,
-    worstMoment: '',
-    bestMoment: '',
-    tomorrowCommitment: '',
-    excuses: '',
-    truthfulReflection: '',
-  })
-
-  // Charger les données au démarrage
   useEffect(() => {
-    fetchEntries()
-
-    // Restaurer depuis localStorage
-    const savedData = localStorage.getItem('disciplineFormDraft')
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData)
-        setFormData(parsed)
-        setAutoSaveMessage('✅ Brouillon restauré')
-        setTimeout(() => setAutoSaveMessage(''), 3000)
-      } catch (error) {
-        console.error('Erreur restauration brouillon:', error)
-      }
-    }
+    fetchTodayEntries()
   }, [])
 
-  // Sauvegarder automatiquement à chaque modification
-  useEffect(() => {
-    // Ne pas sauvegarder si c'est la valeur initiale
-    if (formData.worstMoment || formData.bestMoment || formData.truthfulReflection || formData.excuses || formData.tomorrowCommitment) {
-      localStorage.setItem('disciplineFormDraft', JSON.stringify(formData))
-      setAutoSaveMessage('💾 Sauvegardé')
-
-      // Effacer le message après 2 secondes
-      const timer = setTimeout(() => setAutoSaveMessage(''), 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [formData])
-
-  const fetchEntries = async () => {
+  const fetchTodayEntries = async () => {
     try {
-      const response = await fetch('/api/discipline')
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const todayString = `${year}-${month}-${day}`
+
+      const response = await fetch('/api/discipline/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: todayString }),
+      })
+
       const data = await response.json()
+
       if (data.success) {
-        setEntries(data.entries || [])
+        setTodayEntries(data.entries)
+        setChallenges(data.challenges)
       }
     } catch (error) {
       console.error('Erreur chargement discipline:', error)
@@ -93,419 +63,206 @@ export default function DisciplinePage() {
     }
   }
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setMessage('')
+  const handleAnswer = (answer: string) => {
+    const updated = [...challenges]
+    updated[currentChallenge].answered = true
+    updated[currentChallenge].answer = answer
+    setChallenges(updated)
 
-    try {
-      const response = await fetch('/api/discipline', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+    // Sauvegarder localement
+    localStorage.setItem('disciplineAnswers', JSON.stringify(updated))
 
-      const data = await response.json()
-
-      if (data.success) {
-        setMessage('✅ Bilan enregistré. Maintenant AGIS en conséquence.')
-
-        // Supprimer la sauvegarde automatique
-        localStorage.removeItem('disciplineFormDraft')
-        setAutoSaveMessage('')
-
-        fetchEntries()
-        // Réinitialiser pour demain
-        setFormData({
-          ...formData,
-          date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-          worstMoment: '',
-          bestMoment: '',
-          tomorrowCommitment: '',
-          excuses: '',
-          truthfulReflection: '',
-        })
-      } else {
-        setMessage('❌ Erreur : ' + (data.error || 'Impossible d\'enregistrer'))
-      }
-    } catch (error) {
-      setMessage('❌ Erreur de connexion')
-    } finally {
-      setSubmitting(false)
+    // Passer à la question suivante
+    if (currentChallenge < challenges.length - 1) {
+      setCurrentChallenge(currentChallenge + 1)
     }
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked
-      setFormData((prev) => ({ ...prev, [name]: checked }))
-    } else if (type === 'number' || type === 'range') {
-      setFormData((prev) => ({ ...prev, [name]: parseInt(value, 10) || 0 }))
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }))
-    }
+  if (loading) {
+    return (
+      <div>
+        <Navigation />
+        <div className={styles.container}>
+          <p>Analyse de ta journée...</p>
+        </div>
+      </div>
+    )
   }
 
-  const clearDraft = () => {
-    if (confirm('Effacer le brouillon et recommencer ?')) {
-      localStorage.removeItem('disciplineFormDraft')
-      setFormData({
-        date: today,
-        wakeUpTime: '',
-        sleepTime: '',
-        exerciseDone: false,
-        exerciseDuration: 0,
-        productiveHours: 0,
-        distractionsResisted: 0,
-        promisesKept: 0,
-        selfRating: 5,
-        worstMoment: '',
-        bestMoment: '',
-        tomorrowCommitment: '',
-        excuses: '',
-        truthfulReflection: '',
-      })
-      setAutoSaveMessage('🗑️ Brouillon effacé')
-      setTimeout(() => setAutoSaveMessage(''), 3000)
-    }
-  }
-
-  const calculateDisciplineScore = (entry: DisciplineEntry): number => {
-    let score = entry.selfRating * 10
-
-    if (entry.exerciseDone) score += 15
-    score += entry.exerciseDuration * 0.5
-    score += entry.productiveHours * 10
-    score += entry.distractionsResisted * 5
-    score += entry.promisesKept * 10
-
-    // Pénalités
-    if (!entry.wakeUpTime) score -= 10
-    if (entry.excuses.length > 50) score -= 20
-
-    return Math.max(0, Math.min(100, score))
-  }
-
-  const getDisciplineLevel = (score: number): { label: string; color: string } => {
-    if (score >= 90) return { label: 'GUERRIER', color: '#4caf50' }
-    if (score >= 75) return { label: 'DISCIPLINÉ', color: '#8bc34a' }
-    if (score >= 60) return { label: 'EN PROGRÈS', color: '#ff9800' }
-    if (score >= 40) return { label: 'FAIBLE', color: '#ff5722' }
-    return { label: 'LÂCHE', color: '#f44336' }
-  }
-
-  const getAverageDisciplineScore = (): number => {
-    if (entries.length === 0) return 0
-    const total = entries.reduce((sum, entry) => sum + calculateDisciplineScore(entry), 0)
-    return total / entries.length
-  }
+  const smokedEntries = todayEntries.filter(e => e.hasSmoked)
+  const totalJoints = smokedEntries.reduce((sum, e) => sum + e.jointCount, 0)
+  const answeredCount = challenges.filter(c => c.answered).length
 
   return (
     <div>
       <Navigation />
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>⚔️ DISCIPLINE & RESPONSABILITÉ</h1>
+          <h1 className={styles.title}>🔥 Remise en Question</h1>
           <p className={styles.subtitle}>
-            Arrête les excuses. Sois honnête. Agis.
+            Confrontons tes choix d&apos;aujourd&apos;hui
           </p>
         </div>
 
-        {/* Avertissement */}
-        <div className={styles.warningBox}>
-          <h3>⚠️ RÈGLES NON NÉGOCIABLES</h3>
-          <ul>
-            <li>Pas de mensonge à toi-même. JAMAIS.</li>
-            <li>Chaque excuse est une défaite que tu t&apos;infliges.</li>
-            <li>Tes intentions ne valent RIEN sans action.</li>
-            <li>Demain n&apos;existe pas. Il n&apos;y a que MAINTENANT.</li>
-            <li>Tu es 100% responsable de ta vie. PERSONNE d&apos;autre.</li>
-          </ul>
-        </div>
-
-        {/* Score moyen */}
-        {entries.length > 0 && (
-          <div className={styles.scoreCard}>
-            <h2>Score de Discipline Moyen</h2>
-            <div className={styles.bigScore}>
-              {getAverageDisciplineScore().toFixed(0)}
-              <span>/100</span>
+        {/* Résumé du jour */}
+        <div className={styles.summaryCard}>
+          <h2>Résumé du jour</h2>
+          <div className={styles.stats}>
+            <div className={styles.statItem}>
+              <div className={styles.statValue}>{todayEntries.length}</div>
+              <div className={styles.statLabel}>Entrées enregistrées</div>
             </div>
-            <p className={styles.scoreLabel}>
-              {getDisciplineLevel(getAverageDisciplineScore()).label}
-            </p>
+            <div className={styles.statItem}>
+              <div className={styles.statValue}>{totalJoints}</div>
+              <div className={styles.statLabel}>Joints fumés</div>
+            </div>
+            <div className={styles.statItem}>
+              <div className={styles.statValue}>{answeredCount}/{challenges.length}</div>
+              <div className={styles.statLabel}>Questions répondues</div>
+            </div>
           </div>
-        )}
 
-        {/* Formulaire */}
-        <div className={styles.formSection}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2>📝 Bilan Quotidien - Sois BRUTAL</h2>
-            {autoSaveMessage && (
-              <div style={{
-                fontSize: '14px',
-                color: '#4caf50',
-                padding: '8px 12px',
-                background: '#e8f5e9',
-                borderRadius: '6px',
-                fontWeight: '500'
-              }}>
-                {autoSaveMessage}
-              </div>
-            )}
-          </div>
-          {message && <div className={styles.message}>{message}</div>}
-
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.formGrid}>
-              <div className={styles.formGroup}>
-                <label>Date</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Heure réveil RÉELLE ⏰</label>
-                <input
-                  type="time"
-                  name="wakeUpTime"
-                  value={formData.wakeUpTime}
-                  onChange={handleChange}
-                  placeholder="Pas l'heure prévue, la VRAIE"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Heure coucher RÉELLE 😴</label>
-                <input
-                  type="time"
-                  name="sleepTime"
-                  value={formData.sleepTime}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className={styles.formGrid}>
-              <div className={styles.formGroup}>
-                <label>
-                  <input
-                    type="checkbox"
-                    name="exerciseDone"
-                    checked={formData.exerciseDone}
-                    onChange={handleChange}
-                  />
-                  Sport fait ? (Oui/Non, pas de milieu)
-                </label>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Durée sport (minutes) 💪</label>
-                <input
-                  type="number"
-                  name="exerciseDuration"
-                  value={formData.exerciseDuration}
-                  onChange={handleChange}
-                  min="0"
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Heures VRAIMENT productives 📊</label>
-                <input
-                  type="number"
-                  name="productiveHours"
-                  value={formData.productiveHours}
-                  onChange={handleChange}
-                  min="0"
-                  max="24"
-                />
-                <small>Compte que le temps où tu as VRAIMENT avancé</small>
-              </div>
-            </div>
-
-            <div className={styles.formGrid}>
-              <div className={styles.formGroup}>
-                <label>Distractions résistées 🛡️</label>
-                <input
-                  type="number"
-                  name="distractionsResisted"
-                  value={formData.distractionsResisted}
-                  onChange={handleChange}
-                  min="0"
-                />
-                <small>Combien de fois tu as dit NON aux tentations</small>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Promesses tenues ✅</label>
-                <input
-                  type="number"
-                  name="promisesKept"
-                  value={formData.promisesKept}
-                  onChange={handleChange}
-                  min="0"
-                />
-                <small>Sur combien de promesses faites à toi-même</small>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Auto-évaluation (0-10) 🎯</label>
-                <input
-                  type="range"
-                  name="selfRating"
-                  value={formData.selfRating}
-                  onChange={handleChange}
-                  min="0"
-                  max="10"
-                />
-                <div className={styles.ratingValue}>{formData.selfRating}/10</div>
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Le PIRE moment d&apos;aujourd&apos;hui 💀</label>
-              <textarea
-                name="worstMoment"
-                value={formData.worstMoment}
-                onChange={handleChange}
-                rows={3}
-                placeholder="Quand as-tu été le plus faible ? Décris PRÉCISÉMENT."
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Le MEILLEUR moment d&apos;aujourd&apos;hui 🏆</label>
-              <textarea
-                name="bestMoment"
-                value={formData.bestMoment}
-                onChange={handleChange}
-                rows={3}
-                placeholder="Quand as-tu été fier de toi ? Célèbre-le."
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Tes EXCUSES d&apos;aujourd&apos;hui 🤡</label>
-              <textarea
-                name="excuses"
-                value={formData.excuses}
-                onChange={handleChange}
-                rows={3}
-                placeholder="Liste toutes les excuses que tu t'es trouvées. Regarde comme elles sont pathétiques."
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Réflexion BRUTALEMENT honnête 🔥</label>
-              <textarea
-                name="truthfulReflection"
-                value={formData.truthfulReflection}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Pas de langue de bois. Comment juges-tu VRAIMENT ta journée ?"
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Engagement NON NÉGOCIABLE pour demain ⚡</label>
-              <textarea
-                name="tomorrowCommitment"
-                value={formData.tomorrowCommitment}
-                onChange={handleChange}
-                rows={3}
-                placeholder="Que vas-tu faire DIFFÉREMMENT demain ? Sois précis. Pas de 'je vais essayer'."
-                required
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '15px' }}>
-              <button type="submit" className={styles.submitButton} disabled={submitting}>
-                {submitting ? 'Enregistrement...' : '🔥 ENREGISTRER & S\'ENGAGER'}
+          {/* Alerte si peu d'entrées */}
+          {todayEntries.length < 3 && (
+            <div className={styles.warning}>
+              <h3>⚠️ Suivi Insuffisant</h3>
+              <p>
+                Tu n&apos;as enregistré que {todayEntries.length} entrée{todayEntries.length > 1 ? 's' : ''} aujourd&apos;hui.
+                <br />
+                <strong>Le suivi est essentiel</strong> pour comprendre tes patterns et progresser.
+                <br />
+                Sans données précises, tu te mens à toi-même.
+              </p>
+              <button onClick={() => window.location.href = '/new'} className={styles.addButton}>
+                ➕ Ajouter une entrée MAINTENANT
               </button>
-              <button
-                type="button"
-                onClick={clearDraft}
-                className={styles.cancelButton}
-                style={{
-                  flex: '0 0 auto',
-                  padding: '14px 24px',
-                  background: '#f5f5f5',
-                  color: '#333',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                }}
-              >
-                🗑️ Effacer brouillon
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Historique */}
-        <div className={styles.historySection}>
-          <h2>📜 Historique de Discipline</h2>
-
-          {loading ? (
-            <p>Chargement...</p>
-          ) : entries.length === 0 ? (
-            <p className={styles.empty}>Aucune entrée. Commence MAINTENANT.</p>
-          ) : (
-            <div className={styles.entriesGrid}>
-              {entries.map((entry) => {
-                const score = calculateDisciplineScore(entry)
-                const level = getDisciplineLevel(score)
-
-                return (
-                  <div key={entry.id} className={styles.entryCard}>
-                    <div className={styles.entryHeader}>
-                      <h3>{new Date(entry.date).toLocaleDateString('fr-FR')}</h3>
-                      <div
-                        className={styles.entryScore}
-                        style={{ color: level.color }}
-                      >
-                        {score.toFixed(0)}
-                        <span>{level.label}</span>
-                      </div>
-                    </div>
-
-                    <div className={styles.entryStats}>
-                      <div>⏰ Réveil: {entry.wakeUpTime || 'Non renseigné'}</div>
-                      <div>💪 Sport: {entry.exerciseDone ? `✅ ${entry.exerciseDuration}min` : '❌'}</div>
-                      <div>📊 Productif: {entry.productiveHours}h</div>
-                      <div>🛡️ Résistances: {entry.distractionsResisted}</div>
-                    </div>
-
-                    {entry.truthfulReflection && (
-                      <div className={styles.entryReflection}>
-                        <strong>Réflexion:</strong>
-                        <p>{entry.truthfulReflection}</p>
-                      </div>
-                    )}
-
-                    {entry.tomorrowCommitment && (
-                      <div className={styles.entryCommitment}>
-                        <strong>Engagement:</strong>
-                        <p>{entry.tomorrowCommitment}</p>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
             </div>
           )}
         </div>
+
+        {/* Questions de remise en question */}
+        {challenges.length > 0 ? (
+          <div className={styles.challengeSection}>
+            <h2>
+              Question {currentChallenge + 1} sur {challenges.length}
+            </h2>
+
+            <div className={styles.challengeCard}>
+              <div className={styles.questionNumber}>
+                {currentChallenge + 1}/{challenges.length}
+              </div>
+
+              <div className={styles.question}>
+                {challenges[currentChallenge].question}
+              </div>
+
+              {!challenges[currentChallenge].answered ? (
+                <div className={styles.answerSection}>
+                  <textarea
+                    className={styles.answerInput}
+                    placeholder="Réponds honnêtement. Pas d'excuses, juste la vérité..."
+                    rows={6}
+                    id="answerText"
+                  />
+                  <button
+                    onClick={() => {
+                      const textarea = document.getElementById('answerText') as HTMLTextAreaElement
+                      if (textarea.value.trim()) {
+                        handleAnswer(textarea.value)
+                        textarea.value = ''
+                      } else {
+                        alert('Réponds à la question. Sois honnête avec toi-même.')
+                      }
+                    }}
+                    className={styles.submitAnswer}
+                  >
+                    Valider ma réponse
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.answeredSection}>
+                  <div className={styles.yourAnswer}>
+                    <strong>Ta réponse :</strong>
+                    <p>{challenges[currentChallenge].answer}</p>
+                  </div>
+                  {currentChallenge < challenges.length - 1 && (
+                    <button
+                      onClick={() => setCurrentChallenge(currentChallenge + 1)}
+                      className={styles.nextButton}
+                    >
+                      Question suivante →
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Navigation entre questions */}
+            <div className={styles.navigation}>
+              {challenges.map((c, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentChallenge(index)}
+                  className={`${styles.navDot} ${index === currentChallenge ? styles.active : ''} ${c.answered ? styles.answered : ''}`}
+                />
+              ))}
+            </div>
+
+            {/* Résumé final si toutes les questions sont répondues */}
+            {answeredCount === challenges.length && (
+              <div className={styles.completionCard}>
+                <h2>✅ Réflexion Terminée</h2>
+                <p>
+                  Tu as répondu à toutes les questions. Maintenant, la vraie question :
+                </p>
+                <div className={styles.finalQuestion}>
+                  Que vas-tu faire DIFFÉREMMENT demain ?
+                </div>
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className={styles.finishButton}
+                >
+                  Retour au tableau de bord
+                </button>
+              </div>
+            )}
+          </div>
+        ) : smokedEntries.length === 0 ? (
+          <div className={styles.noChallenges}>
+            <h2>🎉 Aucun joint aujourd&apos;hui !</h2>
+            <p>Continue comme ça. Reste vigilant.</p>
+          </div>
+        ) : (
+          <div className={styles.noChallenges}>
+            <p>Aucune question générée pour le moment.</p>
+          </div>
+        )}
+
+        {/* Liste des entrées du jour */}
+        {todayEntries.length > 0 && (
+          <div className={styles.entriesSection}>
+            <h2>Tes entrées d&apos;aujourd&apos;hui</h2>
+            <div className={styles.entriesList}>
+              {todayEntries.map((entry) => (
+                <div key={entry.id} className={styles.entryItem}>
+                  <div className={styles.entryTime}>{entry.time}</div>
+                  <div className={styles.entryContent}>
+                    {entry.hasSmoked ? (
+                      <div className={styles.smoked}>
+                        🚬 {entry.jointCount} joint{entry.jointCount > 1 ? 's' : ''}
+                        {entry.trigger && <span className={styles.trigger}> → {entry.trigger}</span>}
+                      </div>
+                    ) : (
+                      <div className={styles.notSmoked}>
+                        ✅ Pas fumé (envie: {entry.cravingLevel}/10)
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -9,6 +9,7 @@ import ActiveStrategies from './components/ActiveStrategies'
 import AlertMonitor from './components/AlertMonitor'
 import NotificationSettings from './components/NotificationSettings'
 import HealthWidget from './components/HealthWidget'
+import SobrietyCounter from './components/SobrietyCounter'
 import {
   LineChart,
   Line,
@@ -221,6 +222,9 @@ export default function DashboardPage() {
 
         {/* Santé & Agenda */}
         <HealthWidget key={`health-${refreshKey}`} />
+
+        {/* Compteur de Sobriété */}
+        <SobrietyCounter key={`sobriety-${refreshKey}`} />
 
         {/* Résumé du jour */}
         <div className={styles.grid}>

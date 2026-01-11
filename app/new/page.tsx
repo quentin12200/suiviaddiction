@@ -35,6 +35,12 @@ export default function NewEntryPage() {
     alternativeAction: '',
     consciousDecision: false,
     comment: '',
+    // Gestion Adrénaline (discret)
+    adrenalineEvent: false,
+    adrenalineType: '',
+    adrenalineTrigger: '',
+    adrenalineAlternative: '',
+    adrenalineOutcome: '',
   })
 
   const handleSubmit = async (e: FormEvent) => {
@@ -439,6 +445,107 @@ export default function NewEntryPage() {
               <span>Décision consciente</span>
             </label>
           </div>
+
+          {/* GESTION ADRÉNALINE (Section discrète) */}
+          <div className={styles.formGroup} style={{ borderTop: '2px solid #e0e0e0', paddingTop: '24px', marginTop: '24px' }}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                name="adrenalineEvent"
+                checked={formData.adrenalineEvent}
+                onChange={handleChange}
+                className={styles.checkbox}
+              />
+              <span>📊 Gestion de stimulation/tension</span>
+            </label>
+            <small style={{ color: '#666', fontSize: '13px', display: 'block', marginTop: '8px' }}>
+              Optionnel : Pour tracker les moments où tu cherches de l'adrénaline ou à décharger une tension
+            </small>
+          </div>
+
+          {/* Si tracking adrénaline activé */}
+          {formData.adrenalineEvent && (
+            <>
+              {/* Type de gestion */}
+              <div className={styles.formGroup}>
+                <label htmlFor="adrenalineType" className={styles.label}>
+                  Type de gestion *
+                </label>
+                <select
+                  id="adrenalineType"
+                  name="adrenalineType"
+                  value={formData.adrenalineType}
+                  onChange={handleChange}
+                  className={styles.select}
+                  required
+                >
+                  <option value="">-- Sélectionner --</option>
+                  <option value="risque">🔴 Comportement à risque</option>
+                  <option value="échappatoire">🟡 Échappatoire passive</option>
+                  <option value="alternative">🟢 Alternative constructive</option>
+                </select>
+              </div>
+
+              {/* Déclencheur */}
+              <div className={styles.formGroup}>
+                <label htmlFor="adrenalineTrigger" className={styles.label}>
+                  Qu'est-ce que tu cherchais vraiment ? *
+                </label>
+                <select
+                  id="adrenalineTrigger"
+                  name="adrenalineTrigger"
+                  value={formData.adrenalineTrigger}
+                  onChange={handleChange}
+                  className={styles.select}
+                  required
+                >
+                  <option value="">-- Identifier le besoin --</option>
+                  <option value="routine">Routine/Monotonie</option>
+                  <option value="stimulation">Besoin de stimulation intense</option>
+                  <option value="transgression">Envie de transgression/limite</option>
+                  <option value="procrastination">Procrastination</option>
+                  <option value="vide">Vide/Absence d'objectif</option>
+                  <option value="solitude">Solitude émotionnelle</option>
+                  <option value="stress">Stress/Pression à évacuer</option>
+                </select>
+              </div>
+
+              {/* Alternative testée */}
+              <div className={styles.formGroup}>
+                <label htmlFor="adrenalineAlternative" className={styles.label}>
+                  Alternative testée avant de craquer
+                </label>
+                <input
+                  id="adrenalineAlternative"
+                  type="text"
+                  name="adrenalineAlternative"
+                  value={formData.adrenalineAlternative}
+                  onChange={handleChange}
+                  className={styles.input}
+                  placeholder="Ex: Sport intense, douche froide, projet créatif..."
+                />
+              </div>
+
+              {/* Résultat */}
+              <div className={styles.formGroup}>
+                <label htmlFor="adrenalineOutcome" className={styles.label}>
+                  Résultat
+                </label>
+                <select
+                  id="adrenalineOutcome"
+                  name="adrenalineOutcome"
+                  value={formData.adrenalineOutcome}
+                  onChange={handleChange}
+                  className={styles.select}
+                >
+                  <option value="">-- Sélectionner --</option>
+                  <option value="réussi">✅ Envie partie</option>
+                  <option value="réduit">🟡 Envie réduite</option>
+                  <option value="échoué">❌ Envie toujours là</option>
+                </select>
+              </div>
+            </>
+          )}
 
           {/* Commentaire */}
           <div className={styles.formGroup}>

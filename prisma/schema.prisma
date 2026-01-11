@@ -28,10 +28,19 @@ model Entry {
   alternativeAction     String   @default("")
   consciousDecision     Boolean  @default(false)
   comment               String   @default("")
+
+  // Gestion Adrénaline (discret)
+  adrenalineEvent       Boolean  @default(false)
+  adrenalineType        String   @default("") // "risque", "échappatoire", "alternative"
+  adrenalineTrigger     String   @default("") // Routine, Stimulation, Transgression, Procrastination, Vide, Solitude, Stress
+  adrenalineAlternative String   @default("") // Quelle alternative a été testée
+  adrenalineOutcome     String   @default("") // "réussi", "réduit", "échoué"
+
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
   @@index([date])
+  @@index([adrenalineEvent])
 }
 
 // Modèle pour les objectifs journaliers

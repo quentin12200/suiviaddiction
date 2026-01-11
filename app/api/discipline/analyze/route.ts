@@ -46,6 +46,64 @@ export async function POST(request: NextRequest) {
     const challenges: any[] = []
 
     todayEntries.forEach((entry: any) => {
+      // QUESTIONS ADRÉNALINE (si event adrénaline)
+      if (entry.adrenalineEvent) {
+        if (entry.adrenalineType === 'risque') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu as cherché l'adrénaline dans quelque chose de RISQUÉ. Qu'est-ce que tu FUYAIS à ce moment-là ? Qu'est-ce qui MANQUE dans ta vie pour que tu aies besoin de franchir cette limite ?`,
+            answered: false,
+            answer: '',
+          })
+
+          // Question sur le déclencheur spécifique
+          if (entry.adrenalineTrigger === 'transgression') {
+            challenges.push({
+              entryId: entry.id,
+              question: `Le frisson de la transgression. C'est vraiment ça que tu cherchais ? Liste 3 choses qui pourraient te donner la MÊME intensité sans détruire ce qui compte pour toi.`,
+              answered: false,
+              answer: '',
+            })
+          }
+
+          if (entry.adrenalineTrigger === 'vide') {
+            challenges.push({
+              entryId: entry.id,
+              question: `Tu as ressenti un VIDE. Au lieu de le remplir avec du risque, qu'est-ce qui pourrait donner du SENS à ta vie en ce moment ?`,
+              answered: false,
+              answer: '',
+            })
+          }
+
+          if (entry.adrenalineTrigger === 'routine') {
+            challenges.push({
+              entryId: entry.id,
+              question: `La routine t'étouffe. Mais prendre des risques qui détruisent ta vie, c'est la solution ? Qu'est-ce que tu pourrais CHANGER dans ta vie pour sortir de cette monotonie ?`,
+              answered: false,
+              answer: '',
+            })
+          }
+        }
+
+        if (entry.adrenalineType === 'échappatoire') {
+          challenges.push({
+            entryId: entry.id,
+            question: `Tu as choisi l'échappatoire passive. C'est mieux que le risque, mais est-ce que ça RÉSOUT vraiment le problème ? Qu'est-ce que tu évites de faire ou de ressentir ?`,
+            answered: false,
+            answer: '',
+          })
+        }
+
+        if (entry.adrenalineType === 'alternative' && entry.adrenalineOutcome === 'réussi') {
+          challenges.push({
+            entryId: entry.id,
+            question: `BRAVO ! Tu as trouvé une alternative qui a MARCHÉ. Décris précisément ce que tu as fait pour pouvoir le REPRODUIRE la prochaine fois.`,
+            answered: false,
+            answer: '',
+          })
+        }
+      }
+
       if (entry.hasSmoked) {
         // NOUVELLE QUESTION : Challenge sur le patch nicotine + tabac
         challenges.push({

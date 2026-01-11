@@ -205,29 +205,15 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Alertes Préventives */}
-        <AlertMonitor key={`alert-${refreshKey}`} />
+        {/* 3-column dashboard layout */}
+        <div className={styles.dashboardGrid}>
+          {/* LEFT COLUMN - Stats & Actions */}
+          <div className={styles.leftColumn}>
+            {/* Alertes Préventives */}
+            <AlertMonitor key={`alert-${refreshKey}`} />
 
-        {/* Notifications */}
-        <NotificationSettings />
-
-        {/* Score de Liberté */}
-        <FreedomScore key={`freedom-${refreshKey}`} />
-
-        {/* Encouragement IA */}
-        <AIEncouragement key={`ai-${refreshKey}`} />
-
-        {/* Stratégies Actives */}
-        <ActiveStrategies key={`strategies-${refreshKey}`} />
-
-        {/* Santé & Agenda */}
-        <HealthWidget key={`health-${refreshKey}`} />
-
-        {/* Compteur de Sobriété */}
-        <SobrietyCounter key={`sobriety-${refreshKey}`} />
-
-        {/* Résumé du jour */}
-        <div className={styles.grid}>
+            {/* Résumé du jour */}
+            <div className={styles.grid}>
           <div className={styles.card}>
             <h2>Aujourd&apos;hui</h2>
             <div className={styles.stat}>
@@ -322,58 +308,84 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Graphiques */}
-        <div className={styles.chartSection}>
-          <h2>Consommation - 7 derniers jours</h2>
-          <div className={styles.chartContainer}>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData7Days}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="joints" fill="#667eea" name="Joints" />
-              </BarChart>
-            </ResponsiveContainer>
+            {/* Actions rapides */}
+            <div className={styles.actions}>
+              <h2>Actions rapides</h2>
+              <div className={styles.actionButtons}>
+                <Link href="/new" className={styles.actionButton}>
+                  Ajouter une entrée
+                </Link>
+                <Link href="/history" className={styles.actionButton}>
+                  Voir l&apos;historique
+                </Link>
+                <Link href="/goals" className={styles.actionButton}>
+                  Gérer les objectifs
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className={styles.chartSection}>
-          <h2>Consommation - 30 derniers jours</h2>
-          <div className={styles.chartContainer}>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData30Days}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="joints"
-                  stroke="#764ba2"
-                  name="Joints"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          {/* CENTER COLUMN - Sobriety & Charts */}
+          <div className={styles.centerColumn}>
+            {/* Compteur de Sobriété */}
+            <SobrietyCounter key={`sobriety-${refreshKey}`} />
+
+            {/* Graphiques */}
+            <div className={styles.chartSection}>
+              <h2>Consommation - 7 derniers jours</h2>
+              <div className={styles.chartContainer}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={chartData7Days}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="joints" fill="#667eea" name="Joints" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className={styles.chartSection}>
+              <h2>Consommation - 30 derniers jours</h2>
+              <div className={styles.chartContainer}>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={chartData30Days}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="joints"
+                      stroke="#764ba2"
+                      name="Joints"
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Actions rapides */}
-        <div className={styles.actions}>
-          <h2>Actions rapides</h2>
-          <div className={styles.actionButtons}>
-            <Link href="/new" className={styles.actionButton}>
-              Ajouter une entrée
-            </Link>
-            <Link href="/history" className={styles.actionButton}>
-              Voir l&apos;historique
-            </Link>
-            <Link href="/goals" className={styles.actionButton}>
-              Gérer les objectifs
-            </Link>
+          {/* RIGHT COLUMN - Widgets & Tools */}
+          <div className={styles.rightColumn}>
+            {/* Notifications */}
+            <NotificationSettings />
+
+            {/* Score de Liberté */}
+            <FreedomScore key={`freedom-${refreshKey}`} />
+
+            {/* Encouragement IA */}
+            <AIEncouragement key={`ai-${refreshKey}`} />
+
+            {/* Stratégies Actives */}
+            <ActiveStrategies key={`strategies-${refreshKey}`} />
+
+            {/* Santé & Agenda */}
+            <HealthWidget key={`health-${refreshKey}`} />
           </div>
         </div>
       </div>

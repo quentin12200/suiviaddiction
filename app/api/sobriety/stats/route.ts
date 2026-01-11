@@ -66,15 +66,27 @@ export async function GET() {
     const sortedJoints = allJoints
       .map(joint => {
         const dateStr = joint.date.toISOString().split('T')[0]
-        const timeStr = (joint.jointTime || joint.time).replace(':00', '') // Enlever les secondes si présentes
+
+        // Récupérer l'heure (jointTime en priorité, sinon time)
+        let rawTime = joint.jointTime || joint.time
+
+        // Normaliser le format : garder seulement HH:mm
+        // Gérer les formats possibles: "HH:mm", "HH:mm:ss", etc.
+        const timeParts = rawTime.split(':')
+        const timeStr = `${timeParts[0]}:${timeParts[1]}` // Garder seulement HH:mm
+
+        // Construire le datetime complet
         const fullDateTime = new Date(`${dateStr}T${timeStr}:00.000Z`)
+        const timestamp = fullDateTime.getTime()
+
+        console.log(`  🕐 Processing: ${dateStr} ${rawTime} → ${timeStr} → timestamp ${timestamp}`)
 
         return {
           ...joint,
           dateStr,
           timeStr,
           fullDateTime,
-          timestamp: fullDateTime.getTime(),
+          timestamp,
         }
       })
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -94,12 +106,24 @@ export async function GET() {
       fullDateTime: lastJoint.fullDateTime.toISOString(),
     })
 
+    // Retourner aussi les 5 dernières entrées pour debug côté client
+    const last5 = sortedJoints.slice(0, 5).map(j => ({
+      id: j.id,
+      date: j.dateStr,
+      time: j.timeStr,
+      timestamp: j.timestamp,
+    }))
+
+    console.log('📤 [SOBRIETY API] Returning data with', last5.length, 'entries for debug')
+
     return NextResponse.json(
       {
         success: true,
         data: {
           lastJointDate: lastJoint.dateStr,
           lastJointTime: lastJoint.timeStr,
+          totalJointsInDb: allJoints.length,
+          last5Joints: last5, // Pour voir dans console navigateur
         },
       },
       {

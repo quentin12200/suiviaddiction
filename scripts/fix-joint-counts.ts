@@ -8,10 +8,7 @@ async function fixJointCounts() {
   const brokenEntries = await prisma.entry.findMany({
     where: {
       hasSmoked: true,
-      OR: [
-        { jointCount: 0 },
-        { jointCount: null },
-      ],
+      jointCount: 0,
     },
     select: {
       id: true,
@@ -45,10 +42,7 @@ async function fixJointCounts() {
   const stillBroken = await prisma.entry.count({
     where: {
       hasSmoked: true,
-      OR: [
-        { jointCount: 0 },
-        { jointCount: null },
-      ],
+      jointCount: 0,
     },
   })
 

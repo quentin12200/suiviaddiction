@@ -64,6 +64,7 @@ export default function Navigation() {
         { href: '/integrations', label: 'Intégrations', icon: '🔗' },
         { href: '/import', label: 'Import CSV', icon: '📥' },
         { href: '/export', label: 'Export PDF', icon: '📄' },
+        { href: '/admin', label: 'Admin', icon: '🔧' },
       ],
     },
   ]

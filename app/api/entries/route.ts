@@ -60,11 +60,15 @@ export async function POST(request: NextRequest) {
     // Si body.date est "2026-01-09", on crée une date UTC à minuit
     const entryDate = new Date(body.date + 'T00:00:00.000Z')
 
+    // S'assurer que jointCount est toujours >= 1 quand hasSmoked est true
+    const jointCount = body.hasSmoked ? (parseInt(body.jointCount) || 1) : 0
+
     console.log('🔍 Creating entry:')
     console.log('  Input date:', body.date)
     console.log('  Parsed date (UTC):', entryDate.toISOString())
     console.log('  Has smoked:', body.hasSmoked)
-    console.log('  Joint count:', body.hasSmoked ? body.jointCount : 0)
+    console.log('  Joint count (raw):', body.jointCount)
+    console.log('  Joint count (final):', jointCount)
 
     // Créer l'entrée
     const entry = await prisma.entry.create({
@@ -72,7 +76,7 @@ export async function POST(request: NextRequest) {
         date: entryDate,
         time: body.time,
         hasSmoked: body.hasSmoked,
-        jointCount: body.hasSmoked ? body.jointCount : 0,
+        jointCount: jointCount,
         jointTime: body.jointTime || body.time,
         minutesSinceLastJoint,
         cravingLevel: body.cravingLevel,

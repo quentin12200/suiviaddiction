@@ -10,6 +10,7 @@ import AlertMonitor from './components/AlertMonitor'
 import NotificationSettings from './components/NotificationSettings'
 import HealthWidget from './components/HealthWidget'
 import SobrietyCounter from './components/SobrietyCounter'
+import PeriodStats from './components/PeriodStats'
 import {
   LineChart,
   Line,
@@ -329,6 +330,9 @@ export default function DashboardPage() {
           <div className={styles.centerColumn}>
             {/* Compteur de Sobriété */}
             <SobrietyCounter key={`sobriety-${refreshKey}`} />
+
+            {/* Statistiques par période */}
+            <PeriodStats key={`periods-${refreshKey}`} />
 
             {/* Graphiques */}
             <div className={styles.chartSection}>

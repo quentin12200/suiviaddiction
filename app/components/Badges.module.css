@@ -1,0 +1,279 @@
+.container {
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 25px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 15px 0;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.summaryText {
+  font-weight: 600;
+  color: #4a5568;
+  white-space: nowrap;
+}
+
+.progressBar {
+  flex: 1;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+.percentage {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 1.1rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Filtres */
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  padding: 10px 18px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #4a5568;
+}
+
+.filterButton:hover {
+  border-color: #667eea;
+  background: #f7fafc;
+}
+
+.filterButton.active {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 30px;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 15px 0;
+}
+
+/* Grille de badges */
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.badge {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.badge:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.unlocked {
+  border-color: #48bb78;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+}
+
+.locked {
+  border-color: #e2e8f0;
+  opacity: 0.7;
+}
+
+.badgeIcon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  animation: bounce 2s ease infinite;
+}
+
+.badgeIconLocked {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.badgeTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+}
+
+.badgeDescription {
+  font-size: 0.85rem;
+  color: #718096;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.badgeStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: #48bb78;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.checkmark {
+  font-size: 1rem;
+}
+
+/* Progression */
+.badgeProgress {
+  margin-top: 12px;
+}
+
+.progressLabel {
+  font-size: 0.75rem;
+  color: #718096;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.progressBarSmall {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFillSmall {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+/* Stats Section */
+.statsSection {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 30px;
+}
+
+.statsSection .sectionTitle {
+  color: white;
+  margin-bottom: 20px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.statItem {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.statIcon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .badgesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .badge {
+    padding: 15px;
+  }
+
+  .badgeIcon,
+  .badgeIconLocked {
+    font-size: 2.5rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filters {
+    gap: 6px;
+  }
+
+  .filterButton {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}

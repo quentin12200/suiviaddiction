@@ -24,10 +24,15 @@ export default function PDFExport() {
       const result = await response.json()
 
       if (!result.success) {
-        throw new Error('Erreur récupération données')
+        throw new Error(result.error || 'Erreur récupération données')
       }
 
       const data = result.data
+
+      if (!data || data.summary.totalDays === 0) {
+        alert('Aucune entrée trouvée pour cette période. Ajoute des entrées d\'abord.')
+        return
+      }
 
       // Créer le PDF
       const pdf = new jsPDF()
@@ -228,7 +233,8 @@ export default function PDFExport() {
       pdf.save(`rapport-addiction-${data.period.endDate}.pdf`)
     } catch (error) {
       console.error('Erreur génération PDF:', error)
-      alert('Erreur lors de la génération du PDF')
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
+      alert(`Erreur lors de la génération du PDF: ${errorMessage}`)
     } finally {
       setLoading(false)
     }

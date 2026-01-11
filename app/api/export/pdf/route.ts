@@ -104,14 +104,16 @@ export async function GET(request: Request) {
     // États émotionnels les plus fréquents
     const emotionalCounts: Record<string, number> = {}
     entries
-      .filter(e => e.emotionalState)
+      .filter(e => e.emotionalState && e.emotionalState.trim() !== '')
       .forEach(entry => {
-        const states = entry.emotionalState.split(',').map(s => s.trim())
-        states.forEach(state => {
-          if (state) {
-            emotionalCounts[state] = (emotionalCounts[state] || 0) + 1
-          }
-        })
+        if (entry.emotionalState) {
+          const states = entry.emotionalState.split(',').map(s => s.trim())
+          states.forEach(state => {
+            if (state) {
+              emotionalCounts[state] = (emotionalCounts[state] || 0) + 1
+            }
+          })
+        }
       })
 
     const topEmotions = Object.entries(emotionalCounts)

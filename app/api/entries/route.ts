@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     const entries = await prisma.entry.findMany({
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
       take: limit,
       skip: offset,
     })
@@ -41,7 +44,10 @@ export async function POST(request: NextRequest) {
     if (body.hasSmoked) {
       const lastSmokedEntry = await prisma.entry.findFirst({
         where: { hasSmoked: true },
-        orderBy: { date: 'desc' },
+        orderBy: [
+          { date: 'desc' },
+          { time: 'desc' },
+        ],
       })
 
       if (lastSmokedEntry) {

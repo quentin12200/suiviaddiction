@@ -143,3 +143,96 @@ model Reading {
   @@index([status])
   @@index([category])
 }
+
+// Modèle pour les Habitudes Atomiques (James Clear)
+model AtomicHabit {
+  id          String   @id @default(cuid())
+
+  // STEP 1: Make it Obvious (Rendre évident)
+  name        String   // L'habitude en elle-même
+  trigger     String   // "Je vais [habitude] QUAND [trigger]"
+  identity    String   // "Pour que je devienne [identity]"
+  stackAfter  String?  // Habit stacking: après quelle habitude existante ?
+  visualCue   String?  // Rappel visuel (ex: "chaussures devant la porte")
+
+  // STEP 2: Make it Attractive (Rendre attractif)
+  reward      String?  // Récompense immédiate associée
+  pleasure    String?  // Élément plaisant pendant l'habitude (podcast, musique, etc.)
+
+  // STEP 3: Make it Easy (Rendre facile)
+  difficulty  String   @default("easy") // easy, medium, hard
+  preparation String?  // Ce qui est prêt pour faciliter (ex: "tenue de sport sur la chaise")
+  duration    Int      @default(5) // Durée en minutes
+
+  // STEP 4: Make it Satisfying (Rendre satisfaisant)
+  trackingMethod String @default("checkbox") // checkbox, counter, timer, yes_no
+
+  // Métadonnées
+  category    String   @default("general") // sport, meditation, alimentation, lecture, créativité, social
+  isActive    Boolean  @default(true)
+  isPositive  Boolean  @default(true) // true=bonne habitude à prendre, false=mauvaise à arrêter
+
+  // Pour remplacer l'addiction
+  replacesAddiction Boolean @default(false) // Est-ce une alternative au joint ?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation avec les complétions quotidiennes
+  completions HabitCompletion[]
+
+  @@index([isActive])
+  @@index([category])
+  @@index([replacesAddiction])
+}
+
+// Modèle pour tracker les complétions quotidiennes d'habitudes
+model HabitCompletion {
+  id          String   @id @default(cuid())
+  habitId     String
+  habit       AtomicHabit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  date        DateTime // Date de la complétion
+  completed   Boolean  @default(false)
+  value       Int?     // Pour les habitudes comptées (ex: nombre de pages lues)
+  duration    Int?     // Durée réelle en minutes
+
+  // Notes et contexte
+  note        String   @default("") // Comment s'est passée l'habitude
+  difficulty  String?  // "facile", "moyen", "difficile"
+  mood        String?  // Comment tu te sentais après
+
+  // Récompense obtenue
+  rewardClaimed Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([habitId, date])
+  @@index([habitId])
+  @@index([date])
+  @@index([completed])
+}
+
+// Modèle pour les badges et récompenses
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   // Nom du badge
+  description String   // Description
+  icon        String   // Emoji ou icon
+  category    String   // streak, milestone, achievement
+
+  // Critères d'obtention
+  requirement String   // Description du critère
+  requiredValue Int    // Valeur requise (ex: 7 jours de streak)
+
+  // Métadonnées
+  earnedAt    DateTime? // Quand le badge a été obtenu (null = pas encore obtenu)
+  isUnlocked  Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isUnlocked])
+}

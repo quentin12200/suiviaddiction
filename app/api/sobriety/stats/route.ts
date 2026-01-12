@@ -113,10 +113,21 @@ export async function GET() {
     }
 
     console.log('✅ Last joint found:', {
+      id: lastJoint.id.substring(0, 8),
       date: lastJoint.dateStr,
       time: lastJoint.timeStr,
       hasSmoked: lastJoint.hasSmoked,
-      timestamp: new Date(lastJoint.timestamp).toLocaleString('fr-FR')
+      jointCount: lastJoint.jointCount,
+      timestamp: new Date(lastJoint.timestamp).toLocaleString('fr-FR'),
+      rawEntry: {
+        jointTime: lastJoint.jointTime,
+        time: lastJoint.time,
+      }
+    })
+
+    console.log('📤 Returning to client:', {
+      lastJointDate: lastJoint.dateStr,
+      lastJointTime: lastJoint.timeStr,
     })
 
     return NextResponse.json(

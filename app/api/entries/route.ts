@@ -112,6 +112,15 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('✅ Entry created with ID:', entry.id)
+    console.log('💾 Entry saved in database:', {
+      id: entry.id.substring(0, 8),
+      date: entry.date.toISOString(),
+      dateStr: entry.date.toISOString().split('T')[0],
+      time: entry.time,
+      jointTime: entry.jointTime,
+      hasSmoked: entry.hasSmoked,
+      jointCount: entry.jointCount,
+    })
 
     return NextResponse.json({ success: true, entry })
   } catch (error) {

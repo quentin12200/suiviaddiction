@@ -34,6 +34,7 @@ export function useSpeechRecognition({
         (window as any).webkitSpeechRecognition
 
       if (SpeechRecognition) {
+        console.log('✅ Reconnaissance vocale supportée!')
         setIsSupported(true)
 
         const recognitionInstance = new SpeechRecognition()
@@ -95,8 +96,11 @@ export function useSpeechRecognition({
         setRecognition(recognitionInstance)
       } else {
         console.warn('⚠️ Reconnaissance vocale non supportée par ce navigateur')
+        console.log('Navigateur détecté:', navigator.userAgent)
         setIsSupported(false)
       }
+    } else {
+      console.warn('⚠️ Pas de window (SSR)')
     }
 
     return () => {

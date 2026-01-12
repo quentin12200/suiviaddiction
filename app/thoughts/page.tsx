@@ -123,7 +123,7 @@ export default function ThoughtsPage() {
         <div className={styles.quickAdd}>
           <div className={styles.quickAddHeader}>
             <h2>📝 Note une pensée</h2>
-            {isSupported && (
+            {isSupported ? (
               <button
                 type="button"
                 onClick={toggleRecording}
@@ -143,8 +143,21 @@ export default function ThoughtsPage() {
                   </>
                 )}
               </button>
+            ) : (
+              <div className={styles.notSupported} title="Utilise Chrome, Edge ou Safari pour la reconnaissance vocale">
+                ⚠️ Micro non disponible
+              </div>
             )}
           </div>
+
+          {!isSupported && (
+            <div className={styles.browserHint}>
+              💡 <strong>Astuce:</strong> La reconnaissance vocale fonctionne sur Chrome, Edge et Safari.
+              {typeof window !== 'undefined' && navigator.userAgent.includes('Firefox') && (
+                <span> Firefox ne supporte pas encore cette fonctionnalité.</span>
+              )}
+            </div>
+          )}
 
           {isListening && (
             <div className={styles.listeningIndicator}>

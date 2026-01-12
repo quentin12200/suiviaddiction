@@ -41,28 +41,30 @@ export async function GET() {
     })
 
     // Fonction helper pour calculer les stats d'une période
+    type EntryType = typeof allEntries[number]
+
     const calculatePeriodStats = (entries: typeof allEntries) => {
       // NOUVELLE LOGIQUE : Compter les MOMENTS, pas les jours
       const totalEntries = entries.length
-      const resistanceMoments = entries.filter(e => !e.hasSmoked).length
-      const smokingMoments = entries.filter(e => e.hasSmoked).length
+      const resistanceMoments = entries.filter((e: EntryType) => !e.hasSmoked).length
+      const smokingMoments = entries.filter((e: EntryType) => e.hasSmoked).length
 
-      const totalJoints = entries.reduce((sum, e) => sum + (e.jointCount || 0), 0)
+      const totalJoints = entries.reduce((sum: number, e: EntryType) => sum + (e.jointCount || 0), 0)
       const avgCraving = entries.length > 0
-        ? entries.reduce((sum, e) => sum + e.cravingLevel, 0) / entries.length
+        ? entries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / entries.length
         : 0
 
       // Jours uniques (pour calculer moyenne joints/jour)
-      const uniqueDays = new Set(entries.map(e => e.date.toISOString().split('T')[0])).size
+      const uniqueDays = new Set(entries.map((e: EntryType) => e.date.toISOString().split('T')[0])).size
 
       // Alternatives constructives
       const constructiveAlternatives = entries.filter(
-        e => e.adrenalineEvent && e.adrenalineOutcome === 'réussi'
+        (e: EntryType) => e.adrenalineEvent && e.adrenalineOutcome === 'réussi'
       ).length
 
       // Isolements réussis
       const successfulIsolations = entries.filter(
-        e => e.isolationEvent && e.isolationOutcome === 'rechargé'
+        (e: EntryType) => e.isolationEvent && e.isolationOutcome === 'rechargé'
       ).length
 
       return {
@@ -79,13 +81,13 @@ export async function GET() {
     }
 
     // Filtrer par période
-    const lastWeekEntries = allEntries.filter(e => e.date >= weekAgo)
+    const lastWeekEntries = allEntries.filter((e: EntryType) => e.date >= weekAgo)
     const previousWeekEntries = allEntries.filter(
-      e => e.date >= twoWeeksAgo && e.date < weekAgo
+      (e: EntryType) => e.date >= twoWeeksAgo && e.date < weekAgo
     )
-    const lastMonthEntries = allEntries.filter(e => e.date >= monthAgo)
+    const lastMonthEntries = allEntries.filter((e: EntryType) => e.date >= monthAgo)
     const previousMonthEntries = allEntries.filter(
-      e => e.date >= twoMonthsAgo && e.date < monthAgo
+      (e: EntryType) => e.date >= twoMonthsAgo && e.date < monthAgo
     )
     const last3MonthsEntries = allEntries
 

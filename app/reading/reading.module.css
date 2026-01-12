@@ -4,12 +4,43 @@
   padding: 30px 20px;
 }
 
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .title {
   font-size: 36px;
   font-weight: 700;
   color: #333;
-  margin-bottom: 24px;
-  text-align: center;
+  margin: 0;
+}
+
+.aiRecommendButton {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.aiRecommendButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.aiRecommendButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .legend {
@@ -292,14 +323,176 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* AI Recommendations Panel */
+.aiRecommendationsPanel {
+  background: linear-gradient(135deg, #f8f9ff 0%, #fff3f8 100%);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 32px;
+  border: 2px solid #667eea30;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+}
+
+.aiPanelTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aiLoading {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.aiContent {
+  line-height: 1.8;
+  font-size: 15px;
+  color: #333;
+}
+
+.aiContent p {
+  margin: 12px 0;
+}
+
+.aiBold {
+  font-weight: 700;
+  color: #333;
+  margin: 16px 0 8px 0 !important;
+}
+
+.aiHighlight {
+  background: #fff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  margin: 12px 0 !important;
+}
+
+/* AI Insights Buttons */
+.aiInsightsButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.aiInsightBtn {
+  padding: 8px 14px;
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.aiInsightBtn:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.aiInsightBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.aiInsightBtnActive {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.aiInsightBtnActive:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+  color: white !important;
+}
+
+/* AI Insight Content */
+.aiInsightContent {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #fff3f8 100%);
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid #667eea30;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.aiInsightText {
+  line-height: 1.7;
+  font-size: 14px;
+  color: #333;
+}
+
+.aiInsightText p {
+  margin: 10px 0;
+}
+
+.aiInsightText .aiBold {
+  font-weight: 700;
+  color: #333;
+  margin: 14px 0 6px 0 !important;
+}
+
+.aiInsightText .aiHighlight {
+  background: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+  margin: 10px 0 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
     padding: 20px 15px;
   }
 
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .title {
     font-size: 28px;
+  }
+
+  .aiRecommendButton {
+    width: 100%;
   }
 
   .booksGrid {
@@ -308,5 +501,18 @@
 
   .modalContent {
     padding: 24px;
+  }
+
+  .aiInsightsButtons {
+    gap: 6px;
+  }
+
+  .aiInsightBtn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .aiRecommendationsPanel {
+    padding: 20px;
   }
 }

@@ -21,13 +21,34 @@ export async function GET() {
 
     type EntryType = typeof recentEntries[number]
 
+    // Grouper les entrées par jour unique
+    const entriesByDay = new Map<string, EntryType[]>()
+    for (const entry of recentEntries) {
+      const dateKey = entry.date.toISOString().split('T')[0]
+      if (!entriesByDay.has(dateKey)) {
+        entriesByDay.set(dateKey, [])
+      }
+      entriesByDay.get(dateKey)!.push(entry)
+    }
+
+    // Calculer le nombre de JOURS UNIQUES (pas d'entrées)
+    let daysWithSmoking = 0
+    let daysWithoutSmoking = 0
+
+    for (const [_, dayEntries] of Array.from(entriesByDay.entries())) {
+      const dayHadSmoking = dayEntries.some(e => e.hasSmoked)
+      if (dayHadSmoking) {
+        daysWithSmoking++
+      } else {
+        daysWithoutSmoking++
+      }
+    }
+
     // Calculer des statistiques précises
     const totalJoints = recentEntries
       .filter((e: EntryType) => e.hasSmoked)
       .reduce((sum: number, e: EntryType) => sum + e.jointCount, 0)
 
-    const daysWithSmoking = recentEntries.filter((e: EntryType) => e.hasSmoked).length
-    const daysWithoutSmoking = recentEntries.filter((e: EntryType) => !e.hasSmoked).length
     const avgCraving = recentEntries.length > 0
       ? recentEntries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / recentEntries.length
       : 0

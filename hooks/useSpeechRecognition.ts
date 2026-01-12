@@ -71,6 +71,13 @@ export function useSpeechRecognition({
 
         recognitionInstance.onerror = (event: any) => {
           console.error('❌ Erreur reconnaissance vocale:', event.error)
+
+          // En mode continu, ignorer l'erreur "no-speech" car les pauses sont normales
+          if (continuous && event.error === 'no-speech') {
+            console.log('ℹ️ Pause détectée (mode continu) - c\'est normal!')
+            return
+          }
+
           setIsListening(false)
 
           const errorMessages: Record<string, string> = {

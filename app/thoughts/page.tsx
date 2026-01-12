@@ -35,7 +35,7 @@ export default function ThoughtsPage() {
     onError: (error) => {
       alert(`❌ ${error}`)
     },
-    continuous: false,
+    continuous: true, // Mode continu - ne s'arrête pas tout seul!
     language: 'fr-FR',
   })
 
@@ -162,7 +162,7 @@ export default function ThoughtsPage() {
           {isListening && (
             <div className={styles.listeningIndicator}>
               <span className={styles.pulse}></span>
-              <span>🎤 J'écoute... Parle maintenant!</span>
+              <span>🎤 J'écoute... Prends ton temps! Clique "🔴 Arrêter" quand tu as fini.</span>
             </div>
           )}
 

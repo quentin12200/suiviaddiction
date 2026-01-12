@@ -45,6 +45,8 @@ export default function Navigation() {
       title: 'PROGRESSION',
       items: [
         { href: '/goals', label: 'Objectifs', icon: '🎯' },
+        { href: '/habits', label: 'Habitudes', icon: '🎯' },
+        { href: '/habits/tracker', label: 'Tracker', icon: '✅' },
         { href: '/discipline', label: 'Discipline', icon: '⚔️' },
         { href: '/strategies', label: 'Stratégies', icon: '🛡️' },
         { href: '/reading', label: 'Lectures', icon: '📚' },

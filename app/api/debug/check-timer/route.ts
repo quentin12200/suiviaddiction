@@ -8,7 +8,7 @@ export async function GET() {
       orderBy: [
         { date: 'desc' },
         { time: 'desc' },
-      },
+      ],
       select: {
         id: true,
         date: true,

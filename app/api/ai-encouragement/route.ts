@@ -35,7 +35,7 @@ export async function GET() {
     let daysWithSmoking = 0
     let daysWithoutSmoking = 0
 
-    for (const [_, dayEntries] of entriesByDay) {
+    for (const [_, dayEntries] of Array.from(entriesByDay.entries())) {
       const dayHadSmoking = dayEntries.some(e => e.hasSmoked)
       if (dayHadSmoking) {
         daysWithSmoking++

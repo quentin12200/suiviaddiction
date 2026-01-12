@@ -12,6 +12,12 @@ interface AtomicHabit {
   duration: number
   trackingMethod: string
   replacesAddiction: boolean
+  stats?: {
+    currentStreak: number
+    longestStreak: number
+    totalCompletions: number
+    completionRate: number
+  }
 }
 
 interface HabitCompletion {

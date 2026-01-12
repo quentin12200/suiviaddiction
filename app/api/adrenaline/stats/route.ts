@@ -14,7 +14,10 @@ export async function GET() {
         adrenalineEvent: true,
         adrenalineType: 'risque',
       },
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
       select: { date: true, time: true },
     })
 
@@ -38,16 +41,18 @@ export async function GET() {
       },
     })
 
+    type AdrenalineEvent = typeof allAdrenalineEvents[number]
+
     // Compter par type
     const byType = {
-      risque: allAdrenalineEvents.filter(e => e.adrenalineType === 'risque').length,
-      échappatoire: allAdrenalineEvents.filter(e => e.adrenalineType === 'échappatoire').length,
-      alternative: allAdrenalineEvents.filter(e => e.adrenalineType === 'alternative').length,
+      risque: allAdrenalineEvents.filter((e: AdrenalineEvent) => e.adrenalineType === 'risque').length,
+      échappatoire: allAdrenalineEvents.filter((e: AdrenalineEvent) => e.adrenalineType === 'échappatoire').length,
+      alternative: allAdrenalineEvents.filter((e: AdrenalineEvent) => e.adrenalineType === 'alternative').length,
     }
 
     // Compter par déclencheur
     const triggerCounts: Record<string, number> = {}
-    allAdrenalineEvents.forEach(event => {
+    allAdrenalineEvents.forEach((event: AdrenalineEvent) => {
       if (event.adrenalineTrigger) {
         triggerCounts[event.adrenalineTrigger] = (triggerCounts[event.adrenalineTrigger] || 0) + 1
       }

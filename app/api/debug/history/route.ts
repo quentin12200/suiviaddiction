@@ -9,7 +9,10 @@ export async function GET(request: NextRequest) {
     if (!entryId) {
       // Retourner les 5 dernières entrées
       const entries = await prisma.entry.findMany({
-        orderBy: { date: 'desc' },
+        orderBy: [
+          { date: 'desc' },
+          { time: 'desc' },
+        ],
         take: 5,
         select: {
           id: true,
@@ -20,10 +23,12 @@ export async function GET(request: NextRequest) {
         }
       })
 
+      type EntryType = typeof entries[number]
+
       return NextResponse.json({
         message: 'Dernières 5 entrées',
         count: entries.length,
-        entries: entries.map(e => ({
+        entries: entries.map((e: EntryType) => ({
           id: e.id,
           viewUrl: `/entry/${e.id}`,
           apiUrl: `/api/entries/${e.id}`,

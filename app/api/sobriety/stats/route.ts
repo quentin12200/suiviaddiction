@@ -28,7 +28,7 @@ export async function GET() {
     console.log('🔍 Sobriety stats - Total entries checked:', allEntries.length)
 
     // Convertir toutes les entrées avec timestamps
-    const entriesWithTimestamps = allEntries.map(entry => {
+    const entriesWithTimestampsMapped = allEntries.map(entry => {
       try {
         const dateStr = entry.date.toISOString().split('T')[0]
         const rawTime = entry.jointTime || entry.time
@@ -66,7 +66,10 @@ export async function GET() {
         console.error('❌ Error processing entry:', entry.id, error)
         return null
       }
-    }).filter(Boolean) as NonNullable<typeof entriesWithTimestamps[number]>[]
+    })
+
+    // Filter out null values
+    const entriesWithTimestamps = entriesWithTimestampsMapped.filter((e): e is NonNullable<typeof e> => e !== null)
 
     // Trier par timestamp décroissant (plus récent en premier)
     const sorted = entriesWithTimestamps.sort((a, b) => b.timestamp - a.timestamp)

@@ -21,8 +21,10 @@ export async function GET() {
       take: 20,
     })
 
+    type EntryType = typeof last20[number]
+
     // Convertir avec timestamps
-    const withTimestamps = last20.map(entry => {
+    const withTimestamps = last20.map((entry: EntryType) => {
       const dateStr = entry.date.toISOString().split('T')[0]
       const rawTime = entry.jointTime || entry.time
       const fullDateTime = new Date(`${dateStr}T${rawTime}:00`)
@@ -41,15 +43,19 @@ export async function GET() {
       }
     })
 
+    type WithTimestamp = typeof withTimestamps[number]
+
     // Trier par timestamp
-    const sorted = withTimestamps.sort((a, b) => b.timestampRaw - a.timestampRaw)
+    const sorted = withTimestamps.sort((a: WithTimestamp, b: WithTimestamp) => b.timestampRaw - a.timestampRaw)
+
+    type SortedEntry = typeof sorted[number]
 
     // Trouver la première entrée fumée
-    const lastSmoked = sorted.find(e => e.hasSmoked === true)
+    const lastSmoked = sorted.find((e: SortedEntry) => e.hasSmoked === true)
 
     // Compter combien ont fumé vs résisté
-    const smokedCount = sorted.filter(e => e.hasSmoked).length
-    const resistedCount = sorted.filter(e => !e.hasSmoked).length
+    const smokedCount = sorted.filter((e: SortedEntry) => e.hasSmoked).length
+    const resistedCount = sorted.filter((e: SortedEntry) => !e.hasSmoked).length
 
     return NextResponse.json({
       success: true,
@@ -58,7 +64,7 @@ export async function GET() {
       smokedCount,
       resistedCount,
       allEntries: sorted,
-      entriesSummary: sorted.map(e => ({
+      entriesSummary: sorted.map((e: SortedEntry) => ({
         id: e.id,
         date: e.date,
         time: e.time,

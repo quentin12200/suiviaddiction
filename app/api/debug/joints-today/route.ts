@@ -19,23 +19,33 @@ export async function GET(request: NextRequest) {
           lt: tomorrowUTC,
         },
       },
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
     })
 
-    const jointsCountUTC = entriesUTC.reduce((sum, entry) => {
+    type UTCEntryType = typeof entriesUTC[number]
+
+    const jointsCountUTC = entriesUTC.reduce((sum: number, entry: UTCEntryType) => {
       return sum + (entry.hasSmoked ? entry.jointCount : 0)
     }, 0)
 
     // Méthode 2: Toutes les entrées pour voir la date
     const allEntries = await prisma.entry.findMany({
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
       take: 10,
     })
+
+    type AllEntryType = typeof allEntries[number]
 
     // Méthode 3: Compter manuellement pour aujourd'hui (date string)
     const todayDateString = now.toISOString().split('T')[0] // "2026-01-10"
 
-    const manualCount = allEntries.reduce((sum, entry) => {
+    const manualCount = allEntries.reduce((sum: number, entry: AllEntryType) => {
       const entryDateString = entry.date.toISOString().split('T')[0]
       if (entryDateString === todayDateString && entry.hasSmoked) {
         return sum + entry.jointCount
@@ -57,7 +67,7 @@ export async function GET(request: NextRequest) {
       method1_UTC: {
         entriesFound: entriesUTC.length,
         jointsCount: jointsCountUTC,
-        entries: entriesUTC.map(e => ({
+        entries: entriesUTC.map((e: UTCEntryType) => ({
           id: e.id,
           date: e.date.toISOString(),
           time: e.time,
@@ -69,8 +79,8 @@ export async function GET(request: NextRequest) {
         entriesChecked: allEntries.length,
         jointsCount: manualCount,
         todayEntries: allEntries
-          .filter(e => e.date.toISOString().split('T')[0] === todayDateString)
-          .map(e => ({
+          .filter((e: AllEntryType) => e.date.toISOString().split('T')[0] === todayDateString)
+          .map((e: AllEntryType) => ({
             id: e.id,
             date: e.date.toISOString(),
             time: e.time,
@@ -78,7 +88,7 @@ export async function GET(request: NextRequest) {
             jointCount: e.jointCount,
           })),
       },
-      allRecentEntries: allEntries.map(e => ({
+      allRecentEntries: allEntries.map((e: AllEntryType) => ({
         id: e.id,
         date: e.date.toISOString(),
         dateString: e.date.toISOString().split('T')[0],

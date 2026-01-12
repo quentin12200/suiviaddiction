@@ -21,30 +21,10 @@ export async function GET() {
 
     type EntryType = typeof recentEntries[number]
 
-    // Grouper les entrées par jour unique
-    const entriesByDay = new Map<string, EntryType[]>()
-    for (const entry of recentEntries) {
-      const dateKey = entry.date.toISOString().split('T')[0]
-      if (!entriesByDay.has(dateKey)) {
-        entriesByDay.set(dateKey, [])
-      }
-      entriesByDay.get(dateKey)!.push(entry)
-    }
-
-    // Calculer le nombre de JOURS UNIQUES (pas d'entrées)
-    let daysWithSmoking = 0
-    let daysWithoutSmoking = 0
-
-    for (const [_, dayEntries] of Array.from(entriesByDay.entries())) {
-      const dayHadSmoking = dayEntries.some(e => e.hasSmoked)
-      if (dayHadSmoking) {
-        daysWithSmoking++
-      } else {
-        daysWithoutSmoking++
-      }
-    }
-
-    // Calculer des statistiques précises
+    // NOUVELLE LOGIQUE : Compter les MOMENTS, pas les jours
+    const totalEntries = recentEntries.length
+    const smokingMoments = recentEntries.filter((e: EntryType) => e.hasSmoked).length
+    const resistanceMoments = recentEntries.filter((e: EntryType) => !e.hasSmoked).length
     const totalJoints = recentEntries
       .filter((e: EntryType) => e.hasSmoked)
       .reduce((sum: number, e: EntryType) => sum + e.jointCount, 0)
@@ -54,18 +34,23 @@ export async function GET() {
       : 0
 
     // Construire le prompt pour ChatGPT
-    const prompt = `Tu es un coach bienveillant qui aide les personnes à réduire leur consommation de cannabis.
+    const prompt = `Tu es un coach bienveillant qui aide les personnes à réduir leur consommation de cannabis.
 
 Voici les statistiques RÉELLES des 7 derniers jours de l'utilisateur :
+- Nombre total d'ENTRÉES enregistrées : ${totalEntries}
+- Nombre de MOMENTS où il a fumé : ${smokingMoments}
+- Nombre de MOMENTS DE RÉSISTANCE (où il n'a pas fumé) : ${resistanceMoments}
 - Nombre total de joints consommés : ${totalJoints}
-- Nombre de jours OÙ il a fumé : ${daysWithSmoking} jour(s)
-- Nombre de jours SANS fumer : ${daysWithoutSmoking} jour(s)
 - Niveau moyen d'envie : ${avgCraving.toFixed(1)}/10
-- Nombre d'entrées enregistrées : ${recentEntries.length}
 
-IMPORTANT : Base ton message UNIQUEMENT sur ces chiffres réels. Si l'utilisateur a fumé tous les jours (${daysWithSmoking} jours avec consommation), ne dis PAS qu'il n'a pas fumé. Sois honnête et encourage les progrès réels ou la conscience de suivre sa consommation.
+IMPORTANT :
+- L'utilisateur fait PLUSIEURS entrées PAR JOUR (pas une par jour)
+- Il fume TOUS LES JOURS mais il ESPACE ses consommations
+- Son progrès = AUGMENTER le nombre de moments de résistance
+- NE parle PAS de "jours sans fumer" car ça n'existe pas pour lui
+- Parle de ses MOMENTS DE RÉSISTANCE et de l'ESPACEMENT entre joints
 
-Génère un message d'encouragement personnalisé et motivant (maximum 3 phrases courtes). Sois positif, reconnaissant des efforts RÉELS, et donne un conseil pratique basé sur ces statistiques.`
+Génère un message d'encouragement personnalisé (maximum 3 phrases courtes). Valorise ses moments de résistance et encourage-le à continuer d'espacer ses consommations.`
 
     // Appeler l'API OpenAI
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -103,7 +88,7 @@ Génère un message d'encouragement personnalisé et motivant (maximum 3 phrases
       encouragement,
       stats: {
         totalJoints,
-        daysWithoutSmoking,
+        resistanceMoments,
         avgCraving: avgCraving.toFixed(1),
       },
     })

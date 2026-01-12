@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    // Prendre les 10 dernières entrées
-    const last10 = await prisma.entry.findMany({
+    // Prendre les 20 dernières entrées pour avoir plus de contexte
+    const last20 = await prisma.entry.findMany({
       orderBy: [
         { date: 'desc' },
         { time: 'desc' },
@@ -16,46 +16,66 @@ export async function GET() {
         jointTime: true,
         hasSmoked: true,
         jointCount: true,
+        createdAt: true,
       },
-      take: 10,
+      take: 20,
     })
 
+    type EntryType = typeof last20[number]
+
     // Convertir avec timestamps
-    const withTimestamps = last10.map(entry => {
+    const withTimestamps = last20.map((entry: EntryType) => {
       const dateStr = entry.date.toISOString().split('T')[0]
       const rawTime = entry.jointTime || entry.time
       const fullDateTime = new Date(`${dateStr}T${rawTime}:00`)
 
       return {
-        id: entry.id,
+        id: entry.id.substring(0, 12),
         date: dateStr,
         time: entry.time,
         jointTime: entry.jointTime,
+        usedTime: rawTime,
         hasSmoked: entry.hasSmoked,
         jointCount: entry.jointCount,
+        createdAt: entry.createdAt.toLocaleString('fr-FR'),
         timestamp: fullDateTime.toLocaleString('fr-FR'),
         timestampRaw: fullDateTime.getTime(),
       }
     })
 
+    type WithTimestamp = typeof withTimestamps[number]
+
     // Trier par timestamp
-    const sorted = withTimestamps.sort((a, b) => b.timestampRaw - a.timestampRaw)
+    const sorted = withTimestamps.sort((a: WithTimestamp, b: WithTimestamp) => b.timestampRaw - a.timestampRaw)
+
+    type SortedEntry = typeof sorted[number]
 
     // Trouver la première entrée fumée
-    const lastSmoked = sorted.find(e => e.hasSmoked === true)
+    const lastSmoked = sorted.find((e: SortedEntry) => e.hasSmoked === true)
+
+    // Compter combien ont fumé vs résisté
+    const smokedCount = sorted.filter((e: SortedEntry) => e.hasSmoked).length
+    const resistedCount = sorted.filter((e: SortedEntry) => !e.hasSmoked).length
 
     return NextResponse.json({
       success: true,
-      message: 'Voici les 10 dernières entrées et la détection',
+      message: `Voici les ${sorted.length} dernières entrées triées par timestamp`,
       totalChecked: sorted.length,
-      entries: sorted.map(e => ({
+      smokedCount,
+      resistedCount,
+      allEntries: sorted,
+      entriesSummary: sorted.map((e: SortedEntry) => ({
+        id: e.id,
         date: e.date,
         time: e.time,
+        usedTime: e.usedTime,
         hasSmoked: e.hasSmoked ? '🚬 OUI' : '✅ NON',
         jointCount: e.jointCount,
+        createdAt: e.createdAt,
         timestamp: e.timestamp,
       })),
       detectedLastSmoked: lastSmoked ? {
+        id: lastSmoked.id,
         date: lastSmoked.date,
         time: lastSmoked.jointTime || lastSmoked.time,
         timestamp: lastSmoked.timestamp,

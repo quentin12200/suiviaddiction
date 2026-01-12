@@ -7,11 +7,15 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     const entries = await prisma.entry.findMany({
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
       take: 50,
     })
 
-    const analysis = entries.map(e => ({
+    type EntryType = typeof entries[number]
+    const analysis = entries.map((e: EntryType) => ({
       id: e.id,
       date: e.date.toISOString().split('T')[0],
       time: e.time,

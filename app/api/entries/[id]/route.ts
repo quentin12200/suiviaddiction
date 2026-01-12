@@ -26,7 +26,8 @@ export async function GET(
         select: { id: true },
         take: 10,
       })
-      console.log('  IDs existants (10 premiers):', allIds.map(e => e.id))
+      type IdEntry = typeof allIds[number]
+      console.log('  IDs existants (10 premiers):', allIds.map((e: IdEntry) => e.id))
 
       return NextResponse.json(
         { success: false, error: 'Entrée non trouvée', searchedId: params.id },

@@ -27,33 +27,69 @@ export async function GET() {
 
     console.log('🔍 Sobriety stats - Total entries checked:', allEntries.length)
 
-    // Convertir toutes les entrées avec timestamps
-    const entriesWithTimestamps = allEntries.map(entry => {
-      const dateStr = entry.date.toISOString().split('T')[0]
-      const rawTime = entry.jointTime || entry.time
-      const timeParts = rawTime.split(':')
-      const timeStr = `${timeParts[0]}:${timeParts[1]}`
-      const fullDateTime = new Date(`${dateStr}T${timeStr}:00`)
-      const timestamp = fullDateTime.getTime()
+    type EntryType = typeof allEntries[number]
 
-      return {
-        ...entry,
-        dateStr,
-        timeStr,
-        timestamp,
+    // Convertir toutes les entrées avec timestamps
+    const entriesWithTimestampsMapped = allEntries.map((entry: EntryType) => {
+      try {
+        const dateStr = entry.date.toISOString().split('T')[0]
+        const rawTime = entry.jointTime || entry.time
+
+        // Validation: s'assurer que rawTime est bien au format HH:MM
+        if (!rawTime || typeof rawTime !== 'string') {
+          console.error('❌ Invalid time format for entry:', entry.id, rawTime)
+          return null
+        }
+
+        const timeParts = rawTime.split(':')
+        if (timeParts.length < 2) {
+          console.error('❌ Time missing parts for entry:', entry.id, rawTime)
+          return null
+        }
+
+        const timeStr = `${timeParts[0].padStart(2, '0')}:${timeParts[1].padStart(2, '0')}`
+        const fullDateTime = new Date(`${dateStr}T${timeStr}:00`)
+
+        // Vérifier que la date est valide
+        if (isNaN(fullDateTime.getTime())) {
+          console.error('❌ Invalid datetime for entry:', entry.id, dateStr, timeStr)
+          return null
+        }
+
+        const timestamp = fullDateTime.getTime()
+
+        return {
+          ...entry,
+          dateStr,
+          timeStr,
+          timestamp,
+        }
+      } catch (error) {
+        console.error('❌ Error processing entry:', entry.id, error)
+        return null
       }
     })
 
+    type MappedEntry = typeof entriesWithTimestampsMapped[number]
+
+    // Filter out null values
+    const entriesWithTimestamps = entriesWithTimestampsMapped.filter((e: MappedEntry): e is NonNullable<typeof e> => e !== null)
+
+    type WithTimestamp = typeof entriesWithTimestamps[number]
+
     // Trier par timestamp décroissant (plus récent en premier)
-    const sorted = entriesWithTimestamps.sort((a, b) => b.timestamp - a.timestamp)
+    const sorted = entriesWithTimestamps.sort((a: WithTimestamp, b: WithTimestamp) => b.timestamp - a.timestamp)
 
     // Chercher la PREMIÈRE entrée où hasSmoked=true
-    const lastJoint = sorted.find(entry => entry.hasSmoked === true)
+    const lastJoint = sorted.find((entry: WithTimestamp) => entry.hasSmoked === true)
 
-    console.log('🔍 First 5 entries:', sorted.slice(0, 5).map(e => ({
+    console.log('🔍 First 10 entries (sorted by timestamp):', sorted.slice(0, 10).map((e: WithTimestamp) => ({
+      id: e.id.substring(0, 8),
       date: e.dateStr,
       time: e.timeStr,
       hasSmoked: e.hasSmoked,
+      jointCount: e.jointCount,
+      timestamp: new Date(e.timestamp).toLocaleString('fr-FR'),
     })))
 
     if (!lastJoint) {

@@ -32,10 +32,15 @@ export async function POST(request: NextRequest) {
 
     // Récupérer toutes les entrées et filtrer par date
     const allEntries = await prisma.entry.findMany({
-      orderBy: { date: 'asc' },
+      orderBy: [
+        { date: 'asc' },
+        { time: 'asc' },
+      ],
     })
 
-    const todayEntries = allEntries.filter(entry => {
+    type EntryType = typeof allEntries[number]
+
+    const todayEntries = allEntries.filter((entry: EntryType) => {
       const entryDateString = entry.date.toISOString().split('T')[0]
       return entryDateString === date
     })
@@ -45,7 +50,7 @@ export async function POST(request: NextRequest) {
     // Générer des questions provocatrices
     const challenges: any[] = []
 
-    todayEntries.forEach((entry: any) => {
+    todayEntries.forEach((entry: EntryType) => {
       // QUESTIONS ISOLEMENT (si event isolement)
       if (entry.isolationEvent) {
         // Si isolement SANS plan → Destructif

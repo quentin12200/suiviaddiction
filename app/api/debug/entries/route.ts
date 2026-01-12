@@ -9,7 +9,10 @@ export async function GET() {
 
     // Récupérer les 10 dernières entrées
     const allEntries = await prisma.entry.findMany({
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
       take: 10,
       select: {
         id: true,
@@ -38,7 +41,10 @@ export async function GET() {
       }
     })
 
-    const totalJoints = todayEntries.reduce((sum, e) => sum + (e.hasSmoked ? e.jointCount : 0), 0)
+    type TodayEntryType = typeof todayEntries[number]
+    type AllEntryType = typeof allEntries[number]
+
+    const totalJoints = todayEntries.reduce((sum: number, e: TodayEntryType) => sum + (e.hasSmoked ? e.jointCount : 0), 0)
 
     return NextResponse.json({
       serverInfo: {
@@ -55,14 +61,14 @@ export async function GET() {
         todayEntriesFound: todayEntries.length,
         totalJointsToday: totalJoints,
       },
-      todayEntries: todayEntries.map(e => ({
+      todayEntries: todayEntries.map((e: TodayEntryType) => ({
         id: e.id,
         date: e.date.toISOString(),
         time: e.time,
         hasSmoked: e.hasSmoked,
         jointCount: e.jointCount,
       })),
-      last10Entries: allEntries.map(e => ({
+      last10Entries: allEntries.map((e: AllEntryType) => ({
         id: e.id,
         date: e.date.toISOString(),
         time: e.time,

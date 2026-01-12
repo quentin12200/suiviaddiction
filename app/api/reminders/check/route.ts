@@ -46,9 +46,10 @@ export async function GET() {
           gte: thirtyDaysAgo,
         },
       },
-      orderBy: {
-        date: 'desc',
-      },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
       select: {
         date: true,
         time: true,
@@ -59,11 +60,13 @@ export async function GET() {
       },
     })
 
+    type EntryType = typeof recentEntries[number]
+
     // Analyser les heures où tu fumes habituellement
     const smokingByHour: Record<number, number> = {}
     recentEntries
-      .filter(e => e.hasSmoked && e.jointTime)
-      .forEach(entry => {
+      .filter((e: EntryType) => e.hasSmoked && e.jointTime)
+      .forEach((entry: EntryType) => {
         const entryHour = parseInt(entry.jointTime!.split(':')[0])
         smokingByHour[entryHour] = (smokingByHour[entryHour] || 0) + 1
       })
@@ -86,7 +89,7 @@ export async function GET() {
 
     // Détecter un pattern de rechute (3+ jours fumés consécutifs récemment)
     const last7Days = recentEntries.slice(0, 7)
-    const smokingDays = last7Days.filter(e => e.hasSmoked).length
+    const smokingDays = last7Days.filter((e: EntryType) => e.hasSmoked).length
 
     if (smokingDays >= 5) {
       reminders.push({
@@ -127,8 +130,8 @@ export async function GET() {
     // Analyser les triggers récurrents
     const triggerCounts: Record<string, number> = {}
     recentEntries
-      .filter(e => e.hasSmoked && e.trigger)
-      .forEach(entry => {
+      .filter((e: EntryType) => e.hasSmoked && e.trigger)
+      .forEach((entry: EntryType) => {
         if (entry.trigger) {
           triggerCounts[entry.trigger] = (triggerCounts[entry.trigger] || 0) + 1
         }
@@ -151,7 +154,7 @@ export async function GET() {
     const dayOfWeek = now.getDay()
     if (dayOfWeek === 5 && hour >= 17) {
       const weekendSmokingCount = recentEntries
-        .filter(e => {
+        .filter((e: EntryType) => {
           const entryDay = new Date(e.date).getDay()
           return (entryDay === 0 || entryDay === 6) && e.hasSmoked
         }).length

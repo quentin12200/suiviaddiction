@@ -35,35 +35,37 @@ export async function GET() {
       },
     })
 
+    type IsolationEvent = typeof allIsolationEvents[number]
+
     // Compter constructifs vs destructifs
-    const withPlan = allIsolationEvents.filter(e => e.isolationPlanned).length
-    const withoutPlan = allIsolationEvents.filter(e => !e.isolationPlanned).length
+    const withPlan = allIsolationEvents.filter((e: IsolationEvent) => e.isolationPlanned).length
+    const withoutPlan = allIsolationEvents.filter((e: IsolationEvent) => !e.isolationPlanned).length
 
     // Compter par résultat
     const outcomes = {
-      rechargé: allIsolationEvents.filter(e => e.isolationOutcome === 'rechargé').length,
-      neutre: allIsolationEvents.filter(e => e.isolationOutcome === 'neutre').length,
-      addictions: allIsolationEvents.filter(e => e.isolationOutcome === 'addictions').length,
-      vide: allIsolationEvents.filter(e => e.isolationOutcome === 'vide').length,
+      rechargé: allIsolationEvents.filter((e: IsolationEvent) => e.isolationOutcome === 'rechargé').length,
+      neutre: allIsolationEvents.filter((e: IsolationEvent) => e.isolationOutcome === 'neutre').length,
+      addictions: allIsolationEvents.filter((e: IsolationEvent) => e.isolationOutcome === 'addictions').length,
+      vide: allIsolationEvents.filter((e: IsolationEvent) => e.isolationOutcome === 'vide').length,
     }
 
     // Compter par raison
     const reasons = {
-      choix: allIsolationEvents.filter(e => e.isolationReason === 'choix').length,
-      fuite: allIsolationEvents.filter(e => e.isolationReason === 'fuite').length,
-      ennui: allIsolationEvents.filter(e => e.isolationReason === 'ennui').length,
-      fatigue: allIsolationEvents.filter(e => e.isolationReason === 'fatigue').length,
-      concentration: allIsolationEvents.filter(e => e.isolationReason === 'concentration').length,
+      choix: allIsolationEvents.filter((e: IsolationEvent) => e.isolationReason === 'choix').length,
+      fuite: allIsolationEvents.filter((e: IsolationEvent) => e.isolationReason === 'fuite').length,
+      ennui: allIsolationEvents.filter((e: IsolationEvent) => e.isolationReason === 'ennui').length,
+      fatigue: allIsolationEvents.filter((e: IsolationEvent) => e.isolationReason === 'fatigue').length,
+      concentration: allIsolationEvents.filter((e: IsolationEvent) => e.isolationReason === 'concentration').length,
     }
 
     // Activités qui ont mené à "rechargé"
     const successfulActivities = allIsolationEvents
-      .filter(e => e.isolationOutcome === 'rechargé' && e.isolationActivity)
-      .map(e => e.isolationActivity)
+      .filter((e: IsolationEvent) => e.isolationOutcome === 'rechargé' && e.isolationActivity)
+      .map((e: IsolationEvent) => e.isolationActivity)
 
     // Corrélation isolement → addictions
     const isolationToAddictions = allIsolationEvents.filter(
-      e => e.isolationOutcome === 'addictions' || (e.hasSmoked && e.isolationEvent)
+      (e: IsolationEvent) => e.isolationOutcome === 'addictions' || (e.hasSmoked && e.isolationEvent)
     ).length
 
     const correlationRate = allIsolationEvents.length > 0

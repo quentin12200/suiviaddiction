@@ -27,8 +27,10 @@ export async function GET() {
 
     console.log('📊 DEBUG - Total entries with hasSmoked=true:', allJoints.length)
 
+    type JointType = typeof allJoints[number]
+
     // Calculer le timestamp pour chaque entrée
-    const withTimestamps = allJoints.map(joint => {
+    const withTimestamps = allJoints.map((joint: JointType) => {
       const dateStr = joint.date.toISOString().split('T')[0]
       const rawTime = joint.jointTime || joint.time
       const timeParts = rawTime.split(':')
@@ -50,8 +52,10 @@ export async function GET() {
       }
     })
 
+    type WithTimestamp = typeof withTimestamps[number]
+
     // Trier par timestamp
-    const sorted = withTimestamps.sort((a, b) => b.timestamp - a.timestamp)
+    const sorted = withTimestamps.sort((a: WithTimestamp, b: WithTimestamp) => b.timestamp - a.timestamp)
 
     const lastJoint = sorted[0]
 
@@ -68,7 +72,7 @@ export async function GET() {
         timestamp: lastJoint.timestamp,
         dateReadable: lastJoint.dateReadable,
       } : null,
-      first10: sorted.slice(0, 10).map(j => ({
+      first10: sorted.slice(0, 10).map((j: WithTimestamp) => ({
         id: j.id,
         date: j.date,
         time: j.time,

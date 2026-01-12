@@ -25,19 +25,21 @@ export async function GET(request: Request) {
       },
     })
 
+    type EntryType = typeof entries[number]
+
     // NOUVELLE LOGIQUE : Compter les MOMENTS, pas les jours
     const totalEntries = entries.length
-    const resistanceMoments = entries.filter(e => !e.hasSmoked).length
-    const smokingMoments = entries.filter(e => e.hasSmoked).length
+    const resistanceMoments = entries.filter((e: EntryType) => !e.hasSmoked).length
+    const smokingMoments = entries.filter((e: EntryType) => e.hasSmoked).length
 
-    const totalJoints = entries.reduce((sum, e) => sum + (e.jointCount || 0), 0)
+    const totalJoints = entries.reduce((sum: number, e: EntryType) => sum + (e.jointCount || 0), 0)
 
     // Jours uniques pour moyenne joints/jour
-    const uniqueDays = new Set(entries.map(e => e.date.toISOString().split('T')[0])).size
+    const uniqueDays = new Set(entries.map((e: EntryType) => e.date.toISOString().split('T')[0])).size
     const avgJointsPerDay = uniqueDays > 0 ? totalJoints / uniqueDays : 0
 
     const avgCraving = entries.length > 0
-      ? entries.reduce((sum, e) => sum + e.cravingLevel, 0) / entries.length
+      ? entries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / entries.length
       : 0
 
     // Calculer la plus longue série de MOMENTS DE RÉSISTANCE consécutifs
@@ -74,7 +76,7 @@ export async function GET(request: Request) {
 
     // Grouper par semaine pour les graphiques
     const weeklyData: Record<string, { joints: number; craving: number; count: number }> = {}
-    entries.forEach(entry => {
+    entries.forEach((entry: EntryType) => {
       const week = getWeekNumber(new Date(entry.date))
       if (!weeklyData[week]) {
         weeklyData[week] = { joints: 0, craving: 0, count: 0 }
@@ -92,19 +94,19 @@ export async function GET(request: Request) {
 
     // Alternatives constructives
     const constructiveAlternatives = entries.filter(
-      e => e.adrenalineEvent && e.adrenalineOutcome === 'réussi'
+      (e: EntryType) => e.adrenalineEvent && e.adrenalineOutcome === 'réussi'
     ).length
 
     // Isolements réussis
     const successfulIsolations = entries.filter(
-      e => e.isolationEvent && e.isolationOutcome === 'rechargé'
+      (e: EntryType) => e.isolationEvent && e.isolationOutcome === 'rechargé'
     ).length
 
     // Triggers les plus fréquents
     const triggerCounts: Record<string, number> = {}
     entries
-      .filter(e => e.hasSmoked && e.trigger)
-      .forEach(entry => {
+      .filter((e: EntryType) => e.hasSmoked && e.trigger)
+      .forEach((entry: EntryType) => {
         if (entry.trigger) {
           triggerCounts[entry.trigger] = (triggerCounts[entry.trigger] || 0) + 1
         }
@@ -118,11 +120,11 @@ export async function GET(request: Request) {
     // États émotionnels les plus fréquents
     const emotionalCounts: Record<string, number> = {}
     entries
-      .filter(e => e.emotionalState && e.emotionalState.trim() !== '')
-      .forEach(entry => {
+      .filter((e: EntryType) => e.emotionalState && e.emotionalState.trim() !== '')
+      .forEach((entry: EntryType) => {
         if (entry.emotionalState) {
-          const states = entry.emotionalState.split(',').map(s => s.trim())
-          states.forEach(state => {
+          const states = entry.emotionalState.split(',').map((s: string) => s.trim())
+          states.forEach((state: string) => {
             if (state) {
               emotionalCounts[state] = (emotionalCounts[state] || 0) + 1
             }

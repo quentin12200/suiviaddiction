@@ -86,6 +86,8 @@ export default function SobrietyCounter() {
       // Cache-busting : timestamp + random pour éviter le cache
       const cacheBuster = `t=${Date.now()}&r=${Math.random()}`
 
+      console.log('🔄 Fetching sobriety stats...', cacheBuster)
+
       const response = await fetch(`/api/sobriety/stats?${cacheBuster}`, {
         cache: 'no-store',
         headers: {
@@ -97,8 +99,16 @@ export default function SobrietyCounter() {
 
       const result = await response.json()
 
+      console.log('📥 Received sobriety stats:', {
+        success: result.success,
+        lastJointDate: result.data?.lastJointDate,
+        lastJointTime: result.data?.lastJointTime,
+        fullResponse: result
+      })
+
       if (result.success) {
         setData(result.data)
+        console.log('✅ Timer updated with:', result.data)
       }
     } catch (error) {
       console.error('Erreur chargement stats sobriété:', error)

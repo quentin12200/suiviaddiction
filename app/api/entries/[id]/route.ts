@@ -140,13 +140,53 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('🗑️ DELETE /api/entries/[id] - Suppression entrée')
+    console.log('  ID à supprimer:', params.id)
+
+    // First, verify the entry exists
+    const existingEntry = await prisma.entry.findUnique({
+      where: { id: params.id },
+    })
+
+    if (!existingEntry) {
+      console.log('  ⚠️ Entrée non trouvée, déjà supprimée?')
+      return NextResponse.json({
+        success: false,
+        error: 'Entrée non trouvée'
+      }, { status: 404 })
+    }
+
+    console.log('  📋 Entrée trouvée:', {
+      id: existingEntry.id.substring(0, 8),
+      date: existingEntry.date.toISOString().split('T')[0],
+      time: existingEntry.time,
+      hasSmoked: existingEntry.hasSmoked,
+    })
+
+    // Delete the entry
     await prisma.entry.delete({
       where: { id: params.id },
     })
 
-    return NextResponse.json({ success: true })
+    console.log('  ✅ Entrée supprimée avec succès')
+
+    // Verify deletion
+    const checkDeleted = await prisma.entry.findUnique({
+      where: { id: params.id },
+    })
+
+    if (checkDeleted) {
+      console.error('  ❌ ERREUR: Entrée toujours présente après suppression!')
+    } else {
+      console.log('  ✅ Vérification: entrée bien supprimée de la base')
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Entrée supprimée avec succès'
+    })
   } catch (error) {
-    console.error('Erreur suppression entrée:', error)
+    console.error('❌ Erreur suppression entrée:', error)
     return NextResponse.json(
       { error: 'Erreur lors de la suppression de l\'entrée' },
       { status: 500 }

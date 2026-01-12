@@ -11,6 +11,8 @@ export async function POST() {
     // Récupérer toutes les souscriptions actives
     const subscriptions = await prisma.pushSubscription.findMany()
 
+    type SubscriptionType = typeof subscriptions[number]
+
     if (subscriptions.length === 0) {
       return NextResponse.json({
         success: false,
@@ -34,7 +36,7 @@ export async function POST() {
     }
 
     // Convertir les souscriptions au format attendu
-    const formattedSubscriptions = subscriptions.map(sub => ({
+    const formattedSubscriptions = subscriptions.map((sub: SubscriptionType) => ({
       endpoint: sub.endpoint,
       keys: {
         p256dh: sub.p256dh,
@@ -50,7 +52,7 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       message: `Notification envoyée à ${subscriptions.length} appareil(s)`,
-      subscriptions: subscriptions.map(sub => ({
+      subscriptions: subscriptions.map((sub: SubscriptionType) => ({
         endpoint: sub.endpoint.substring(0, 50) + '...',
         userAgent: sub.userAgent,
         createdAt: sub.createdAt.toISOString(),

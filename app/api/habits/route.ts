@@ -28,8 +28,10 @@ export async function GET(request: NextRequest) {
 
     // Calculer les streaks pour chaque habitude
     type HabitType = typeof habits[number]
+    type CompletionType = typeof habits[number]['completions'][number]
+
     const habitsWithStats = habits.map((habit: HabitType) => {
-      const completions = habit.completions.filter((c) => c.completed)
+      const completions = habit.completions.filter((c: CompletionType) => c.completed)
       const currentStreak = calculateCurrentStreak(habit.completions)
       const longestStreak = calculateLongestStreak(habit.completions)
       const completionRate = calculateCompletionRate(habit.completions)

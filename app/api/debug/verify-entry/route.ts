@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
         take: 50,
       })
 
-      const todayEntries = allEntries.filter(e => {
+      type EntryType = typeof allEntries[number]
+
+      const todayEntries = allEntries.filter((e: EntryType) => {
         const entryDateStr = e.date.toISOString().split('T')[0]
         return entryDateStr === todayStr
       })
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
         message: 'Toutes les entrées d\'aujourd\'hui',
         todayDate: todayStr,
         totalFound: todayEntries.length,
-        entries: todayEntries.map(e => ({
+        entries: todayEntries.map((e: EntryType) => ({
           id: e.id,
           date: e.date.toISOString().split('T')[0],
           time: e.time,
@@ -55,7 +57,9 @@ export async function GET(request: NextRequest) {
       take: 100,
     })
 
-    const matchingEntries = allEntries.filter(e => {
+    type EntryType2 = typeof allEntries[number]
+
+    const matchingEntries = allEntries.filter((e: EntryType2) => {
       const entryDateStr = e.date.toISOString().split('T')[0]
       const entryTime = e.jointTime || e.time
 
@@ -70,7 +74,7 @@ export async function GET(request: NextRequest) {
       searchCriteria: { time, date },
       totalFound: matchingEntries.length,
       found: matchingEntries.length > 0,
-      entries: matchingEntries.map(e => ({
+      entries: matchingEntries.map((e: EntryType2) => ({
         id: e.id,
         date: e.date.toISOString().split('T')[0],
         time: e.time,

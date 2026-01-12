@@ -81,10 +81,12 @@ export async function POST(
       )
     }
 
+    type CompletionType = typeof habit.completions[number]
+
     // Calculer les stats
     const stats = {
       currentStreak: calculateCurrentStreak(habit.completions),
-      totalCompletions: habit.completions.filter((c) => c.completed).length,
+      totalCompletions: habit.completions.filter((c: CompletionType) => c.completed).length,
     }
 
     return NextResponse.json({

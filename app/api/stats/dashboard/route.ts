@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const thirtyDaysAgoString = thirtyDaysAgo.toISOString().split('T')[0]
 
-    const last30DaysEntries = allEntries.filter(entry => {
+    const last30DaysEntries = allEntries.filter((entry: EntryType) => {
       const entryDateString = entry.date.toISOString().split('T')[0]
       return entryDateString >= thirtyDaysAgoString && entryDateString <= todayString
     })
@@ -157,18 +157,20 @@ export async function GET(request: NextRequest) {
     const last30DaysData = groupByDay(last30DaysEntries)
     const allDaysData = groupByDay(allEntries)
 
+    type DayDataType = { date: string; count: number }
+
     // Calculer les moyennes
     const avg7Days =
-      last7DaysData.reduce((sum, d) => sum + d.count, 0) /
+      last7DaysData.reduce((sum: number, d: DayDataType) => sum + d.count, 0) /
       Math.max(last7DaysData.length, 1)
 
     const avgHistorical =
-      allDaysData.reduce((sum, d) => sum + d.count, 0) /
+      allDaysData.reduce((sum: number, d: DayDataType) => sum + d.count, 0) /
       Math.max(allDaysData.length, 1)
 
     // Calculer le niveau moyen de craving sur 7 jours
     const avg7DaysCraving =
-      last7DaysEntries.reduce((sum, e) => sum + e.cravingLevel, 0) /
+      last7DaysEntries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) /
       Math.max(last7DaysEntries.length, 1)
 
     const responseData = {

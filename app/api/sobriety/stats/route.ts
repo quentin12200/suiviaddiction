@@ -7,12 +7,9 @@ import { prisma } from '@/lib/prisma'
  */
 export async function GET() {
   try {
-    // Récupérer les entrées avec joint, triées par date décroissante
-    // On prend TOUTES les entrées où hasSmoked=true, peu importe jointCount
-    const allJoints = await prisma.entry.findMany({
-      where: {
-        hasSmoked: true,
-      },
+    // NOUVELLE APPROCHE SIMPLE : Récupérer TOUTES les entrées récentes
+    // Puis chercher la première où hasSmoked=true
+    const allEntries = await prisma.entry.findMany({
       orderBy: [
         { date: 'desc' },
         { time: 'desc' },
@@ -25,21 +22,42 @@ export async function GET() {
         hasSmoked: true,
         jointCount: true,
       },
-      take: 50,
+      take: 100, // Prendre les 100 dernières entrées pour être sûr
     })
 
-    console.log('🔍 Sobriety stats - Total joints found:', allJoints.length)
-    if (allJoints.length > 0) {
-      console.log('🔍 First 3 joints:', allJoints.slice(0, 3).map(j => ({
-        date: j.date,
-        jointTime: j.jointTime,
-        time: j.time,
-        hasSmoked: j.hasSmoked,
-        jointCount: j.jointCount
-      })))
-    }
+    console.log('🔍 Sobriety stats - Total entries checked:', allEntries.length)
 
-    if (allJoints.length === 0) {
+    // Convertir toutes les entrées avec timestamps
+    const entriesWithTimestamps = allEntries.map(entry => {
+      const dateStr = entry.date.toISOString().split('T')[0]
+      const rawTime = entry.jointTime || entry.time
+      const timeParts = rawTime.split(':')
+      const timeStr = `${timeParts[0]}:${timeParts[1]}`
+      const fullDateTime = new Date(`${dateStr}T${timeStr}:00`)
+      const timestamp = fullDateTime.getTime()
+
+      return {
+        ...entry,
+        dateStr,
+        timeStr,
+        timestamp,
+      }
+    })
+
+    // Trier par timestamp décroissant (plus récent en premier)
+    const sorted = entriesWithTimestamps.sort((a, b) => b.timestamp - a.timestamp)
+
+    // Chercher la PREMIÈRE entrée où hasSmoked=true
+    const lastJoint = sorted.find(entry => entry.hasSmoked === true)
+
+    console.log('🔍 First 5 entries:', sorted.slice(0, 5).map(e => ({
+      date: e.dateStr,
+      time: e.timeStr,
+      hasSmoked: e.hasSmoked,
+    })))
+
+    if (!lastJoint) {
+      console.log('⚠️ No entry with hasSmoked=true found')
       return NextResponse.json(
         {
           success: true,
@@ -58,30 +76,10 @@ export async function GET() {
       )
     }
 
-    // Trier par date + heure combinées pour avoir le plus récent
-    const sortedJoints = allJoints
-      .map(joint => {
-        const dateStr = joint.date.toISOString().split('T')[0]
-        const rawTime = joint.jointTime || joint.time
-        const timeParts = rawTime.split(':')
-        const timeStr = `${timeParts[0]}:${timeParts[1]}`
-        const fullDateTime = new Date(`${dateStr}T${timeStr}:00`)
-        const timestamp = fullDateTime.getTime()
-
-        return {
-          ...joint,
-          dateStr,
-          timeStr,
-          timestamp,
-        }
-      })
-      .sort((a, b) => b.timestamp - a.timestamp)
-
-    const lastJoint = sortedJoints[0]
-
-    console.log('✅ Last joint selected:', {
+    console.log('✅ Last joint found:', {
       date: lastJoint.dateStr,
       time: lastJoint.timeStr,
+      hasSmoked: lastJoint.hasSmoked,
       timestamp: new Date(lastJoint.timestamp).toLocaleString('fr-FR')
     })
 

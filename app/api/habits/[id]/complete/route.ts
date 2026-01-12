@@ -89,6 +89,8 @@ export async function POST(
       totalCompletions: habit.completions.filter((c: CompletionType) => c.completed).length,
     }
 
+    // TODO: Sync with Google Calendar (user says it's already connected)
+
     return NextResponse.json({
       success: true,
       completion,

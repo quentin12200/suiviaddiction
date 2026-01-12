@@ -78,6 +78,29 @@ export default function HabitsPage() {
     }
   }
 
+  const initializeRecommendedHabits = async () => {
+    if (!confirm('Cela va créer 4 habitudes recommandées. Continuer ?')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/habits/seed', {
+        method: 'POST',
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`✅ ${data.habits.length} habitudes créées avec succès!`)
+        fetchHabits()
+      } else {
+        alert(`❌ ${data.message}`)
+      }
+    } catch (error) {
+      console.error('Erreur initialisation habitudes:', error)
+      alert('❌ Erreur lors de l\'initialisation')
+    }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
@@ -185,12 +208,22 @@ export default function HabitsPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className={styles.addButton}
-        >
-          {showForm ? '❌ Annuler' : '➕ Nouvelle habitude'}
-        </button>
+        {/* Action Buttons */}
+        <div className={styles.actionButtons}>
+          <button
+            onClick={initializeRecommendedHabits}
+            className={styles.seedButton}
+          >
+            🌱 Initialiser mes habitudes recommandées
+          </button>
+
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className={styles.addButton}
+          >
+            {showForm ? '❌ Annuler' : '➕ Nouvelle habitude'}
+          </button>
+        </div>
 
         {showForm && (
           <div className={styles.formCard}>

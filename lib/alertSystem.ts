@@ -130,18 +130,25 @@ export function analyzePatterns(entries: Entry[]): PatternAnalysis {
     : null
 
   // Calculer les jours consécutifs sans consommation
-  let consecutiveCleanDays = 0
-  const sortedEntries = [...entries].sort((a, b) =>
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  )
-
-  for (const entry of sortedEntries) {
-    if (entry.hasSmoked) break
-    const entryDate = new Date(entry.date).toDateString()
-    const today = new Date().toDateString()
-    if (entryDate === today || consecutiveCleanDays > 0) {
-      consecutiveCleanDays++
+  // Grouper les entrées par jour unique
+  const entriesByDay = new Map<string, Entry[]>()
+  entries.forEach(entry => {
+    const dateKey = new Date(entry.date).toISOString().split('T')[0]
+    if (!entriesByDay.has(dateKey)) {
+      entriesByDay.set(dateKey, [])
     }
+    entriesByDay.get(dateKey)!.push(entry)
+  })
+
+  // Trier les jours du plus récent au plus ancien
+  const sortedDays = Array.from(entriesByDay.entries())
+    .sort((a, b) => b[0].localeCompare(a[0]))
+
+  let consecutiveCleanDays = 0
+  for (const [_, dayEntries] of sortedDays) {
+    // Si au moins une entrée du jour a hasSmoked = true, on arrête
+    if (dayEntries.some(e => e.hasSmoked)) break
+    consecutiveCleanDays++
   }
 
   return {

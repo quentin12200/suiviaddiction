@@ -5,6 +5,15 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import styles from './PDFExport.module.css'
 
+// Extend jsPDF type to include autoTable properties
+declare module 'jspdf' {
+  interface jsPDF {
+    lastAutoTable?: {
+      finalY: number
+    }
+  }
+}
+
 export default function PDFExport() {
   const [loading, setLoading] = useState(false)
   const [period, setPeriod] = useState('30')
@@ -69,7 +78,7 @@ export default function PDFExport() {
         ['Meilleur streak (période)', `${data.summary.bestStreak || 0} jours`],
       ]
 
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: yPos,
         head: [['Indicateur', 'Valeur']],
         body: summaryData,
@@ -82,7 +91,7 @@ export default function PDFExport() {
         },
       })
 
-      yPos = pdf.lastAutoTable.finalY + 10
+      yPos = (pdf.lastAutoTable?.finalY ?? yPos) + 10
 
       // Progression
       pdf.setFontSize(14)
@@ -95,7 +104,7 @@ export default function PDFExport() {
         ['Moments d\'isolement ressourçants', `${data.summary.successfulIsolations || 0}`],
       ]
 
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: yPos,
         head: [['Réalisation', 'Nombre']],
         body: progressData,
@@ -104,7 +113,7 @@ export default function PDFExport() {
         bodyStyles: { fontSize: 9 },
       })
 
-      yPos = pdf.lastAutoTable.finalY + 10
+      yPos = (pdf.lastAutoTable?.finalY ?? yPos) + 10
 
       // Nouvelle page si nécessaire
       if (yPos > pageHeight - 60) {
@@ -124,7 +133,7 @@ export default function PDFExport() {
           `${t.count} fois`,
         ])
 
-        pdf.autoTable({
+        autoTable(pdf, {
           startY: yPos,
           head: [['Déclencheur', 'Fréquence']],
           body: triggerData,
@@ -133,7 +142,7 @@ export default function PDFExport() {
           bodyStyles: { fontSize: 9 },
         })
 
-        yPos = pdf.lastAutoTable.finalY + 10
+        yPos = (pdf.lastAutoTable?.finalY ?? yPos) + 10
       }
 
       // Émotions
@@ -148,7 +157,7 @@ export default function PDFExport() {
           `${e.count} fois`,
         ])
 
-        pdf.autoTable({
+        autoTable(pdf, {
           startY: yPos,
           head: [['État émotionnel', 'Fréquence']],
           body: emotionData,
@@ -157,7 +166,7 @@ export default function PDFExport() {
           bodyStyles: { fontSize: 9 },
         })
 
-        yPos = pdf.lastAutoTable.finalY + 10
+        yPos = (pdf.lastAutoTable?.finalY ?? yPos) + 10
       }
 
       // Nouvelle page pour l'analyse

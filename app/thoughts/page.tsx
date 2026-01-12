@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Navigation from '../components/Navigation'
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import styles from './thoughts.module.css'
 
 interface Thought {
@@ -15,6 +16,28 @@ export default function ThoughtsPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [newThought, setNewThought] = useState('')
+
+  // Reconnaissance vocale
+  const {
+    isListening,
+    isSupported,
+    startListening,
+    stopListening,
+    transcript,
+  } = useSpeechRecognition({
+    onResult: (text) => {
+      // Ajouter le texte reconnu au textarea
+      setNewThought((prev) => {
+        const separator = prev.trim() ? ' ' : ''
+        return prev + separator + text
+      })
+    },
+    onError: (error) => {
+      alert(`❌ ${error}`)
+    },
+    continuous: false,
+    language: 'fr-FR',
+  })
 
   useEffect(() => {
     fetchThoughts()
@@ -66,6 +89,14 @@ export default function ThoughtsPage() {
     }
   }
 
+  const toggleRecording = () => {
+    if (isListening) {
+      stopListening()
+    } else {
+      startListening()
+    }
+  }
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleString('fr-FR', {
@@ -90,12 +121,49 @@ export default function ThoughtsPage() {
 
         {/* Formulaire rapide */}
         <div className={styles.quickAdd}>
-          <h2>📝 Note une pensée</h2>
+          <div className={styles.quickAddHeader}>
+            <h2>📝 Note une pensée</h2>
+            {isSupported && (
+              <button
+                type="button"
+                onClick={toggleRecording}
+                className={`${styles.micButton} ${isListening ? styles.micButtonActive : ''}`}
+                disabled={submitting}
+                title={isListening ? 'Arrêter l\'enregistrement' : 'Parler au lieu d\'écrire'}
+              >
+                {isListening ? (
+                  <>
+                    <span className={styles.micIcon}>🔴</span>
+                    <span className={styles.micText}>Arrêter</span>
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.micIcon}>🎤</span>
+                    <span className={styles.micText}>Parler</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {isListening && (
+            <div className={styles.listeningIndicator}>
+              <span className={styles.pulse}></span>
+              <span>🎤 J'écoute... Parle maintenant!</span>
+            </div>
+          )}
+
+          {transcript && isListening && (
+            <div className={styles.liveTranscript}>
+              <span className={styles.liveLabel}>En cours:</span> {transcript}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className={styles.form}>
             <textarea
               value={newThought}
               onChange={(e) => setNewThought(e.target.value)}
-              placeholder="Qu'est-ce qui te passe par la tête ?"
+              placeholder="Qu'est-ce qui te passe par la tête ? (Écris ou parle 🎤)"
               className={styles.textarea}
               rows={4}
               disabled={submitting}

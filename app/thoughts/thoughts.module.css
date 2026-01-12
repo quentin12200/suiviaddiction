@@ -32,10 +32,129 @@
   margin-bottom: 30px;
 }
 
-.quickAdd h2 {
-  margin-top: 0;
+.quickAddHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.quickAddHeader h2 {
+  margin: 0;
   font-size: 1.5rem;
+}
+
+/* Bouton microphone */
+.micButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.micButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.micButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.micButtonActive {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  animation: pulse-button 1.5s infinite;
+}
+
+@keyframes pulse-button {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+}
+
+.micIcon {
+  font-size: 1.2rem;
+}
+
+.micText {
+  font-size: 0.95rem;
+}
+
+/* Indicateur d'écoute */
+.listeningIndicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #92400e;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pulse {
+  width: 12px;
+  height: 12px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+/* Transcription en direct */
+.liveTranscript {
+  padding: 12px 16px;
+  background: #f0f9ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  color: #1e40af;
+  animation: slideDown 0.3s ease-out;
+}
+
+.liveLabel {
+  font-weight: 700;
+  color: #1e3a8a;
 }
 
 .form {
@@ -163,5 +282,19 @@
   .quickAdd,
   .history {
     padding: 20px;
+  }
+
+  .quickAddHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .micButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .micText {
+    display: inline;
   }
 }

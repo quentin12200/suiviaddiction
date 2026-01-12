@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force this route to be dynamic - never cached
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * API pour récupérer les stats de sobriété
  * - Date et heure du dernier joint

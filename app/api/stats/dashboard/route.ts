@@ -45,13 +45,18 @@ export async function GET(request: NextRequest) {
 
     // Récupérer TOUTES les entrées (on filtre en mémoire avec des strings)
     const allEntries = await prisma.entry.findMany({
-      orderBy: { date: 'desc' },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' },
+      ],
     })
+
+    type EntryType = typeof allEntries[number]
 
     console.log(`📊 Total entries in database: ${allEntries.length}`)
 
     // Filtrer les entrées d'aujourd'hui en comparant les strings
-    const todayEntries = allEntries.filter(entry => {
+    const todayEntries = allEntries.filter((entry: EntryType) => {
       const entryDateString = entry.date.toISOString().split('T')[0]
       return entryDateString === todayString
     })
@@ -63,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     if (todayEntries.length > 0) {
       console.log('\n📋 Today\'s entries details:')
-      todayEntries.forEach((entry, index) => {
+      todayEntries.forEach((entry: EntryType, index: number) => {
         const entryJoints = entry.hasSmoked ? entry.jointCount : 0
         console.log(`  ${index + 1}. ID: ${entry.id}`)
         console.log(`     Date: ${entry.date.toISOString()}`)
@@ -75,13 +80,13 @@ export async function GET(request: NextRequest) {
       console.log('  ⚠️ NO ENTRIES for today!')
       const recentEntries = allEntries.slice(0, 5)
       console.log('\n📋 Last 5 entries in database:')
-      recentEntries.forEach((entry, index) => {
+      recentEntries.forEach((entry: EntryType, index: number) => {
         console.log(`  ${index + 1}. Date: ${entry.date.toISOString()} | Time: ${entry.time} | Smoked: ${entry.hasSmoked} | Count: ${entry.jointCount}`)
       })
     }
 
     // Compter les joints aujourd'hui (MÉTHODE SIMPLE)
-    const todayJointsCount = todayEntries.reduce((sum, entry) => {
+    const todayJointsCount = todayEntries.reduce((sum: number, entry: EntryType) => {
       return sum + (entry.hasSmoked ? entry.jointCount : 0)
     }, 0)
 
@@ -116,7 +121,7 @@ export async function GET(request: NextRequest) {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
     const sevenDaysAgoString = sevenDaysAgo.toISOString().split('T')[0]
 
-    const last7DaysEntries = allEntries.filter(entry => {
+    const last7DaysEntries = allEntries.filter((entry: EntryType) => {
       const entryDateString = entry.date.toISOString().split('T')[0]
       return entryDateString >= sevenDaysAgoString && entryDateString <= todayString
     })

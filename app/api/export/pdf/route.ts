@@ -32,14 +32,14 @@ export async function GET(request: Request) {
     const resistanceMoments = entries.filter((e: EntryType) => !e.hasSmoked).length
     const smokingMoments = entries.filter((e: EntryType) => e.hasSmoked).length
 
-    const totalJoints = entries.reduce((sum, e) => sum + (e.jointCount || 0), 0)
+    const totalJoints = entries.reduce((sum: number, e: EntryType) => sum + (e.jointCount || 0), 0)
 
     // Jours uniques pour moyenne joints/jour
-    const uniqueDays = new Set(entries.map(e => e.date.toISOString().split('T')[0])).size
+    const uniqueDays = new Set(entries.map((e: EntryType) => e.date.toISOString().split('T')[0])).size
     const avgJointsPerDay = uniqueDays > 0 ? totalJoints / uniqueDays : 0
 
     const avgCraving = entries.length > 0
-      ? entries.reduce((sum, e) => sum + e.cravingLevel, 0) / entries.length
+      ? entries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / entries.length
       : 0
 
     // Calculer la plus longue série de MOMENTS DE RÉSISTANCE consécutifs

@@ -27,8 +27,10 @@ export async function GET() {
 
     console.log('🔍 Sobriety stats - Total entries checked:', allEntries.length)
 
+    type EntryType = typeof allEntries[number]
+
     // Convertir toutes les entrées avec timestamps
-    const entriesWithTimestampsMapped = allEntries.map(entry => {
+    const entriesWithTimestampsMapped = allEntries.map((entry: EntryType) => {
       try {
         const dateStr = entry.date.toISOString().split('T')[0]
         const rawTime = entry.jointTime || entry.time
@@ -68,16 +70,20 @@ export async function GET() {
       }
     })
 
+    type MappedEntry = typeof entriesWithTimestampsMapped[number]
+
     // Filter out null values
-    const entriesWithTimestamps = entriesWithTimestampsMapped.filter((e): e is NonNullable<typeof e> => e !== null)
+    const entriesWithTimestamps = entriesWithTimestampsMapped.filter((e: MappedEntry): e is NonNullable<typeof e> => e !== null)
+
+    type WithTimestamp = typeof entriesWithTimestamps[number]
 
     // Trier par timestamp décroissant (plus récent en premier)
-    const sorted = entriesWithTimestamps.sort((a, b) => b.timestamp - a.timestamp)
+    const sorted = entriesWithTimestamps.sort((a: WithTimestamp, b: WithTimestamp) => b.timestamp - a.timestamp)
 
     // Chercher la PREMIÈRE entrée où hasSmoked=true
-    const lastJoint = sorted.find(entry => entry.hasSmoked === true)
+    const lastJoint = sorted.find((entry: WithTimestamp) => entry.hasSmoked === true)
 
-    console.log('🔍 First 10 entries (sorted by timestamp):', sorted.slice(0, 10).map(e => ({
+    console.log('🔍 First 10 entries (sorted by timestamp):', sorted.slice(0, 10).map((e: WithTimestamp) => ({
       id: e.id.substring(0, 8),
       date: e.dateStr,
       time: e.timeStr,

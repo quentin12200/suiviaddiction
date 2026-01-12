@@ -59,7 +59,7 @@ export async function GET() {
 
       // Un jour est "smoking day" si AU MOINS UNE entrée a hasSmoked = true
       let smokingDays = 0
-      for (const [_, dayEntries] of entriesByDay) {
+      for (const [_, dayEntries] of Array.from(entriesByDay.entries())) {
         if (dayEntries.some(e => e.hasSmoked)) {
           smokingDays++
         }

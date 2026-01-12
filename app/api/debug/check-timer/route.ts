@@ -61,7 +61,7 @@ export async function GET() {
         timestamp: lastSmoked.timestamp,
         message: '👆 CETTE ENTRÉE devrait être affichée dans le compteur',
       } : 'AUCUNE ENTRÉE FUMÉE TROUVÉE',
-    }, null, 2) // Pretty print JSON
+    })
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 })
   }

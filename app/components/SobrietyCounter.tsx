@@ -18,6 +18,7 @@ export default function SobrietyCounter() {
     seconds: 0,
     totalMinutes: 0,
   })
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Charger les données
   useEffect(() => {
@@ -72,6 +73,13 @@ export default function SobrietyCounter() {
     const interval = setInterval(updateCounter, 1000)
     return () => clearInterval(interval)
   }, [data])
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true)
+    await fetchData()
+    // Attendre 500ms pour que l'animation soit visible
+    setTimeout(() => setIsRefreshing(false), 500)
+  }
 
   const fetchData = async () => {
     try {
@@ -153,7 +161,41 @@ export default function SobrietyCounter() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h2 className={styles.title}>⏱️ Temps Sans Fumer</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <h2 className={styles.title} style={{ margin: 0 }}>⏱️ Temps Sans Fumer</h2>
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            style={{
+              background: isRefreshing ? '#9ca3af' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              cursor: isRefreshing ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+            }}
+          >
+            <span style={{
+              display: 'inline-block',
+              animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
+            }}>
+              🔄
+            </span>
+            {isRefreshing ? 'Actualisation...' : 'Actualiser'}
+          </button>
+        </div>
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
 
         {/* Compteur principal */}
         <div className={styles.mainCounter}>

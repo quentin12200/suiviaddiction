@@ -8,12 +8,10 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     // Récupérer les entrées avec joint, triées par date décroissante
+    // On prend TOUTES les entrées où hasSmoked=true, peu importe jointCount
     const allJoints = await prisma.entry.findMany({
       where: {
         hasSmoked: true,
-        jointCount: {
-          gt: 0,
-        },
       },
       orderBy: [
         { date: 'desc' },

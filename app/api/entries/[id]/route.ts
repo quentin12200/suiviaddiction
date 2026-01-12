@@ -99,6 +99,39 @@ export async function PUT(
 }
 
 /**
+ * PATCH - Modifier partiellement une entrée (pour fix-entries page)
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json()
+
+    console.log(`🔧 PATCH entry ${params.id}:`, body)
+
+    const entry = await prisma.entry.update({
+      where: { id: params.id },
+      data: {
+        hasSmoked: body.hasSmoked,
+        jointCount: body.jointCount ?? 0,
+        jointTime: body.hasSmoked ? (body.jointTime || null) : null,
+      },
+    })
+
+    console.log(`✅ Entry ${params.id} updated successfully`)
+
+    return NextResponse.json({ success: true, entry })
+  } catch (error) {
+    console.error('Erreur mise à jour entrée:', error)
+    return NextResponse.json(
+      { error: 'Erreur lors de la mise à jour de l\'entrée' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * DELETE - Supprimer une entrée
  */
 export async function DELETE(

@@ -67,7 +67,7 @@ export async function GET() {
         const rawTime = joint.jointTime || joint.time
         const timeParts = rawTime.split(':')
         const timeStr = `${timeParts[0]}:${timeParts[1]}`
-        const fullDateTime = new Date(`${dateStr}T${timeStr}:00.000Z`)
+        const fullDateTime = new Date(`${dateStr}T${timeStr}:00`)
         const timestamp = fullDateTime.getTime()
 
         return {

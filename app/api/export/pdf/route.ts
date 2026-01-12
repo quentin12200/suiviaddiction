@@ -25,9 +25,24 @@ export async function GET(request: Request) {
       },
     })
 
-    // Calculer les stats globales
-    const totalDays = entries.length
-    const smokingDays = entries.filter(e => e.hasSmoked).length
+    // Grouper les entrées par jour unique
+    const entriesByDay = new Map<string, typeof entries>()
+    for (const entry of entries) {
+      const dateKey = entry.date.toISOString().split('T')[0]
+      if (!entriesByDay.has(dateKey)) {
+        entriesByDay.set(dateKey, [])
+      }
+      entriesByDay.get(dateKey)!.push(entry)
+    }
+
+    // Calculer les stats globales avec les jours uniques
+    const totalDays = entriesByDay.size
+    let smokingDays = 0
+    for (const [_, dayEntries] of Array.from(entriesByDay.entries())) {
+      if (dayEntries.some(e => e.hasSmoked)) {
+        smokingDays++
+      }
+    }
     const cleanDays = totalDays - smokingDays
     const totalJoints = entries.reduce((sum, e) => sum + (e.jointCount || 0), 0)
     const avgJointsPerDay = totalDays > 0 ? totalJoints / totalDays : 0
@@ -35,26 +50,35 @@ export async function GET(request: Request) {
       ? entries.reduce((sum, e) => sum + e.cravingLevel, 0) / entries.length
       : 0
 
-    // Calculer le streak actuel
-    let currentStreak = 0
-    const reversedEntries = [...entries].reverse()
-    for (const entry of reversedEntries) {
-      if (!entry.hasSmoked) {
-        currentStreak++
-      } else {
-        break
-      }
-    }
+    // Trier les jours par date
+    const sortedDays = Array.from(entriesByDay.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
 
     // Calculer le meilleur streak de la période
     let bestStreak = 0
     let tempStreak = 0
-    for (const entry of entries) {
-      if (!entry.hasSmoked) {
+    for (let i = 0; i < sortedDays.length; i++) {
+      const [_, dayEntries] = sortedDays[i]
+      const dayHadSmoking = dayEntries.some(e => e.hasSmoked)
+
+      if (!dayHadSmoking) {
         tempStreak++
         bestStreak = Math.max(bestStreak, tempStreak)
       } else {
         tempStreak = 0
+      }
+    }
+
+    // Calculer le streak actuel (du plus récent vers le passé)
+    const reversedDays = [...sortedDays].reverse()
+    let currentStreak = 0
+    for (const [_, dayEntries] of reversedDays) {
+      const dayHadSmoking = dayEntries.some(e => e.hasSmoked)
+
+      if (!dayHadSmoking) {
+        currentStreak++
+      } else {
+        break
       }
     }
 

@@ -3,6 +3,8 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Navigation from '../components/Navigation'
+import StateInfoTooltip from '../components/StateInfoTooltip'
+import { emotionalStates as emotionalStatesData, physicalStates as physicalStatesData } from '../data/stateDefinitions'
 import styles from './new.module.css'
 
 export default function NewEntryPage() {
@@ -132,6 +134,9 @@ export default function NewEntryPage() {
     'Ennui',
     'Fatigué',
     'Énergique',
+    'Peur',
+    'Culpabilité',
+    'Déterminé',
   ]
 
   const physicalStates = [
@@ -141,7 +146,8 @@ export default function NewEntryPage() {
     'Relaxé',
     'Douleur',
     'Énergique',
-    'Excité', // AJOUTÉ
+    'Excité',
+    'Hypervigilant',
   ]
 
   const contexts = [
@@ -344,7 +350,12 @@ export default function NewEntryPage() {
                     onChange={() => toggleMultipleChoice('emotionalStates', state)}
                     className={styles.checkboxItem}
                   />
-                  <span>{state}</span>
+                  <span>
+                    {state}
+                    {emotionalStatesData[state] && (
+                      <StateInfoTooltip stateInfo={emotionalStatesData[state]} />
+                    )}
+                  </span>
                 </label>
               ))}
             </div>
@@ -364,7 +375,12 @@ export default function NewEntryPage() {
                     onChange={() => toggleMultipleChoice('physicalStates', state)}
                     className={styles.checkboxItem}
                   />
-                  <span>{state}</span>
+                  <span>
+                    {state}
+                    {physicalStatesData[state] && (
+                      <StateInfoTooltip stateInfo={physicalStatesData[state]} />
+                    )}
+                  </span>
                 </label>
               ))}
             </div>

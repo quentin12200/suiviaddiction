@@ -12,6 +12,7 @@ import HealthWidget from './components/HealthWidget'
 import SobrietyCounter from './components/SobrietyCounter'
 import PeriodStats from './components/PeriodStats'
 import SmartReminders from './components/SmartReminders'
+import TasksWidget from './components/TasksWidget'
 import {
   LineChart,
   Line,
@@ -216,6 +217,9 @@ export default function DashboardPage() {
 
             {/* Alertes Préventives */}
             <AlertMonitor key={`alert-${refreshKey}`} />
+
+            {/* Widget Tâches du Jour */}
+            <TasksWidget key={`tasks-${refreshKey}`} />
 
             {/* Résumé du jour */}
             <div className={styles.grid}>

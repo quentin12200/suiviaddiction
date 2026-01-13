@@ -34,7 +34,7 @@ const PERIODICITY_RULES = {
 type RawRow = Record<string, string>
 
 type NormalizedRow = RawRow & {
-  Date: Date | null
+  DateRef: Date | null
   Montant: number
   Libelle_norm: string
   Merchant_key: string
@@ -174,7 +174,7 @@ const detectRecurrents = (rows: NormalizedRow[], sign: 'negative' | 'positive') 
 
   const results: Record<string, unknown>[] = []
   grouped.forEach((groupRows, merchantKey) => {
-    const sorted = [...groupRows].sort((a, b) => (a.Date?.getTime() ?? 0) - (b.Date?.getTime() ?? 0))
+    const sorted = [...groupRows].sort((a, b) => (a.DateRef?.getTime() ?? 0) - (b.DateRef?.getTime() ?? 0))
     if (sorted.length < 3) return
 
     const amounts = sorted.map((row) => row.Montant)
@@ -187,7 +187,7 @@ const detectRecurrents = (rows: NormalizedRow[], sign: 'negative' | 'positive') 
     const stable = std <= stabilityThreshold
     const stableScore = Math.max(0, 1 - std / stabilityThreshold)
 
-    const dates = sorted.map((row) => row.Date).filter((date): date is Date => Boolean(date))
+    const dates = sorted.map((row) => row.DateRef).filter((date): date is Date => Boolean(date))
     const deltas = dates.slice(1).map((date, index) => {
       const prev = dates[index]
       return Math.round((date.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24))
@@ -226,16 +226,16 @@ const estimateVariableSpend = (rows: NormalizedRow[], recurrentKeys: string[]) =
   }
 
   const maxDate = nonRecurring.reduce((max, row) => {
-    if (!row.Date) return max
-    return row.Date > max ? row.Date : max
-  }, nonRecurring[0].Date ?? new Date())
+    if (!row.DateRef) return max
+    return row.DateRef > max ? row.DateRef : max
+  }, nonRecurring[0].DateRef ?? new Date())
 
   const startDate = new Date(maxDate.getTime() - 56 * 24 * 60 * 60 * 1000)
   const totalsByDay = new Map<string, number>()
 
   nonRecurring.forEach((row) => {
-    if (!row.Date || row.Date < startDate) return
-    const key = row.Date.toISOString().slice(0, 10)
+    if (!row.DateRef || row.DateRef < startDate) return
+    const key = row.DateRef.toISOString().slice(0, 10)
     totalsByDay.set(key, (totalsByDay.get(key) ?? 0) + row.Montant)
   })
 
@@ -378,14 +378,14 @@ export async function POST(request: Request) {
       const libelleNorm = normalizeLabel(row['Libelle simplifie'] || '')
       return {
         ...row,
-        Date: dateRef,
+        DateRef: dateRef,
         Montant: credit - debit,
         Libelle_norm: libelleNorm,
         Merchant_key: buildMerchantKey(libelleNorm),
         Paiement_4x: installment.isInstallment,
         Echeances_restantes: installment.remaining,
       }
-    }).sort((a, b) => (a.Date?.getTime() ?? 0) - (b.Date?.getTime() ?? 0))
+    }).sort((a, b) => (a.DateRef?.getTime() ?? 0) - (b.DateRef?.getTime() ?? 0))
 
     const recurrentExpenses = detectRecurrents(normalizedRows, 'negative')
     const recurrentIncomes = detectRecurrents(normalizedRows, 'positive')
@@ -396,7 +396,7 @@ export async function POST(request: Request) {
 
     const operationsRows = normalizedRows.map((row) => ({
       ...row,
-      Date: row.Date ? row.Date.toISOString().slice(0, 10) : '',
+      Date: row.DateRef ? row.DateRef.toISOString().slice(0, 10) : '',
       Est_recurrent: recurrentMap.has(row.Merchant_key),
       Tag_recurrent: recurrentMap.get(row.Merchant_key)?.Periodicite ?? '',
       Confiance_recurrent: recurrentMap.get(row.Merchant_key)?.Confiance ?? '',

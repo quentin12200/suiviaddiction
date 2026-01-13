@@ -40,6 +40,7 @@ export default function Navigation() {
         { href: '/history', label: 'Historique', icon: '📜' },
         { href: '/thoughts', label: 'Pensées', icon: '💭' },
         { href: '/fiertes', label: 'Mes Fiertés', icon: '🏆' },
+        { href: '/taches', label: 'Mes Tâches', icon: '📋' },
       ],
     },
     {

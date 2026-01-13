@@ -11,7 +11,8 @@ interface StateInfoTooltipProps {
 export default function StateInfoTooltip({ stateInfo }: StateInfoTooltipProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const toggleTooltip = () => {
+  const toggleTooltip = (e: React.MouseEvent) => {
+    e.stopPropagation() // Empêche le clic de cocher la case
     setIsOpen(!isOpen)
   }
 

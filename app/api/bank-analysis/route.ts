@@ -139,19 +139,6 @@ const computeConfidence = (ratio: number, stableScore: number, occurrences: numb
   return Math.round(score * 100)
 }
 
-const toCsv = (rows: Record<string, unknown>[], headers: string[], delimiter = ';') => {
-  const escape = (value: unknown) => {
-    const str = value === null || value === undefined ? '' : String(value)
-    const escaped = str.replace(/"/g, '""')
-    return `"${escaped}"`
-  }
-  const lines = [headers.join(delimiter)]
-  rows.forEach((row) => {
-    lines.push(headers.map((header) => escape(row[header])).join(delimiter))
-  })
-  return lines.join('\n')
-}
-
 const readCsv = (buffer: Buffer): RawRow[] => {
   const encodings: BufferEncoding[] = ['latin1', 'utf-8']
   let lastError: unknown
@@ -446,46 +433,6 @@ export async function POST(request: Request) {
       row.Risque = Number(row.Solde_estime) < decouvertValue
     })
 
-    const forecastHeaders = [
-      'Date',
-      'Flux_recurrents',
-      'Flux_variables_estimes',
-      'Flux_total',
-      'Solde_estime',
-      'Risque',
-      'Detail_recurrents',
-    ]
-
-    const operationsHeaders = [
-      ...REQUIRED_COLUMNS,
-      'Date',
-      'Montant',
-      'Libelle_norm',
-      'Merchant_key',
-      'Paiement_4x',
-      'Echeances_restantes',
-      'Est_recurrent',
-      'Tag_recurrent',
-      'Confiance_recurrent',
-    ]
-
-    const recurrentsHeaders = [
-      'Merchant_key',
-      'Exemple_libelle',
-      'Periodicite',
-      'Montant_median',
-      'Derniere_date',
-      'Prochaine_date_estimee',
-      'Confiance',
-      'Categorie',
-      'Sous_categorie',
-      'Nb_occurrences',
-    ]
-
-    const operationsCsv = toCsv(operationsRows, operationsHeaders)
-    const recurrentsCsv = toCsv(recurrentExpenses, recurrentsHeaders)
-    const forecastCsv = toCsv(forecastRows, forecastHeaders)
-
     const forecastFileName = `previsionnel_${effectiveHorizon}j.csv`
 
     const minRow = forecastRows.reduce((min, row) => {
@@ -515,9 +462,9 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       data: {
-        operations: Buffer.from(operationsCsv).toString('base64'),
-        recurrents: Buffer.from(recurrentsCsv).toString('base64'),
-        forecast: Buffer.from(forecastCsv).toString('base64'),
+        operations: operationsRows,
+        recurrents: recurrentExpenses,
+        forecast: forecastRows,
         console: consoleLines.join('\n'),
         forecastFileName,
         endNextMonthBalance: endNextMonthRow?.Solde_estime ?? '',

@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Navigation from '../components/Navigation'
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import styles from './bank.module.css'
 
 interface AnalysisResult {
-  operations: string
-  recurrents: string
-  forecast: string
+  operations: OperationRow[]
+  recurrents: Record<string, unknown>[]
+  forecast: ForecastRow[]
   console: string
   forecastFileName: string
   endNextMonthBalance: string
@@ -15,6 +16,32 @@ interface AnalysisResult {
   minBalance: string
   minBalanceDate: string
   paiements4xCount: number
+}
+
+interface OperationRow {
+  Date: string
+  Montant: number
+  Libelle_norm: string
+  Merchant_key: string
+  Paiement_4x: boolean
+  Echeances_restantes: number | ''
+  Categorie: string
+  'Sous categorie': string
+  Est_recurrent: boolean
+  Tag_recurrent: string
+  Confiance_recurrent: number | ''
+  'Libelle simplifie': string
+  'Libelle operation': string
+}
+
+interface ForecastRow {
+  Date: string
+  Flux_recurrents: string
+  Flux_variables_estimes: string
+  Flux_total: string
+  Solde_estime: string
+  Risque: boolean
+  Detail_recurrents: string
 }
 
 interface ManualEntry {
@@ -37,6 +64,9 @@ export default function BankAnalysisPage() {
   const [scenario, setScenario] = useState('')
   const [aiResponse, setAiResponse] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [operations, setOperations] = useState<OperationRow[]>([])
+  const [categoryEdits, setCategoryEdits] = useState<Record<string, string>>({})
+  const [recurrenceEdits, setRecurrenceEdits] = useState<Record<string, boolean>>({})
 
   const addManualEntry = () => {
     setManualEntries((prev) => ([...prev, {
@@ -56,21 +86,6 @@ export default function BankAnalysisPage() {
 
   const removeManualEntry = (id: string) => {
     setManualEntries((prev) => prev.filter((entry) => entry.id !== id))
-  }
-
-  const downloadFile = (base64: string, filename: string) => {
-    const binary = atob(base64)
-    const bytes = new Uint8Array(binary.length)
-    for (let i = 0; i < binary.length; i += 1) {
-      bytes[i] = binary.charCodeAt(i)
-    }
-    const blob = new Blob([bytes], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    link.click()
-    URL.revokeObjectURL(url)
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -119,12 +134,33 @@ export default function BankAnalysisPage() {
       }
 
       setResult(data.data)
+      setOperations(data.data.operations || [])
     } catch (err) {
       setError('Erreur de connexion au serveur.')
     } finally {
       setLoading(false)
     }
   }
+
+  const categoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {}
+    operations.forEach((operation) => {
+      if (operation.Montant >= 0) return
+      const category = categoryEdits[operation.Merchant_key] || operation.Categorie || 'Autre'
+      totals[category] = (totals[category] || 0) + Math.abs(operation.Montant)
+    })
+    return Object.entries(totals)
+      .map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }))
+      .sort((a, b) => b.value - a.value)
+  }, [operations, categoryEdits])
+
+  const operationsWithOverrides = useMemo(() => (
+    operations.map((operation) => ({
+      ...operation,
+      categoryLabel: categoryEdits[operation.Merchant_key] || operation.Categorie || 'Autre',
+      recurringLabel: recurrenceEdits[operation.Merchant_key] ?? operation.Est_recurrent,
+    }))
+  ), [operations, categoryEdits, recurrenceEdits])
 
   const handleScenarioSubmit = async () => {
     setAiResponse('')
@@ -298,25 +334,90 @@ export default function BankAnalysisPage() {
                 <p>{result.paiements4xCount}</p>
               </div>
             </div>
-            <div className={styles.buttons}>
-              <button
-                type="button"
-                onClick={() => downloadFile(result.operations, 'operations_enrichies.csv')}
-              >
-                Télécharger operations_enrichies.csv
-              </button>
-              <button
-                type="button"
-                onClick={() => downloadFile(result.recurrents, 'recurrents_detectes.csv')}
-              >
-                Télécharger recurrents_detectes.csv
-              </button>
-              <button
-                type="button"
-                onClick={() => downloadFile(result.forecast, result.forecastFileName)}
-              >
-                Télécharger {result.forecastFileName}
-              </button>
+            <div className={styles.section}>
+              <h3>🏷️ Dépenses par catégorie</h3>
+              {categoryTotals.length === 0 ? (
+                <p>Aucune dépense détectée.</p>
+              ) : (
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={categoryTotals} margin={{ left: 8, right: 16 }}>
+                      <XAxis dataKey="name" interval={0} angle={-20} textAnchor="end" height={60} />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#2563eb" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Catégorie</th>
+                    <th>Total dépenses</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categoryTotals.map((category) => (
+                    <tr key={category.name}>
+                      <td>{category.name}</td>
+                      <td>{category.value.toFixed(2)} €</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className={styles.section}>
+              <h3>🧾 Opérations (modifie la catégorie ou la récurrence)</h3>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Libellé</th>
+                      <th>Montant</th>
+                      <th>Catégorie</th>
+                      <th>Récurrent</th>
+                      <th>4x</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {operationsWithOverrides.map((operation) => (
+                      <tr key={`${operation.Merchant_key}-${operation.Date}-${operation.Montant}`}>
+                        <td>{operation.Date}</td>
+                        <td>{operation['Libelle simplifie'] || operation['Libelle operation']}</td>
+                        <td className={operation.Montant < 0 ? styles.negative : styles.positive}>
+                          {operation.Montant.toFixed(2)} €
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            value={operation.categoryLabel}
+                            onChange={(event) => setCategoryEdits((prev) => ({
+                              ...prev,
+                              [operation.Merchant_key]: event.target.value,
+                            }))}
+                          />
+                        </td>
+                        <td>
+                          <select
+                            value={operation.recurringLabel ? 'yes' : 'no'}
+                            onChange={(event) => setRecurrenceEdits((prev) => ({
+                              ...prev,
+                              [operation.Merchant_key]: event.target.value === 'yes',
+                            }))}
+                          >
+                            <option value="yes">Oui</option>
+                            <option value="no">Non</option>
+                          </select>
+                        </td>
+                        <td>{operation.Paiement_4x ? 'Oui' : 'Non'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className={styles.console}>

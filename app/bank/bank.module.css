@@ -143,6 +143,50 @@
   margin-bottom: 24px;
 }
 
+.section {
+  margin-top: 20px;
+}
+
+.chartWrapper {
+  width: 100%;
+  height: 260px;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px;
+  text-align: left;
+}
+
+.table input,
+.table select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
+.negative {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.positive {
+  color: #16a34a;
+  font-weight: 600;
+}
+
 .summaryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -162,23 +206,6 @@
 
 .summaryGrid small {
   color: #64748b;
-}
-
-.buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.buttons button {
-  padding: 10px 14px;
-  border: none;
-  border-radius: 8px;
-  background: #0ea5e9;
-  color: white;
-  cursor: pointer;
-  text-align: left;
 }
 
 .console {

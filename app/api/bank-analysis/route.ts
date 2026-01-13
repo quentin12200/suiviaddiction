@@ -31,7 +31,21 @@ const PERIODICITY_RULES = {
   trimestriel: { center: 90, tolerance: 10 },
 }
 
-type RawRow = Record<string, string>
+type RawRow = {
+  'Date de comptabilisation': string
+  'Libelle simplifie': string
+  'Libelle operation': string
+  'Reference': string
+  'Informations complementaires': string
+  'Type operation': string
+  'Categorie': string
+  'Sous categorie': string
+  'Debit': string
+  'Credit': string
+  'Date operation': string
+  'Date de valeur': string
+  'Pointage operation': string
+}
 
 type NormalizedRow = RawRow & {
   DateRef: Date | null
@@ -138,7 +152,7 @@ const toCsv = (rows: Record<string, unknown>[], headers: string[], delimiter = '
   return lines.join('\n')
 }
 
-const readCsv = (buffer: Buffer) => {
+const readCsv = (buffer: Buffer): RawRow[] => {
   const encodings: BufferEncoding[] = ['latin1', 'utf-8']
   let lastError: unknown
   for (const encoding of encodings) {

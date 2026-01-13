@@ -368,8 +368,8 @@ export async function POST(request: Request) {
     }
 
     const normalizedRows: NormalizedRow[] = rows.map((row) => {
-      const debit = normalizeAmount(row.Debit)
-      const credit = normalizeAmount(row.Credit)
+      const debit = Math.abs(normalizeAmount(row.Debit))
+      const credit = Math.abs(normalizeAmount(row.Credit))
       const label = row['Libelle operation'] || ''
       const installment = detectInstallment(label)
       const dateRef = parseDate(row['Date de comptabilisation'])

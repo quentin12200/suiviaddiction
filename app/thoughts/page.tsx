@@ -15,6 +15,7 @@ export default function ThoughtsPage() {
   const [thoughts, setThoughts] = useState<Thought[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [newThought, setNewThought] = useState('')
 
   // Reconnaissance vocale
@@ -97,6 +98,39 @@ export default function ThoughtsPage() {
     }
   }
 
+  const exportThoughts = async () => {
+    setExporting(true)
+    try {
+      const response = await fetch('/api/thoughts?limit=10000&offset=0')
+      const data = await response.json()
+
+      if (!data.success) {
+        alert('❌ Impossible d\'exporter les pensées')
+        return
+      }
+
+      const escapeCSV = (value: string) => `"${value.replace(/"/g, '""')}"`
+      const rows = [
+        ['createdAt', 'content'].join(','),
+        ...data.thoughts.map((thought: Thought) => (
+          [escapeCSV(thought.createdAt), escapeCSV(thought.content)].join(',')
+        )),
+      ]
+
+      const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `mes-pensees-${new Date().toISOString().slice(0, 10)}.csv`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      alert('❌ Erreur de connexion')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleString('fr-FR', {
@@ -117,6 +151,25 @@ export default function ThoughtsPage() {
           <p className={styles.subtitle}>
             Note tes pensées, envies, réflexions. Chaque pensée est horodatée pour analyse.
           </p>
+        </div>
+
+        <div className={styles.syncNotice}>
+          <div>
+            <h2>🔄 Sauvegarde & synchronisation</h2>
+            <p>
+              Tes pensées sont stockées dans la base de données de cette installation.
+              Si tu changes d&apos;ordinateur, de navigateur ou d&apos;instance, elles ne seront pas visibles.
+              Utilise l&apos;export CSV pour les garder et les transférer.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={exportThoughts}
+            className={styles.exportButton}
+            disabled={exporting}
+          >
+            {exporting ? '📤 Export...' : '📤 Exporter mes pensées'}
+          </button>
         </div>
 
         {/* Formulaire rapide */}

@@ -11,7 +11,6 @@ Le script génère dans le dossier courant :
 """
 
 import argparse
-import datetime as dt
 import os
 import re
 from typing import Dict, List, Optional, Tuple
@@ -93,6 +92,18 @@ def normalize_label(value: str) -> str:
     return text
 
 
+def detect_installment(label: str) -> Tuple[bool, Optional[int]]:
+    if not label:
+        return False, None
+    match = re.search(r'\b([1-4])\s*/\s*4\b', label.lower())
+    if match:
+        current = int(match.group(1))
+        return True, max(0, 4 - current)
+    if re.search(r'\b4\s*x\b|\bx\s*4\b', label.lower()):
+        return True, None
+    return False, None
+
+
 def build_merchant_key(value: str) -> str:
     cleaned = re.sub(r'\b\d{5}\b', ' ', value)
     cleaned = re.sub(r'\s+', ' ', cleaned).strip()
@@ -126,9 +137,9 @@ def compute_confidence(ratio: float, stable_score: float, occurrences: int) -> i
 
 def detect_recurrents(df: pd.DataFrame, sign: str) -> pd.DataFrame:
     if sign == 'negative':
-        filtered = df[df['Montant'] < 0].copy()
+        filtered = df[(df['Montant'] < 0) & (~df['Paiement_4x'])].copy()
     else:
-        filtered = df[df['Montant'] > 0].copy()
+        filtered = df[(df['Montant'] > 0) & (~df['Paiement_4x'])].copy()
 
     results = []
     for merchant_key, group in filtered.groupby('Merchant_key'):
@@ -334,6 +345,12 @@ def main() -> None:
 
     df['Libelle_norm'] = df['Libelle simplifie'].fillna('').apply(normalize_label)
     df['Merchant_key'] = df['Libelle_norm'].apply(build_merchant_key)
+    df['Paiement_4x'] = df['Libelle operation'].fillna('').apply(
+        lambda value: detect_installment(value)[0]
+    )
+    df['Echeances_restantes'] = df['Libelle operation'].fillna('').apply(
+        lambda value: detect_installment(value)[1]
+    )
 
     recurrent_expenses = detect_recurrents(df, 'negative')
     recurrent_incomes = detect_recurrents(df, 'positive')

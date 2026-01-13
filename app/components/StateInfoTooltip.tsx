@@ -26,9 +26,7 @@ export default function StateInfoTooltip({ stateInfo }: StateInfoTooltipProps) {
         className={styles.infoButton}
         onClick={toggleTooltip}
         aria-label={`Plus d'informations sur ${stateInfo.name}`}
-      >
-        ℹ️
-      </button>
+      ></button>
 
       {isOpen && (
         <>

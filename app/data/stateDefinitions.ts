@@ -22,7 +22,9 @@ export const emotionalStates: Record<string, StateInfo> = {
       '💭 Vos pensées passent sans s\'accrocher',
       '👁️ Vous ne pensez pas à votre vue pendant un moment',
       '☕ Vous buvez votre café/thé en savourant vraiment',
-      '🎵 Vous écoutez de la musique sans penser à autre chose'
+      '🎵 Vous écoutez de la musique sans penser à autre chose',
+      '🎓 Posé comme quand vous formez à la CGT',
+      '👨‍👩‍👧 Moment paisible avec Louise ou Sophie'
     ],
     isValorized: true,
     importance: 'Chaque moment de calme prouve que vous POUVEZ vivre sans béquilles chimiques ! 🎯'
@@ -72,7 +74,11 @@ export const emotionalStates: Record<string, StateInfo> = {
       '🎮 Vous prenez du plaisir dans une activité simple',
       '🤝 Bon moment avec quelqu\'un que vous aimez',
       '✅ Satisfaction d\'avoir respecté votre hygiène de vie',
-      '💚 Vous ressentez de la gratitude (pour votre vue actuelle, votre détermination)'
+      '💚 Vous ressentez de la gratitude (pour votre vue actuelle, votre détermination)',
+      '👨‍👩‍👧 Louise vous fait rire aux éclats',
+      '❤️ Moment complice avec Sophie',
+      '🛡️ Fierté après avoir aidé un camarade syndiqué',
+      '🎓 Satisfaction après une formation CGT réussie'
     ],
     isValorized: true,
     importance: 'STOP et SAVOUREZ : Ces moments sont la PREUVE que la vie peut être belle sans toxiques ! Prenez 10 secondes pour vraiment ressentir cette joie 🌟'
@@ -152,7 +158,10 @@ export const emotionalStates: Record<string, StateInfo> = {
       '🎯 Motivation à fond : "Je vais y arriver !"',
       '💪 Détermination renouvelée',
       '🏃 Élan d\'action vers vos objectifs',
-      '🌟 Vous vous sentez capable de tout'
+      '🌟 Vous vous sentez capable de tout',
+      '🚩 Élan militant comme avant une action syndicale',
+      '🎓 Envie de transmettre comme en formation CGT',
+      '👨‍👩‍👧 Énergie pour jouer avec Louise'
     ],
     isValorized: true,
     importance: 'C\'EST VOTRE VRAIE ÉNERGIE : Sans produits ! Profitez-en à fond ! 🔋'
@@ -199,10 +208,15 @@ export const emotionalStates: Record<string, StateInfo> = {
       '⚔️ Vous êtes en mode "guerrier"',
       '🏔️ Prêt à affronter n\'importe quel obstacle',
       '💎 Engagement envers vous-même et votre santé',
-      '🦁 Vous vous sentez fort et capable'
+      '🦁 Vous vous sentez fort et capable',
+      '🚩 Comme les 213 jours de grève que vous avez tenus',
+      '✂️ Comme quand vous avez coupé avec votre père toxique',
+      '🛡️ Comme quand vous défendez un salarié face à la direction',
+      '📊 Même détermination que pour arriver au bureau de l\'UD',
+      '🍺 Comme quand vous avez arrêté l\'alcool'
     ],
     isValorized: true,
-    importance: 'CÉLÉBREZ CETTE FORCE : C\'est votre arme la plus puissante ! Notez-la à chaque fois ! 🏆'
+    importance: 'CÉLÉBREZ CETTE FORCE : C\'est votre arme la plus puissante ! Vous l\'avez prouvé tant de fois ! 🏆'
   }
 }
 

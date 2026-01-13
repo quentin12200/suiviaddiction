@@ -39,6 +39,7 @@ export default function Navigation() {
         { href: '/new', label: 'Nouvelle entrée', icon: '➕' },
         { href: '/history', label: 'Historique', icon: '📜' },
         { href: '/thoughts', label: 'Pensées', icon: '💭' },
+        { href: '/fiertes', label: 'Mes Fiertés', icon: '🏆' },
       ],
     },
     {

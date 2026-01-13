@@ -67,6 +67,7 @@ export default function Navigation() {
       items: [
         { href: '/integrations', label: 'Intégrations', icon: '🔗' },
         { href: '/import', label: 'Import CSV', icon: '📥' },
+        { href: '/bank', label: 'Analyse Banque', icon: '💳' },
         { href: '/export', label: 'Export PDF', icon: '📄' },
         { href: '/admin', label: 'Admin', icon: '🔧' },
       ],

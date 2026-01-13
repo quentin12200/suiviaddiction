@@ -44,6 +44,13 @@ interface ForecastRow {
   Detail_recurrents: string
 }
 
+interface IncomeRule {
+  id: string
+  label: string
+  amount: string
+  day: string
+}
+
 interface ManualEntry {
   id: string
   date: string
@@ -51,6 +58,8 @@ interface ManualEntry {
   amount: string
   type: 'debit' | 'credit'
 }
+
+type DatePreset = 'last30' | 'currentMonth' | 'previousMonth' | 'custom'
 
 export default function BankAnalysisPage() {
   const [file, setFile] = useState<File | null>(null)
@@ -67,6 +76,25 @@ export default function BankAnalysisPage() {
   const [operations, setOperations] = useState<OperationRow[]>([])
   const [categoryEdits, setCategoryEdits] = useState<Record<string, string>>({})
   const [recurrenceEdits, setRecurrenceEdits] = useState<Record<string, boolean>>({})
+  const [excludedOps, setExcludedOps] = useState<Record<string, boolean>>({})
+  const [categoryMandatory, setCategoryMandatory] = useState<Record<string, boolean>>({})
+  const [datePreset, setDatePreset] = useState<DatePreset>('last30')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [filters, setFilters] = useState({
+    date: '',
+    label: '',
+    amount: '',
+    category: '',
+    recurring: '',
+    installment: '',
+  })
+  const [minimumResources, setMinimumResources] = useState('2600')
+  const [incomeRules, setIncomeRules] = useState<IncomeRule[]>([
+    { id: crypto.randomUUID(), label: 'Quentin CGT', amount: '2600', day: '30' },
+    { id: crypto.randomUUID(), label: 'Salaire Sophie', amount: '1450', day: '20' },
+    { id: crypto.randomUUID(), label: 'Aide Aveyron', amount: '450', day: '20' },
+  ])
 
   const addManualEntry = () => {
     setManualEntries((prev) => ([...prev, {
@@ -135,6 +163,10 @@ export default function BankAnalysisPage() {
 
       setResult(data.data)
       setOperations(data.data.operations || [])
+      setExcludedOps({})
+      setCategoryEdits({})
+      setRecurrenceEdits({})
+      setCategoryMandatory({})
     } catch (err) {
       setError('Erreur de connexion au serveur.')
     } finally {
@@ -146,21 +178,142 @@ export default function BankAnalysisPage() {
     const totals: Record<string, number> = {}
     operations.forEach((operation) => {
       if (operation.Montant >= 0) return
+      const key = `${operation.Merchant_key}-${operation.Date}-${operation.Montant}`
+      if (excludedOps[key]) return
       const category = categoryEdits[operation.Merchant_key] || operation.Categorie || 'Autre'
       totals[category] = (totals[category] || 0) + Math.abs(operation.Montant)
     })
     return Object.entries(totals)
       .map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }))
       .sort((a, b) => b.value - a.value)
-  }, [operations, categoryEdits])
+  }, [operations, categoryEdits, excludedOps])
 
   const operationsWithOverrides = useMemo(() => (
-    operations.map((operation) => ({
-      ...operation,
-      categoryLabel: categoryEdits[operation.Merchant_key] || operation.Categorie || 'Autre',
-      recurringLabel: recurrenceEdits[operation.Merchant_key] ?? operation.Est_recurrent,
-    }))
-  ), [operations, categoryEdits, recurrenceEdits])
+    operations.map((operation) => {
+      const key = `${operation.Merchant_key}-${operation.Date}-${operation.Montant}`
+      return {
+        ...operation,
+        categoryLabel: categoryEdits[operation.Merchant_key] || operation.Categorie || 'Autre',
+        recurringLabel: recurrenceEdits[operation.Merchant_key] ?? operation.Est_recurrent,
+        excluded: excludedOps[key] ?? false,
+        rowKey: key,
+      }
+    })
+  ), [operations, categoryEdits, recurrenceEdits, excludedOps])
+
+  const filteredOperations = useMemo(() => {
+    if (!operationsWithOverrides.length) return []
+    const today = new Date()
+    const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    const startOfPreviousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    const endOfPreviousMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+
+    const fromDate = datePreset === 'custom' && dateFrom
+      ? new Date(dateFrom)
+      : datePreset === 'last30'
+        ? new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000)
+        : datePreset === 'previousMonth'
+          ? startOfPreviousMonth
+          : startOfCurrentMonth
+    const toDate = datePreset === 'custom' && dateTo
+      ? new Date(dateTo)
+      : datePreset === 'previousMonth'
+        ? endOfPreviousMonth
+        : today
+
+    return operationsWithOverrides.filter((operation) => {
+      const dateValue = operation.Date ? new Date(operation.Date) : null
+      if (dateValue && (dateValue < fromDate || dateValue > toDate)) {
+        return false
+      }
+      if (filters.date && !operation.Date.includes(filters.date)) return false
+      const labelValue = operation['Libelle simplifie'] || operation['Libelle operation'] || ''
+      if (filters.label && !labelValue.toLowerCase().includes(filters.label.toLowerCase())) return false
+      if (filters.amount && !operation.Montant.toFixed(2).includes(filters.amount)) return false
+      if (filters.category && !operation.categoryLabel.toLowerCase().includes(filters.category.toLowerCase())) return false
+      if (filters.recurring && (operation.recurringLabel ? 'oui' : 'non') !== filters.recurring.toLowerCase()) return false
+      if (filters.installment && (operation.Paiement_4x ? 'oui' : 'non') !== filters.installment.toLowerCase()) return false
+      return true
+    })
+  }, [operationsWithOverrides, datePreset, dateFrom, dateTo, filters])
+
+  const monthComparison = useMemo(() => {
+    if (!operations.length) return null
+    const today = new Date()
+    const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    const startOfPreviousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    const endOfPreviousMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+
+    const totals = {
+      current: { expenses: 0, income: 0 },
+      previous: { expenses: 0, income: 0 },
+    }
+
+    operationsWithOverrides.forEach((operation) => {
+      const dateValue = operation.Date ? new Date(operation.Date) : null
+      if (!dateValue) return
+      const key = `${operation.Merchant_key}-${operation.Date}-${operation.Montant}`
+      if (excludedOps[key]) return
+      const target = dateValue >= startOfCurrentMonth
+        ? totals.current
+        : dateValue >= startOfPreviousMonth && dateValue <= endOfPreviousMonth
+          ? totals.previous
+          : null
+      if (!target) return
+      if (operation.Montant < 0) {
+        target.expenses += Math.abs(operation.Montant)
+      } else {
+        target.income += operation.Montant
+      }
+    })
+
+    return totals
+  }, [operationsWithOverrides, excludedOps, operations.length])
+
+  const mandatorySummary = useMemo(() => {
+    if (!operationsWithOverrides.length) return null
+    const today = new Date()
+    const startOfPreviousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    const endOfPreviousMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+    let mandatorySpend = 0
+    operationsWithOverrides.forEach((operation) => {
+      if (operation.Montant >= 0) return
+      const dateValue = operation.Date ? new Date(operation.Date) : null
+      if (!dateValue || dateValue < startOfPreviousMonth || dateValue > endOfPreviousMonth) return
+      const category = operation.categoryLabel
+      if (categoryMandatory[category]) {
+        mandatorySpend += Math.abs(operation.Montant)
+      }
+    })
+    const minResourcesValue = Number(minimumResources || 0)
+    return {
+      mandatorySpend,
+      remaining: minResourcesValue - mandatorySpend,
+    }
+  }, [operationsWithOverrides, categoryMandatory, minimumResources])
+
+  const addIncomeRule = () => {
+    setIncomeRules((prev) => ([...prev, {
+      id: crypto.randomUUID(),
+      label: '',
+      amount: '',
+      day: '',
+    }]))
+  }
+
+  const updateIncomeRule = (id: string, updates: Partial<IncomeRule>) => {
+    setIncomeRules((prev) => prev.map((rule) => (
+      rule.id === id ? { ...rule, ...updates } : rule
+    )))
+  }
+
+  const removeIncomeRule = (id: string) => {
+    setIncomeRules((prev) => prev.filter((rule) => rule.id !== id))
+  }
+
+  const incomeRulesTotal = useMemo(() => (
+    incomeRules.reduce((sum, rule) => sum + Number(rule.amount || 0), 0)
+  ), [incomeRules])
 
   const handleScenarioSubmit = async () => {
     setAiResponse('')
@@ -213,6 +366,58 @@ export default function BankAnalysisPage() {
             <li>Le script détecte automatiquement les colonnes et gère la virgule décimale.</li>
             <li>Les résultats restent sur ta machine et ne sont pas envoyés à un service externe.</li>
           </ul>
+        </div>
+
+        <div className={styles.configCard}>
+          <h2>💼 Revenus & ressources minimum</h2>
+          <p>Décris ici tes revenus fixes pour analyser le reste à vivre et anticiper les mois prochains.</p>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="minimumResources">Ressources minimum mensuelles (€)</label>
+            <input
+              id="minimumResources"
+              type="number"
+              step="0.01"
+              value={minimumResources}
+              onChange={(event) => setMinimumResources(event.target.value)}
+            />
+            <small>Revenus fixes déclarés: {incomeRulesTotal.toFixed(2)} € / mois.</small>
+          </div>
+          <div className={styles.manualEntries}>
+            <div className={styles.manualHeader}>
+              <h3>Revenus récurrents (jour de paiement)</h3>
+              <button type="button" onClick={addIncomeRule}>
+                ➕ Ajouter
+              </button>
+            </div>
+            {incomeRules.map((rule) => (
+              <div key={rule.id} className={styles.manualRow}>
+                <input
+                  type="text"
+                  placeholder="Libellé (ex: Salaire Sophie)"
+                  value={rule.label}
+                  onChange={(event) => updateIncomeRule(rule.id, { label: event.target.value })}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Montant"
+                  value={rule.amount}
+                  onChange={(event) => updateIncomeRule(rule.id, { amount: event.target.value })}
+                />
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  placeholder="Jour"
+                  value={rule.day}
+                  onChange={(event) => updateIncomeRule(rule.id, { day: event.target.value })}
+                />
+                <button type="button" onClick={() => removeIncomeRule(rule.id)}>
+                  ✖️
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -355,6 +560,7 @@ export default function BankAnalysisPage() {
                   <tr>
                     <th>Catégorie</th>
                     <th>Total dépenses</th>
+                    <th>Obligatoire</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -362,14 +568,73 @@ export default function BankAnalysisPage() {
                     <tr key={category.name}>
                       <td>{category.name}</td>
                       <td>{category.value.toFixed(2)} €</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={categoryMandatory[category.name] ?? false}
+                          onChange={(event) => setCategoryMandatory((prev) => ({
+                            ...prev,
+                            [category.name]: event.target.checked,
+                          }))}
+                        />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
+            {mandatorySummary && (
+              <div className={styles.section}>
+                <h3>🧮 Reste à vivre (basé sur le mois précédent)</h3>
+                <p>
+                  Dépenses obligatoires estimées : <strong>{mandatorySummary.mandatorySpend.toFixed(2)} €</strong>
+                </p>
+                <p>
+                  Reste à vivre estimé : <strong>{mandatorySummary.remaining.toFixed(2)} €</strong>
+                </p>
+              </div>
+            )}
+
             <div className={styles.section}>
               <h3>🧾 Opérations (modifie la catégorie ou la récurrence)</h3>
+              <div className={styles.filters}>
+                <div>
+                  <label>Filtre période</label>
+                  <select value={datePreset} onChange={(event) => setDatePreset(event.target.value as DatePreset)}>
+                    <option value="last30">30 derniers jours</option>
+                    <option value="currentMonth">Mois en cours</option>
+                    <option value="previousMonth">Mois précédent</option>
+                    <option value="custom">Personnalisé</option>
+                  </select>
+                </div>
+                {datePreset === 'custom' && (
+                  <>
+                    <div>
+                      <label>Du</label>
+                      <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} />
+                    </div>
+                    <div>
+                      <label>Au</label>
+                      <input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} />
+                    </div>
+                  </>
+                )}
+              </div>
+              {monthComparison && (
+                <div className={styles.comparison}>
+                  <div>
+                    <h4>Mois précédent</h4>
+                    <p>Entrées: {monthComparison.previous.income.toFixed(2)} €</p>
+                    <p>Sorties: {monthComparison.previous.expenses.toFixed(2)} €</p>
+                  </div>
+                  <div>
+                    <h4>Mois en cours</h4>
+                    <p>Entrées: {monthComparison.current.income.toFixed(2)} €</p>
+                    <p>Sorties: {monthComparison.current.expenses.toFixed(2)} €</p>
+                  </div>
+                </div>
+              )}
               <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                   <thead>
@@ -380,10 +645,62 @@ export default function BankAnalysisPage() {
                       <th>Catégorie</th>
                       <th>Récurrent</th>
                       <th>4x</th>
+                      <th>Exclure mois prochain</th>
+                    </tr>
+                    <tr>
+                      <th>
+                        <input
+                          type="text"
+                          value={filters.date}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, date: event.target.value }))}
+                        />
+                      </th>
+                      <th>
+                        <input
+                          type="text"
+                          value={filters.label}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, label: event.target.value }))}
+                        />
+                      </th>
+                      <th>
+                        <input
+                          type="text"
+                          value={filters.amount}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, amount: event.target.value }))}
+                        />
+                      </th>
+                      <th>
+                        <input
+                          type="text"
+                          value={filters.category}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, category: event.target.value }))}
+                        />
+                      </th>
+                      <th>
+                        <select
+                          value={filters.recurring}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, recurring: event.target.value }))}
+                        >
+                          <option value="">Tous</option>
+                          <option value="oui">Oui</option>
+                          <option value="non">Non</option>
+                        </select>
+                      </th>
+                      <th>
+                        <select
+                          value={filters.installment}
+                          onChange={(event) => setFilters((prev) => ({ ...prev, installment: event.target.value }))}
+                        >
+                          <option value="">Tous</option>
+                          <option value="oui">Oui</option>
+                          <option value="non">Non</option>
+                        </select>
+                      </th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {operationsWithOverrides.map((operation) => (
+                    {filteredOperations.map((operation) => (
                       <tr key={`${operation.Merchant_key}-${operation.Date}-${operation.Montant}`}>
                         <td>{operation.Date}</td>
                         <td>{operation['Libelle simplifie'] || operation['Libelle operation']}</td>
@@ -413,6 +730,16 @@ export default function BankAnalysisPage() {
                           </select>
                         </td>
                         <td>{operation.Paiement_4x ? 'Oui' : 'Non'}</td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={operation.excluded}
+                            onChange={(event) => setExcludedOps((prev) => ({
+                              ...prev,
+                              [operation.rowKey]: event.target.checked,
+                            }))}
+                          />
+                        </td>
                       </tr>
                     ))}
                   </tbody>

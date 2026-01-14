@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type {
   AnalysisResult,
   OperationWithOverrides,
@@ -8,6 +8,7 @@ import type {
   MandatorySummary
 } from '../types'
 import { CategoryChart } from './CategoryChart'
+import { CategoryDragDrop } from './CategoryDragDrop'
 import { OperationsTable } from './OperationsTable'
 import styles from '../bank.module.css'
 
@@ -65,6 +66,8 @@ export function ResultsSection({
   const currentMonthBalance = currentMonthIncome - currentMonthExpenses
 
   // Calculer les revenus détectés dans les données
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
+
   const detectedIncomes = useMemo(() => {
     const incomes = allOperations
       .filter(op => op.Montant > 0 && !op.excluded)
@@ -181,22 +184,55 @@ export function ResultsSection({
 
 
       <div className={styles.section}>
-        <h3>🏷️ Analyse des dépenses (période filtrée)</h3>
+        <div className={styles.sectionHeader}>
+          <h3>🏷️ Analyse des dépenses (période filtrée)</h3>
+          <div className={styles.viewToggle}>
+            <button
+              className={viewMode === 'cards' ? styles.activeView : ''}
+              onClick={() => setViewMode('cards')}
+            >
+              🎴 Cartes (Glisser-déposer)
+            </button>
+            <button
+              className={viewMode === 'table' ? styles.activeView : ''}
+              onClick={() => setViewMode('table')}
+            >
+              📊 Graphique
+            </button>
+          </div>
+        </div>
         <div className={styles.expenseSummary}>
           <p>
             <strong>Total des dépenses :</strong> {totalExpenses.toFixed(2)} €
           </p>
-          <p className={styles.helpText}>
-            💡 Coche "Obligatoire" pour les dépenses incompressibles (loyer, assurances, etc.)
-            afin de calculer ton reste à vivre. Clique sur "▶ Voir" pour voir le détail de chaque catégorie.
-          </p>
+          {viewMode === 'cards' ? (
+            <p className={styles.helpText}>
+              💡 Glisse-dépose les opérations d'une catégorie à l'autre pour les réorganiser.
+              Coche "Obligatoire" pour les dépenses incompressibles.
+            </p>
+          ) : (
+            <p className={styles.helpText}>
+              💡 Coche "Obligatoire" pour les dépenses incompressibles (loyer, assurances, etc.)
+              afin de calculer ton reste à vivre. Clique sur "▶ Voir" pour voir le détail de chaque catégorie.
+            </p>
+          )}
         </div>
-        <CategoryChart
-          data={categoryTotals}
-          categoryMandatory={categoryMandatory}
-          setCategoryMandatory={setCategoryMandatory}
-          operations={filteredOperations}
-        />
+        {viewMode === 'cards' ? (
+          <CategoryDragDrop
+            data={categoryTotals}
+            categoryMandatory={categoryMandatory}
+            setCategoryMandatory={setCategoryMandatory}
+            operations={filteredOperations}
+            setCategoryEdits={setCategoryEdits}
+          />
+        ) : (
+          <CategoryChart
+            data={categoryTotals}
+            categoryMandatory={categoryMandatory}
+            setCategoryMandatory={setCategoryMandatory}
+            operations={filteredOperations}
+          />
+        )}
       </div>
 
       {mandatorySummary && (

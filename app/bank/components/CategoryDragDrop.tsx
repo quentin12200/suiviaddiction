@@ -37,8 +37,10 @@ export function CategoryDragDrop({
   }
 
   const handleDragStart = (e: React.DragEvent, operation: OperationWithOverrides) => {
+    e.stopPropagation()
     setDraggedOp(operation)
     e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', operation.rowKey)
   }
 
   const handleDragOver = (e: React.DragEvent, categoryName: string) => {
@@ -53,6 +55,8 @@ export function CategoryDragDrop({
 
   const handleDrop = (e: React.DragEvent, targetCategory: string) => {
     e.preventDefault()
+    e.stopPropagation()
+
     if (draggedOp && draggedOp.categoryLabel !== targetCategory) {
       // Mettre à jour la catégorie de l'opération
       setCategoryEdits(prev => ({
@@ -126,10 +130,12 @@ export function CategoryDragDrop({
                   categoryOps.map((op) => (
                     <div
                       key={op.rowKey}
-                      className={styles.operationItem}
+                      className={`${styles.operationItem} ${draggedOp?.rowKey === op.rowKey ? styles.dragging : ''}`}
                       draggable
                       onDragStart={(e) => handleDragStart(e, op)}
+                      onDragEnd={() => setDraggedOp(null)}
                     >
+                      <div className={styles.dragHandle}>⋮⋮</div>
                       <div className={styles.operationMain}>
                         <span className={styles.operationDate}>{op.Date}</span>
                         <span className={styles.operationLabel}>

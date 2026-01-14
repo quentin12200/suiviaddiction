@@ -262,6 +262,7 @@ export default function BankAnalysisPage() {
             setCategoryEdits={setCategoryEdits}
             setRecurrenceEdits={setRecurrenceEdits}
             setExcludedOps={setExcludedOps}
+            allOperations={operationsWithOverrides}
           />
         )}
 

@@ -472,6 +472,107 @@
   font-size: 1.4rem;
 }
 
+/* Category details */
+.detailButton {
+  background: #e0f2fe;
+  border: 1px solid #0284c7;
+  color: #0369a1;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.detailButton:hover {
+  background: #bae6fd;
+}
+
+.detailRow {
+  background: #f8fafc;
+}
+
+.detailCell {
+  padding-left: 32px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailDate {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.detailLabel {
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* Income card */
+.infoCard {
+  background: #f0f9ff;
+  border: 2px solid #7dd3fc;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.infoCard h3 {
+  margin-top: 0;
+  color: #0c4a6e;
+}
+
+.incomesSummary p {
+  margin: 8px 0;
+}
+
+.detailsBox {
+  margin-top: 16px;
+  cursor: pointer;
+}
+
+.detailsBox summary {
+  font-weight: 600;
+  color: #0369a1;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.detailsBox summary:hover {
+  background: #e0f2fe;
+}
+
+.smallTable {
+  width: 100%;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  border-collapse: collapse;
+}
+
+.smallTable th,
+.smallTable td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #e0f2fe;
+}
+
+.smallTable th {
+  background: #e0f2fe;
+  font-weight: 600;
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 16px;

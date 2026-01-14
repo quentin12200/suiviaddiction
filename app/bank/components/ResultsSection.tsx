@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type {
   AnalysisResult,
   OperationWithOverrides,
@@ -29,6 +30,7 @@ interface ResultsSectionProps {
   setCategoryEdits: React.Dispatch<React.SetStateAction<Record<string, string>>>
   setRecurrenceEdits: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
   setExcludedOps: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
+  allOperations: OperationWithOverrides[]
 }
 
 export function ResultsSection({
@@ -50,6 +52,7 @@ export function ResultsSection({
   setCategoryEdits,
   setRecurrenceEdits,
   setExcludedOps,
+  allOperations,
 }: ResultsSectionProps) {
   const endBalance = parseFloat(result.endNextMonthBalance || '0')
   const minBalance = parseFloat(result.minBalance || '0')
@@ -60,6 +63,25 @@ export function ResultsSection({
   const currentMonthExpenses = monthComparison?.current.expenses || 0
   const currentMonthIncome = monthComparison?.current.income || 0
   const currentMonthBalance = currentMonthIncome - currentMonthExpenses
+
+  // Calculer les revenus détectés dans les données
+  const detectedIncomes = useMemo(() => {
+    const incomes = allOperations
+      .filter(op => op.Montant > 0 && !op.excluded)
+      .map(op => ({
+        date: op.Date,
+        label: op['Libelle simplifie'] || op['Libelle operation'],
+        amount: op.Montant,
+        isRecurring: op.recurringLabel
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    const total = incomes.reduce((sum, inc) => sum + inc.amount, 0)
+    const recurring = incomes.filter(inc => inc.isRecurring)
+    const recurringTotal = recurring.reduce((sum, inc) => sum + inc.amount, 0)
+
+    return { incomes, total, recurring, recurringTotal }
+  }, [allOperations])
 
   return (
     <div className={styles.results}>
@@ -90,6 +112,49 @@ export function ResultsSection({
           <h4>Paiements 4x détectés</h4>
           <p className={styles.bigAmount}>{result.paiements4xCount}</p>
         </div>
+      </div>
+
+      <div className={styles.infoCard}>
+        <h3>💵 Revenus détectés dans tes opérations</h3>
+        <div className={styles.incomesSummary}>
+          <p>
+            <strong>Total des revenus :</strong> {detectedIncomes.total.toFixed(2)} € ({detectedIncomes.incomes.length} versements)
+          </p>
+          {detectedIncomes.recurring.length > 0 && (
+            <p>
+              <strong>Revenus récurrents détectés :</strong> {detectedIncomes.recurringTotal.toFixed(2)} €
+              ({detectedIncomes.recurring.length} versements réguliers)
+            </p>
+          )}
+          <details className={styles.detailsBox}>
+            <summary>Voir le détail des revenus</summary>
+            <table className={styles.smallTable}>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Libellé</th>
+                  <th>Montant</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detectedIncomes.incomes.slice(0, 20).map((income, idx) => (
+                  <tr key={idx}>
+                    <td>{income.date}</td>
+                    <td>{income.label}</td>
+                    <td className={styles.positive}>{income.amount.toFixed(2)} €</td>
+                    <td>{income.isRecurring ? <span className={styles.badge}>Récurrent</span> : 'Ponctuel'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        </div>
+        <p className={styles.helpText}>
+          ℹ️ Les prévisions utilisent ces revenus récurrents + les règles de revenus que tu as configurées
+          pour estimer ton solde futur. Si ton salaire du 30 n'apparaît pas comme récurrent, ajoute-le dans
+          "Revenus récurrents (jour de paiement)" en haut de page.
+        </p>
       </div>
 
       {monthComparison && (
@@ -123,13 +188,14 @@ export function ResultsSection({
           </p>
           <p className={styles.helpText}>
             💡 Coche "Obligatoire" pour les dépenses incompressibles (loyer, assurances, etc.)
-            afin de calculer ton reste à vivre.
+            afin de calculer ton reste à vivre. Clique sur "▶ Voir" pour voir le détail de chaque catégorie.
           </p>
         </div>
         <CategoryChart
           data={categoryTotals}
           categoryMandatory={categoryMandatory}
           setCategoryMandatory={setCategoryMandatory}
+          operations={filteredOperations}
         />
       </div>
 

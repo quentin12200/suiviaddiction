@@ -810,6 +810,177 @@
   color: #dc2626;
 }
 
+/* Category Manager (nouveau système sans drag & drop) */
+.categoryManager {
+  position: relative;
+}
+
+.selectionBar {
+  position: sticky;
+  top: 0;
+  background: #1e293b;
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.selectionInfo {
+  font-size: 1.1rem;
+}
+
+.selectionActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.categorySelect {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #0f172a;
+  font-size: 0.95rem;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.moveButton {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.moveButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.moveButton:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.excludeButton {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.excludeButton:hover {
+  background: #dc2626;
+}
+
+.cancelButton {
+  background: #64748b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background: #475569;
+}
+
+.selectAllRow {
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.selectAllRow label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+}
+
+.selectAllRow input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.operationItem.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.opCheckbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.opCheckbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.operationContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.quickExclude {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.quickExclude:hover {
+  background: #fca5a5;
+  transform: scale(1.1);
+}
+
+.selectedCount {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.operationItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.operationItem:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 16px;

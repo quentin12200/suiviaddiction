@@ -8,7 +8,7 @@ import type {
   MandatorySummary
 } from '../types'
 import { CategoryChart } from './CategoryChart'
-import { CategoryDragDrop } from './CategoryDragDrop'
+import { CategoryManager } from './CategoryManager'
 import { OperationsTable } from './OperationsTable'
 import styles from '../bank.module.css'
 
@@ -32,6 +32,7 @@ interface ResultsSectionProps {
   setRecurrenceEdits: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
   setExcludedOps: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
   allOperations: OperationWithOverrides[]
+  operations: OperationWithOverrides[]
 }
 
 export function ResultsSection({
@@ -54,6 +55,7 @@ export function ResultsSection({
   setRecurrenceEdits,
   setExcludedOps,
   allOperations,
+  operations,
 }: ResultsSectionProps) {
   const endBalance = parseFloat(result.endNextMonthBalance || '0')
   const minBalance = parseFloat(result.minBalance || '0')
@@ -191,7 +193,7 @@ export function ResultsSection({
               className={viewMode === 'cards' ? styles.activeView : ''}
               onClick={() => setViewMode('cards')}
             >
-              🎴 Cartes (Glisser-déposer)
+              ✅ Gestion des catégories
             </button>
             <button
               className={viewMode === 'table' ? styles.activeView : ''}
@@ -207,8 +209,8 @@ export function ResultsSection({
           </p>
           {viewMode === 'cards' ? (
             <p className={styles.helpText}>
-              💡 Glisse-dépose les opérations d'une catégorie à l'autre pour les réorganiser.
-              Coche "Obligatoire" pour les dépenses incompressibles.
+              💡 Sélectionne les opérations (checkbox), choisis une catégorie de destination, et clique sur "➜ Déplacer".
+              Utilise le bouton 🚫 pour exclure rapidement une opération.
             </p>
           ) : (
             <p className={styles.helpText}>
@@ -218,12 +220,13 @@ export function ResultsSection({
           )}
         </div>
         {viewMode === 'cards' ? (
-          <CategoryDragDrop
+          <CategoryManager
             data={categoryTotals}
             categoryMandatory={categoryMandatory}
             setCategoryMandatory={setCategoryMandatory}
-            operations={filteredOperations}
+            operations={operations}
             setCategoryEdits={setCategoryEdits}
+            setExcludedOps={setExcludedOps}
           />
         ) : (
           <CategoryChart

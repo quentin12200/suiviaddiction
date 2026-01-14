@@ -8,6 +8,8 @@ import styles from './TasksWidget.module.css'
 export default function TasksWidget() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [todayTasks, setTodayTasks] = useState<Task[]>([])
+  const normalizeDate = (value?: string) => (value ? value.split('T')[0] : undefined)
+  const getTaskDueDate = (task: Task) => normalizeDate(task.dueDate || task.createdAt)
 
   useEffect(() => {
     loadTasks()
@@ -22,10 +24,13 @@ export default function TasksWidget() {
         setTasks(loadedTasks)
 
         const today = new Date().toISOString().split('T')[0]
-        const filtered = loadedTasks.filter(t =>
-          (t.type === 'quotidienne' && !t.completed) ||
-          (t.type === 'ponctuelle' && !t.completed && t.dueDate && t.dueDate <= today)
-        )
+        const filtered = loadedTasks.filter(t => {
+          const taskDueDate = getTaskDueDate(t)
+          return (
+            (t.type === 'quotidienne' && !t.completed) ||
+            (t.type === 'ponctuelle' && !t.completed && taskDueDate && taskDueDate <= today)
+          )
+        })
         setTodayTasks(filtered)
       }
     } catch (error) {

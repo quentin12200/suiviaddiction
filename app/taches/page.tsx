@@ -10,6 +10,8 @@ export default function TachesPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'today' | 'pending' | 'completed'>('today')
+  const normalizeDate = (value?: string) => (value ? value.split('T')[0] : undefined)
+  const getTaskDueDate = (task: Task) => normalizeDate(task.dueDate || task.createdAt)
   const [formData, setFormData] = useState<Partial<Task>>({
     title: '',
     description: '',
@@ -62,12 +64,15 @@ export default function TachesPage() {
       }
 
       // Pour les tâches ponctuelles non complétées
-      if (task.type === 'ponctuelle' && !task.completed && task.dueDate) {
-        const daysOverdue = Math.floor((new Date(today).getTime() - new Date(task.dueDate).getTime()) / (1000 * 60 * 60 * 24))
-        if (daysOverdue > 0) {
-          return {
-            ...task,
-            daysNotCompleted: daysOverdue
+      if (task.type === 'ponctuelle' && !task.completed) {
+        const taskDueDate = getTaskDueDate(task)
+        if (taskDueDate) {
+          const daysOverdue = Math.floor((new Date(today).getTime() - new Date(taskDueDate).getTime()) / (1000 * 60 * 60 * 24))
+          if (daysOverdue > 0) {
+            return {
+              ...task,
+              daysNotCompleted: daysOverdue
+            }
           }
         }
       }
@@ -215,10 +220,13 @@ export default function TachesPage() {
 
     switch (filter) {
       case 'today':
-        return tasks.filter(t =>
-          (t.type === 'quotidienne' && !t.completed) ||
-          (t.type === 'ponctuelle' && !t.completed && t.dueDate && t.dueDate <= today)
-        )
+        return tasks.filter(t => {
+          const taskDueDate = getTaskDueDate(t)
+          return (
+            (t.type === 'quotidienne' && !t.completed) ||
+            (t.type === 'ponctuelle' && !t.completed && taskDueDate && taskDueDate <= today)
+          )
+        })
       case 'pending':
         return tasks.filter(t => !t.completed)
       case 'completed':
@@ -235,9 +243,10 @@ export default function TachesPage() {
       total: tasks.length,
       completed: tasks.filter(t => t.completed).length,
       pending: tasks.filter(t => !t.completed).length,
-      overdue: tasks.filter(t =>
-        !t.completed && t.dueDate && t.dueDate < today
-      ).length,
+      overdue: tasks.filter(t => {
+        const taskDueDate = getTaskDueDate(t)
+        return !t.completed && taskDueDate && taskDueDate < today
+      }).length,
       needsAttention: tasks.filter(t =>
         !t.completed && (t.daysNotCompleted || 0) >= 3
       ).length

@@ -3,8 +3,8 @@ import type { IncomeRule } from '../types'
 
 export function useIncomeRules() {
   const [incomeRules, setIncomeRules] = useState<IncomeRule[]>([
-    { id: crypto.randomUUID(), label: 'Quentin CGT', amount: '2600', day: '30' },
     { id: crypto.randomUUID(), label: 'Salaire Sophie', amount: '1450', day: '20' },
+    { id: crypto.randomUUID(), label: 'Quentin CGT', amount: '2600', day: '30' },
     { id: crypto.randomUUID(), label: 'Aide Aveyron', amount: '450', day: '20' },
   ])
 

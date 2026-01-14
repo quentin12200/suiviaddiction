@@ -23,7 +23,7 @@ export default function BankAnalysisPage() {
   const [file, setFile] = useState<File | null>(null)
   const [solde, setSolde] = useState('')
   const [horizon, setHorizon] = useState('30')
-  const [decouvert, setDecouvert] = useState('-200')
+  const [decouvert, setDecouvert] = useState('-900')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<AnalysisResult | null>(null)
@@ -263,6 +263,7 @@ export default function BankAnalysisPage() {
             setRecurrenceEdits={setRecurrenceEdits}
             setExcludedOps={setExcludedOps}
             allOperations={operationsWithOverrides}
+            operations={operationsWithOverrides}
           />
         )}
 

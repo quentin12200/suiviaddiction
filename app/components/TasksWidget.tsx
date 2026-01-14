@@ -24,7 +24,7 @@ export default function TasksWidget() {
         const today = new Date().toISOString().split('T')[0]
         const filtered = loadedTasks.filter(t =>
           (t.type === 'quotidienne' && !t.completed) ||
-          (t.type === 'ponctuelle' && !t.completed && t.dueDate === today)
+          (t.type === 'ponctuelle' && !t.completed && t.dueDate && t.dueDate <= today)
         )
         setTodayTasks(filtered)
       }

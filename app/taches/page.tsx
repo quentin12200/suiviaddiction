@@ -217,7 +217,7 @@ export default function TachesPage() {
       case 'today':
         return tasks.filter(t =>
           (t.type === 'quotidienne' && !t.completed) ||
-          (t.type === 'ponctuelle' && !t.completed && t.dueDate === today)
+          (t.type === 'ponctuelle' && !t.completed && t.dueDate && t.dueDate <= today)
         )
       case 'pending':
         return tasks.filter(t => !t.completed)

@@ -13,19 +13,23 @@ export default function TasksWidget() {
     loadTasks()
   }, [])
 
-  const loadTasks = () => {
-    const saved = localStorage.getItem('userTasks')
-    if (saved) {
-      const loadedTasks: Task[] = JSON.parse(saved)
-      setTasks(loadedTasks)
+  const loadTasks = async () => {
+    try {
+      const response = await fetch('/api/tasks')
+      const data = await response.json()
+      if (data.success) {
+        const loadedTasks: Task[] = data.tasks
+        setTasks(loadedTasks)
 
-      // Filtrer pour aujourd'hui
-      const today = new Date().toISOString().split('T')[0]
-      const filtered = loadedTasks.filter(t =>
-        (t.type === 'quotidienne' && !t.completed) ||
-        (t.type === 'ponctuelle' && !t.completed && t.dueDate === today)
-      )
-      setTodayTasks(filtered)
+        const today = new Date().toISOString().split('T')[0]
+        const filtered = loadedTasks.filter(t =>
+          (t.type === 'quotidienne' && !t.completed) ||
+          (t.type === 'ponctuelle' && !t.completed && t.dueDate === today)
+        )
+        setTodayTasks(filtered)
+      }
+    } catch (error) {
+      console.error('Erreur chargement tâches widget:', error)
     }
   }
 
@@ -54,9 +58,14 @@ export default function TasksWidget() {
       return task
     })
 
-    localStorage.setItem('userTasks', JSON.stringify(updated))
     setTasks(updated)
-    loadTasks() // Recharger pour mettre à jour l'affichage
+    fetch(`/api/tasks/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated.find(task => task.id === id)),
+    }).finally(() => {
+      loadTasks()
+    })
   }
 
   const stats = {

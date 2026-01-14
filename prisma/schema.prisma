@@ -144,6 +144,28 @@ model Reading {
   @@index([category])
 }
 
+// Modèle pour les tâches
+model TaskItem {
+  id             String   @id @default(cuid())
+  title          String
+  description    String   @default("")
+  type           String   // ponctuelle, quotidienne
+  priority       String   @default("normale")
+  category       String   @default("Personnel")
+  completed      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  dueDate        DateTime?
+  lastCompleted  DateTime?
+  daysNotCompleted Int    @default(0)
+  isFromHabit    Boolean  @default(false)
+  habitId        String?
+  updatedAt      DateTime @updatedAt
+
+  @@index([completed])
+  @@index([type])
+  @@index([category])
+}
+
 // Modèle pour les Habitudes Atomiques (James Clear)
 model AtomicHabit {
   id          String   @id @default(cuid())

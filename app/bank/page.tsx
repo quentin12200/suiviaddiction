@@ -148,6 +148,15 @@ export default function BankAnalysisPage() {
             type: entry.type,
           }))
       ))
+      formData.append('incomeRules', JSON.stringify(
+        incomeRules
+          .filter((rule) => rule.label && rule.amount && rule.day)
+          .map((rule) => ({
+            label: rule.label,
+            amount: Number(rule.amount),
+            day: Number(rule.day),
+          }))
+      ))
 
       const response = await fetch('/api/bank-analysis', {
         method: 'POST',
@@ -173,20 +182,6 @@ export default function BankAnalysisPage() {
       setLoading(false)
     }
   }
-
-  const categoryTotals = useMemo(() => {
-    const totals: Record<string, number> = {}
-    operations.forEach((operation) => {
-      if (operation.Montant >= 0) return
-      const key = `${operation.Merchant_key}-${operation.Date}-${operation.Montant}`
-      if (excludedOps[key]) return
-      const category = categoryEdits[operation.Merchant_key] || operation.Categorie || 'Autre'
-      totals[category] = (totals[category] || 0) + Math.abs(operation.Montant)
-    })
-    return Object.entries(totals)
-      .map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }))
-      .sort((a, b) => b.value - a.value)
-  }, [operations, categoryEdits, excludedOps])
 
   const operationsWithOverrides = useMemo(() => (
     operations.map((operation) => {
@@ -236,6 +231,19 @@ export default function BankAnalysisPage() {
       return true
     })
   }, [operationsWithOverrides, datePreset, dateFrom, dateTo, filters])
+
+  const categoryTotals = useMemo(() => {
+    const totals: Record<string, number> = {}
+    filteredOperations.forEach((operation) => {
+      if (operation.Montant >= 0) return
+      if (operation.excluded) return
+      const category = operation.categoryLabel || 'Autre'
+      totals[category] = (totals[category] || 0) + Math.abs(operation.Montant)
+    })
+    return Object.entries(totals)
+      .map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }))
+      .sort((a, b) => b.value - a.value)
+  }, [filteredOperations])
 
   const monthComparison = useMemo(() => {
     if (!operations.length) return null

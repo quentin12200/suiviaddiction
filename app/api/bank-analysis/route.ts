@@ -63,6 +63,12 @@ type ManualEntry = {
   type: 'debit' | 'credit'
 }
 
+type IncomeRule = {
+  label: string
+  amount: number
+  day: number
+}
+
 const parseDate = (value?: string): Date | null => {
   if (!value) return null
   const cleaned = value.trim()
@@ -260,6 +266,7 @@ const generateForecast = (
   recurrentExpenses: Record<string, unknown>[],
   recurrentIncomes: Record<string, unknown>[],
   manualEntries: ManualEntry[],
+  incomeRules: IncomeRule[],
   soldeInitial: number,
   horizon: number,
 ) => {
@@ -298,6 +305,23 @@ const generateForecast = (
       amount,
       label: entry.label || 'Manual',
     })
+  })
+
+  incomeRules.forEach((rule) => {
+    if (!rule.amount || !rule.day) return
+    for (let cursor = new Date(today); cursor <= endDate; cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)) {
+      const year = cursor.getFullYear()
+      const month = cursor.getMonth()
+      const lastDay = new Date(year, month + 1, 0).getDate()
+      const day = Math.min(rule.day, lastDay)
+      const incomeDate = new Date(year, month, day)
+      if (incomeDate < today || incomeDate > endDate) continue
+      recurringEvents.push({
+        date: incomeDate.toISOString().slice(0, 10),
+        amount: Math.abs(rule.amount),
+        label: rule.label || 'Revenu',
+      })
+    }
   })
 
   const recurringDaily = new Map<string, number>()
@@ -348,6 +372,7 @@ export async function POST(request: Request) {
     const horizon = formData.get('horizon')
     const decouvert = formData.get('decouvert')
     const manualEntriesRaw = formData.get('manualEntries')
+    const incomeRulesRaw = formData.get('incomeRules')
 
     if (!(file instanceof File)) {
       return NextResponse.json({ success: false, error: 'Fichier CSV manquant.' }, { status: 400 })
@@ -412,6 +437,15 @@ export async function POST(request: Request) {
       }
     }
 
+    let parsedIncomeRules: IncomeRule[] = []
+    if (typeof incomeRulesRaw === 'string' && incomeRulesRaw.trim()) {
+      try {
+        parsedIncomeRules = JSON.parse(incomeRulesRaw)
+      } catch (parseError) {
+        parsedIncomeRules = []
+      }
+    }
+
     const horizonValue = typeof horizon === 'string' && horizon ? Number(horizon) : 30
     const endNextMonth = endOfNextMonthDate()
     const today = new Date()
@@ -424,6 +458,7 @@ export async function POST(request: Request) {
       recurrentExpenses,
       recurrentIncomes,
       parsedManualEntries,
+      parsedIncomeRules,
       Number(solde),
       effectiveHorizon,
     )

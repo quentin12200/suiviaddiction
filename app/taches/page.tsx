@@ -19,16 +19,23 @@ export default function TachesPage() {
     completed: false
   })
 
-  // Charger les tâches depuis localStorage
+  // Charger les tâches depuis l'API (sync multi-appareils)
   useEffect(() => {
-    const saved = localStorage.getItem('userTasks')
-    if (saved) {
-      const loadedTasks = JSON.parse(saved)
-      // Mettre à jour les compteurs et reporter les tâches
-      const updatedTasks = updateTasksDaily(loadedTasks)
-      setTasks(updatedTasks)
-      localStorage.setItem('userTasks', JSON.stringify(updatedTasks))
+    const loadTasks = async () => {
+      try {
+        const response = await fetch('/api/tasks')
+        const data = await response.json()
+        if (data.success) {
+          const updatedTasks = updateTasksDaily(data.tasks || [])
+          setTasks(updatedTasks)
+          await syncTasks(updatedTasks)
+        }
+      } catch (error) {
+        console.error('Erreur chargement tâches:', error)
+      }
     }
+
+    loadTasks()
   }, [])
 
   // Système intelligent de report automatique et compteurs
@@ -69,10 +76,20 @@ export default function TachesPage() {
     })
   }
 
-  // Sauvegarder dans localStorage
+  const syncTasks = async (newTasks: Task[]) => {
+    await Promise.all(
+      newTasks.map((task) =>
+        fetch(`/api/tasks/${task.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(task),
+        })
+      )
+    )
+  }
+
   const saveTasks = (newTasks: Task[]) => {
     setTasks(newTasks)
-    localStorage.setItem('userTasks', JSON.stringify(newTasks))
   }
 
   // Ajouter ou modifier une tâche
@@ -89,6 +106,11 @@ export default function TachesPage() {
         t.id === editingId ? { ...t, ...formData } as Task : t
       )
       saveTasks(updated)
+      fetch(`/api/tasks/${editingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated.find(t => t.id === editingId)),
+      })
       setEditingId(null)
     } else {
       // Ajouter
@@ -105,6 +127,11 @@ export default function TachesPage() {
         daysNotCompleted: 0
       }
       saveTasks([...tasks, newTask])
+      fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask),
+      })
     }
 
     // Reset form
@@ -146,12 +173,18 @@ export default function TachesPage() {
     })
 
     saveTasks(updated)
+    fetch(`/api/tasks/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated.find(task => task.id === id)),
+    })
   }
 
   // Supprimer une tâche
   const deleteTask = (id: string) => {
     if (confirm('Supprimer cette tâche ?')) {
       saveTasks(tasks.filter(t => t.id !== id))
+      fetch(`/api/tasks/${id}`, { method: 'DELETE' })
     }
   }
 

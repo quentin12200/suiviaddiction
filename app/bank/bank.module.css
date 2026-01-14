@@ -241,18 +241,47 @@
   margin-bottom: 16px;
 }
 
-.summaryGrid h4 {
-  margin-bottom: 4px;
+.summaryGrid > div {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
 }
 
-.summaryGrid p {
-  font-size: 1.4rem;
+.summaryGrid h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.bigAmount {
+  font-size: 1.8rem;
   font-weight: 700;
-  margin: 0;
+  margin: 4px 0;
 }
 
 .summaryGrid small {
   color: #64748b;
+  font-size: 0.85rem;
+}
+
+.cardDanger {
+  background: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+}
+
+.cardDanger .bigAmount {
+  color: #dc2626;
+}
+
+.cardSuccess {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+}
+
+.cardSuccess .bigAmount {
+  color: #16a34a;
 }
 
 .console {
@@ -304,6 +333,143 @@
   background: rgba(255, 255, 255, 0.6);
   padding: 12px;
   border-radius: 8px;
+}
+
+/* Alert and info boxes */
+.alert {
+  background: #fef2f2;
+  border: 2px solid #fca5a5;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.alert strong {
+  color: #dc2626;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.alert p {
+  margin: 0;
+  color: #991b1b;
+}
+
+.infoBox {
+  background: #eff6ff;
+  border: 2px solid #93c5fd;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.infoBox p {
+  margin: 8px 0;
+  color: #1e40af;
+}
+
+.warning {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 4px;
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* Month summary */
+.monthSummary {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.monthSummary h3 {
+  margin-top: 0;
+}
+
+.flowGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.flowItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flowLabel {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.flowPositive {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.flowNegative {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+/* Expense summary */
+.expenseSummary {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.expenseSummary p {
+  margin: 8px 0;
+}
+
+.helpText {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Remaining summary */
+.remainingSummary {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.remainingCalc {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calcRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.calcAmount {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.calcTotal {
+  border-top: 2px solid #cbd5e1;
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.calcTotal .calcAmount {
+  font-size: 1.4rem;
 }
 
 @media (max-width: 640px) {

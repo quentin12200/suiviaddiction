@@ -2,11 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Task } from '../../data/taskTypes'
+import { useSyncQueue } from './useSyncQueue'
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Système de synchronisation robuste
+  const { syncStatus, pendingCount, isOnline, enqueue, forceSync } = useSyncQueue()
 
   // Système intelligent de report automatique et compteurs
   const updateTasksDaily = useCallback((taskList: Task[]): Task[] => {
@@ -105,65 +109,46 @@ export function useTasks() {
       daysNotCompleted: 0
     }
 
+    // Optimistic update
     const updatedTasks = [...tasks, newTask]
     setTasks(updatedTasks)
 
-    try {
-      await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTask),
-      })
-    } catch (err) {
-      console.error('Erreur ajout tâche:', err)
-      setError('Erreur lors de l\'ajout')
-      // Rollback
-      setTasks(tasks)
-    }
-  }, [tasks])
+    // Ajouter à la queue de sync
+    enqueue(newTask.id, 'create', newTask)
+  }, [tasks, enqueue])
 
   // Modifier une tâche
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+    // Optimistic update
     const updatedTasks = tasks.map(t =>
       t.id === id ? { ...t, ...updates } as Task : t
     )
     setTasks(updatedTasks)
 
-    try {
-      await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedTasks.find(t => t.id === id)),
-      })
-    } catch (err) {
-      console.error('Erreur modification tâche:', err)
-      setError('Erreur lors de la modification')
-      // Rollback
-      setTasks(tasks)
+    // Ajouter à la queue de sync
+    const updatedTask = updatedTasks.find(t => t.id === id)
+    if (updatedTask) {
+      enqueue(id, 'update', updatedTask)
     }
-  }, [tasks])
+  }, [tasks, enqueue])
 
   // Supprimer une tâche
   const deleteTask = useCallback(async (id: string) => {
     if (!confirm('Supprimer cette tâche ?')) return
 
+    // Optimistic update
     const updatedTasks = tasks.filter(t => t.id !== id)
     setTasks(updatedTasks)
 
-    try {
-      await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
-    } catch (err) {
-      console.error('Erreur suppression tâche:', err)
-      setError('Erreur lors de la suppression')
-      // Rollback
-      setTasks(tasks)
-    }
-  }, [tasks])
+    // Ajouter à la queue de sync
+    enqueue(id, 'delete', null)
+  }, [tasks, enqueue])
 
   // Cocher/décocher une tâche
   const toggleTask = useCallback(async (id: string) => {
     const today = new Date().toISOString().split('T')[0]
 
+    // Optimistic update
     const updatedTasks = tasks.map(task => {
       if (task.id === id) {
         const newCompleted = !task.completed
@@ -188,19 +173,12 @@ export function useTasks() {
 
     setTasks(updatedTasks)
 
-    try {
-      await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedTasks.find(task => task.id === id)),
-      })
-    } catch (err) {
-      console.error('Erreur toggle tâche:', err)
-      setError('Erreur lors de la modification')
-      // Rollback
-      setTasks(tasks)
+    // Ajouter à la queue de sync
+    const updatedTask = updatedTasks.find(task => task.id === id)
+    if (updatedTask) {
+      enqueue(id, 'update', updatedTask)
     }
-  }, [tasks])
+  }, [tasks, enqueue])
 
   return {
     tasks,
@@ -211,5 +189,10 @@ export function useTasks() {
     deleteTask,
     toggleTask,
     refreshTasks: loadTasks,
+    // Sync info
+    syncStatus,
+    pendingCount,
+    isOnline,
+    forceSync,
   }
 }

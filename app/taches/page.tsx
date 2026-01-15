@@ -9,11 +9,23 @@ import { TaskStatsSection } from './components/TaskStatsSection'
 import { TaskFilters } from './components/TaskFilters'
 import { TaskForm } from './components/TaskForm'
 import { TaskList } from './components/TaskList'
+import { SyncIndicator } from './components/SyncIndicator'
 import styles from './taches.module.css'
 
 export default function TachesPage() {
   // Hooks
-  const { tasks, isLoading, addTask, updateTask, deleteTask, toggleTask } = useTasks()
+  const {
+    tasks,
+    isLoading,
+    addTask,
+    updateTask,
+    deleteTask,
+    toggleTask,
+    syncStatus,
+    pendingCount,
+    isOnline,
+    forceSync,
+  } = useTasks()
   const { filter, setFilter, filteredTasks } = useTaskFilters(tasks)
   const stats = useTaskStats(tasks)
 
@@ -55,6 +67,14 @@ export default function TachesPage() {
           <h1 className={styles.title}>📋 Mes Tâches</h1>
           <p className={styles.subtitle}>Système intelligent avec report automatique</p>
         </div>
+
+        {/* Indicateur de synchronisation */}
+        <SyncIndicator
+          syncStatus={syncStatus}
+          pendingCount={pendingCount}
+          isOnline={isOnline}
+          onForceSync={forceSync}
+        />
 
         {/* Statistiques */}
         <TaskStatsSection stats={stats} />

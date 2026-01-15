@@ -23,6 +23,15 @@ export function useSoldeProjection({
 
   // Calculer la projection jour par jour
   const projection = useMemo((): SoldeProjection[] => {
+    console.log('🔍 useSoldeProjection - Calcul de la projection')
+    console.log('  Solde initial:', solde)
+    console.log('  Nombre de dépenses récurrentes:', expenses.length)
+    if (expenses.length > 0) {
+      console.log('  Exemples de dépenses:', expenses.slice(0, 3).map(e => `${e.label} (le ${e.dayOfMonth})`))
+    }
+    console.log('  Nombre de revenus:', incomeRules.length)
+    console.log('  Horizon (jours):', horizonDays)
+
     const result: SoldeProjection[] = []
     const today = new Date()
     let currentSolde = solde
@@ -63,6 +72,7 @@ export function useSoldeProjection({
       expenses.forEach(exp => {
         if (!exp.isActive) return
         if (exp.dayOfMonth === dayOfMonth) {
+          console.log(`  📅 Jour ${dayOfMonth} (${dateStr}): Dépense trouvée - ${exp.label} (${exp.amount}€)`)
 
           // Vérifier si la dépense est dans la période de validité
           if (exp.startDate && new Date(exp.startDate) > date) return

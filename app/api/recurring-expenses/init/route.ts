@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Créer toutes les dépenses
     const expenses = await prisma.recurringExpense.createMany({
-      data: DEFAULT_EXPENSES.map(exp => ({
+      data: DEFAULT_EXPENSES.map((exp: any) => ({
         label: exp.label,
         amount: exp.amount,
         dayOfMonth: exp.dayOfMonth,

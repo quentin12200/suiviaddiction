@@ -273,9 +273,11 @@ async function migrate() {
 
       for (const expense of expenses) {
         const id = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-        const frequency = expense.frequency || 'mensuel'
-        const startDate = expense.startDate ? `'${expense.startDate}'` : 'NULL'
-        const endDate = expense.endDate ? `'${expense.endDate}'` : 'NULL'
+        const frequency = (expense as any).frequency || 'mensuel'
+        const startDate = (expense as any).startDate ? `'${(expense as any).startDate}'` : 'NULL'
+        const endDate = (expense as any).endDate ? `'${(expense as any).endDate}'` : 'NULL'
+        const isVariable = (expense as any).isVariable || 0
+        const variableMonths = (expense as any).variableMonths ? `'${(expense as any).variableMonths}'` : 'NULL'
 
         await prisma.$executeRawUnsafe(`
           INSERT INTO RecurringExpense (
@@ -288,8 +290,8 @@ async function migrate() {
             ${expense.dayOfMonth},
             '${frequency}',
             '${expense.category}',
-            ${expense.isVariable || 0},
-            ${expense.variableMonths ? `'${expense.variableMonths}'` : 'NULL'},
+            ${isVariable},
+            ${variableMonths},
             1,
             ${startDate},
             ${endDate},

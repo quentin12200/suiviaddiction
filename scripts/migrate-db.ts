@@ -133,9 +133,13 @@ async function migrate() {
 
     console.log('✅ Index Thought créés')
 
-    // Créer la table TaskItem
+    // Supprimer l'ancienne table TaskItem si elle existe avec le mauvais format
+    await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "TaskItem"`)
+    console.log('🗑️ Ancienne table TaskItem supprimée (si existante)')
+
+    // Créer la table TaskItem avec le bon format DATETIME
     await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS "TaskItem" (
+      CREATE TABLE "TaskItem" (
         "id" TEXT PRIMARY KEY NOT NULL,
         "title" TEXT NOT NULL,
         "description" TEXT NOT NULL DEFAULT '',
@@ -143,13 +147,13 @@ async function migrate() {
         "priority" TEXT NOT NULL DEFAULT 'normale',
         "category" TEXT NOT NULL DEFAULT 'Personnel',
         "completed" INTEGER NOT NULL DEFAULT 0,
-        "createdAt" INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-        "dueDate" INTEGER,
-        "lastCompleted" INTEGER,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "dueDate" DATETIME,
+        "lastCompleted" DATETIME,
         "daysNotCompleted" INTEGER NOT NULL DEFAULT 0,
         "isFromHabit" INTEGER NOT NULL DEFAULT 0,
         "habitId" TEXT,
-        "updatedAt" INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       )
     `)
 

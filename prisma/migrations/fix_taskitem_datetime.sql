@@ -1,5 +1,9 @@
--- Add TaskItem table for Turso (compatible with Prisma DateTime)
-CREATE TABLE IF NOT EXISTS TaskItem (
+-- Drop and recreate TaskItem table with correct DATETIME format
+-- This fixes the "Conversion failed: string-encoded number must be an i32" error
+
+DROP TABLE IF EXISTS TaskItem;
+
+CREATE TABLE TaskItem (
   id TEXT PRIMARY KEY NOT NULL,
   title TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
@@ -16,6 +20,6 @@ CREATE TABLE IF NOT EXISTS TaskItem (
   updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS TaskItem_completed_idx ON TaskItem(completed);
-CREATE INDEX IF NOT EXISTS TaskItem_type_idx ON TaskItem(type);
-CREATE INDEX IF NOT EXISTS TaskItem_category_idx ON TaskItem(category);
+CREATE INDEX TaskItem_completed_idx ON TaskItem(completed);
+CREATE INDEX TaskItem_type_idx ON TaskItem(type);
+CREATE INDEX TaskItem_category_idx ON TaskItem(category);

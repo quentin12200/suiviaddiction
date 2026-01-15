@@ -172,6 +172,41 @@ async function migrate() {
     `)
 
     console.log('✅ Index TaskItem créés')
+
+    // Créer la table RecurringExpense
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "RecurringExpense" (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "label" TEXT NOT NULL,
+        "amount" REAL NOT NULL,
+        "dayOfMonth" INTEGER NOT NULL,
+        "frequency" TEXT NOT NULL DEFAULT 'mensuel',
+        "category" TEXT NOT NULL DEFAULT 'Autre',
+        "startDate" DATETIME,
+        "endDate" DATETIME,
+        "isVariable" INTEGER NOT NULL DEFAULT 0,
+        "variableMonths" TEXT,
+        "isActive" INTEGER NOT NULL DEFAULT 1,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+
+    console.log('✅ Table RecurringExpense créée')
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "RecurringExpense_dayOfMonth_idx" ON "RecurringExpense"("dayOfMonth")
+    `)
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "RecurringExpense_isActive_idx" ON "RecurringExpense"("isActive")
+    `)
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "RecurringExpense_category_idx" ON "RecurringExpense"("category")
+    `)
+
+    console.log('✅ Index RecurringExpense créés')
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

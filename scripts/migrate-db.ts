@@ -207,6 +207,67 @@ async function migrate() {
     `)
 
     console.log('✅ Index RecurringExpense créés')
+
+    // Pré-remplir les dépenses récurrentes par défaut (si la table est vide)
+    const expensesCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM RecurringExpense`
+    const count = (expensesCount as any)[0].count
+
+    if (count === 0) {
+      console.log('📝 Insertion des dépenses récurrentes par défaut...')
+
+      const expenses = [
+        { label: 'Crédit Immo', amount: 460, dayOfMonth: 5, category: 'Crédit' },
+        { label: 'Assurance Emprunteur', amount: 14, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'Mutuelle', amount: 55.96, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'Impôts', amount: 237, dayOfMonth: 15, category: 'Autre' },
+        { label: 'EDF', amount: 80, dayOfMonth: 5, category: 'Énergie', isVariable: 1, variableMonths: '{"1":238,"2":150}' },
+        { label: 'Eau', amount: 30, dayOfMonth: 16, category: 'Énergie' },
+        { label: 'Internet', amount: 29.99, dayOfMonth: 17, category: 'Abonnement' },
+        { label: 'Netflix', amount: 17.99, dayOfMonth: 5, category: 'Abonnement' },
+        { label: 'Spotify', amount: 10.99, dayOfMonth: 5, category: 'Abonnement' },
+        { label: 'Canal+', amount: 24.99, dayOfMonth: 5, category: 'Abonnement' },
+        { label: 'Assurance Voiture', amount: 45, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'Téléphone Sophie', amount: 9.99, dayOfMonth: 7, category: 'Abonnement' },
+        { label: 'Téléphone Quentin', amount: 19.99, dayOfMonth: 12, category: 'Abonnement' },
+        { label: 'Piscine', amount: 35, dayOfMonth: 5, category: 'Autre' },
+        { label: 'Salle de sport', amount: 29.90, dayOfMonth: 1, category: 'Abonnement' },
+        { label: 'Loyer garage', amount: 50, dayOfMonth: 1, category: 'Autre' },
+        { label: 'Essence', amount: 150, dayOfMonth: 1, category: 'Autre' },
+        { label: 'Courses alimentaires', amount: 400, dayOfMonth: 5, category: 'Autre' },
+        { label: 'Courses alimentaires', amount: 200, dayOfMonth: 15, category: 'Autre' },
+        { label: 'Courses alimentaires', amount: 200, dayOfMonth: 25, category: 'Autre' },
+        { label: 'Prime assurance habitation', amount: 45, dayOfMonth: 20, category: 'Assurance' },
+        { label: 'Frais bancaires', amount: 5, dayOfMonth: 1, category: 'Autre' },
+        { label: 'Cantine enfants', amount: 80, dayOfMonth: 5, category: 'Autre' },
+      ]
+
+      for (const expense of expenses) {
+        const id = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        await prisma.$executeRawUnsafe(`
+          INSERT INTO RecurringExpense (
+            id, label, amount, dayOfMonth, frequency, category,
+            isVariable, variableMonths, isActive, createdAt, updatedAt
+          ) VALUES (
+            '${id}',
+            '${expense.label.replace(/'/g, "''")}',
+            ${expense.amount},
+            ${expense.dayOfMonth},
+            'mensuel',
+            '${expense.category}',
+            ${expense.isVariable || 0},
+            ${expense.variableMonths ? `'${expense.variableMonths}'` : 'NULL'},
+            1,
+            datetime('now'),
+            datetime('now')
+          )
+        `)
+      }
+
+      console.log(`✅ ${expenses.length} dépenses récurrentes insérées`)
+    } else {
+      console.log(`ℹ️ ${count} dépenses récurrentes déjà présentes, pas d'insertion`)
+    }
+
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

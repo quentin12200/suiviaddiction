@@ -90,6 +90,35 @@ export function useSyncQueue() {
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue))
   }
 
+  // Exécuter une sync avec retry et backoff
+  const executeSyncWithRetry = useCallback(async (item: PendingSync): Promise<void> => {
+    const delay = item.retries > 0 ? RETRY_DELAYS[item.retries - 1] || 4000 : 0
+
+    if (delay > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+
+    const endpoint = item.action === 'create'
+      ? '/api/tasks'
+      : `/api/tasks/${item.taskId}`
+
+    const method = item.action === 'create'
+      ? 'POST'
+      : item.action === 'update'
+        ? 'PATCH'
+        : 'DELETE'
+
+    const response = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: method !== 'DELETE' ? JSON.stringify(item.data) : undefined,
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+  }, [])
+
   // Traiter la queue
   const processQueue = useCallback(async () => {
     const queue = getQueue()
@@ -132,36 +161,7 @@ export function useSyncQueue() {
     } else {
       setSyncStatus('pending')
     }
-  }, [])
-
-  // Exécuter une sync avec retry et backoff
-  const executeSyncWithRetry = async (item: PendingSync): Promise<void> => {
-    const delay = item.retries > 0 ? RETRY_DELAYS[item.retries - 1] || 4000 : 0
-
-    if (delay > 0) {
-      await new Promise(resolve => setTimeout(resolve, delay))
-    }
-
-    const endpoint = item.action === 'create'
-      ? '/api/tasks'
-      : `/api/tasks/${item.taskId}`
-
-    const method = item.action === 'create'
-      ? 'POST'
-      : item.action === 'update'
-        ? 'PATCH'
-        : 'DELETE'
-
-    const response = await fetch(endpoint, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: method !== 'DELETE' ? JSON.stringify(item.data) : undefined,
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
-    }
-  }
+  }, [executeSyncWithRetry])
 
   // Forcer le traitement de la queue (bouton manuel)
   const forceSync = useCallback(() => {

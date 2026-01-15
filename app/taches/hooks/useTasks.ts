@@ -50,22 +50,9 @@ export function useTasks() {
     })
   }, [])
 
-  // Synchroniser les tâches avec l'API
-  const syncTasks = useCallback(async (newTasks: Task[]) => {
-    await Promise.all(
-      newTasks.map((task) =>
-        fetch(`/api/tasks/${task.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(task),
-        })
-      )
-    )
-  }, [])
-
   // Charger les tâches depuis l'API
-  const loadTasks = useCallback(async () => {
-    setIsLoading(true)
+  const loadTasks = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true)
     setError(null)
     try {
       const response = await fetch('/api/tasks')
@@ -73,7 +60,6 @@ export function useTasks() {
       if (data.success) {
         const updatedTasks = updateTasksDaily(data.tasks || [])
         setTasks(updatedTasks)
-        await syncTasks(updatedTasks)
       } else {
         setError('Erreur de chargement des tâches')
       }
@@ -81,13 +67,23 @@ export function useTasks() {
       console.error('Erreur chargement tâches:', err)
       setError('Erreur de connexion')
     } finally {
-      setIsLoading(false)
+      if (showLoading) setIsLoading(false)
     }
-  }, [updateTasksDaily, syncTasks])
+  }, [updateTasksDaily])
 
   // Charger au montage
   useEffect(() => {
     loadTasks()
+  }, [loadTasks])
+
+  // Polling pour sync multi-appareils (refresh toutes les 10 secondes)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Recharger les tâches depuis l'API sans afficher "Chargement..."
+      loadTasks(false)
+    }, 10000) // 10 secondes
+
+    return () => clearInterval(interval)
   }, [loadTasks])
 
   // Ajouter une tâche

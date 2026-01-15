@@ -72,11 +72,22 @@ export function useSoldeProjection({
       expenses.forEach(exp => {
         if (!exp.isActive) return
         if (exp.dayOfMonth === dayOfMonth) {
-          console.log(`  📅 Jour ${dayOfMonth} (${dateStr}): Dépense trouvée - ${exp.label} (${exp.amount}€)`)
 
           // Vérifier si la dépense est dans la période de validité
           if (exp.startDate && new Date(exp.startDate) > date) return
           if (exp.endDate && new Date(exp.endDate) < date) return
+
+          // Gérer les dépenses bimensuelles (tous les 2 mois)
+          if (exp.frequency === 'bimensuel') {
+            const currentMonth = date.getMonth() + 1 // 1-12
+            const startMonth = exp.startDate ? new Date(exp.startDate).getMonth() + 1 : 1
+            // Vérifier si on est dans un mois valide (même parité que le mois de départ)
+            if ((currentMonth - startMonth) % 2 !== 0) {
+              return // Pas le bon mois pour cette dépense bimensuelle
+            }
+          }
+
+          console.log(`  📅 Jour ${dayOfMonth} (${dateStr}): Dépense trouvée - ${exp.label} (${exp.amount}€)${exp.frequency === 'bimensuel' ? ' [BIMENSUEL]' : ''}`)
 
           // Gérer les dépenses variables par mois
           let amount = exp.amount

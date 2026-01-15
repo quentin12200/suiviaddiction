@@ -216,47 +216,83 @@ async function migrate() {
       console.log('📝 Insertion des dépenses récurrentes par défaut...')
 
       const expenses = [
-        { label: 'Crédit Immo', amount: 460, dayOfMonth: 5, category: 'Crédit' },
-        { label: 'Assurance Emprunteur', amount: 14, dayOfMonth: 5, category: 'Assurance' },
-        { label: 'Mutuelle', amount: 55.96, dayOfMonth: 5, category: 'Assurance' },
-        { label: 'Impôts', amount: 237, dayOfMonth: 15, category: 'Autre' },
-        { label: 'EDF', amount: 80, dayOfMonth: 5, category: 'Énergie', isVariable: 1, variableMonths: '{"1":238,"2":150}' },
-        { label: 'Eau', amount: 30, dayOfMonth: 16, category: 'Énergie' },
-        { label: 'Internet', amount: 29.99, dayOfMonth: 17, category: 'Abonnement' },
-        { label: 'Netflix', amount: 17.99, dayOfMonth: 5, category: 'Abonnement' },
-        { label: 'Spotify', amount: 10.99, dayOfMonth: 5, category: 'Abonnement' },
-        { label: 'Canal+', amount: 24.99, dayOfMonth: 5, category: 'Abonnement' },
-        { label: 'Assurance Voiture', amount: 45, dayOfMonth: 5, category: 'Assurance' },
-        { label: 'Téléphone Sophie', amount: 9.99, dayOfMonth: 7, category: 'Abonnement' },
-        { label: 'Téléphone Quentin', amount: 19.99, dayOfMonth: 12, category: 'Abonnement' },
-        { label: 'Piscine', amount: 35, dayOfMonth: 5, category: 'Autre' },
-        { label: 'Salle de sport', amount: 29.90, dayOfMonth: 1, category: 'Abonnement' },
-        { label: 'Loyer garage', amount: 50, dayOfMonth: 1, category: 'Autre' },
-        { label: 'Essence', amount: 150, dayOfMonth: 1, category: 'Autre' },
-        { label: 'Courses alimentaires', amount: 400, dayOfMonth: 5, category: 'Autre' },
-        { label: 'Courses alimentaires', amount: 200, dayOfMonth: 15, category: 'Autre' },
-        { label: 'Courses alimentaires', amount: 200, dayOfMonth: 25, category: 'Autre' },
-        { label: 'Prime assurance habitation', amount: 45, dayOfMonth: 20, category: 'Assurance' },
-        { label: 'Frais bancaires', amount: 5, dayOfMonth: 1, category: 'Autre' },
-        { label: 'Cantine enfants', amount: 80, dayOfMonth: 5, category: 'Autre' },
+        // Jour 5 - Jour critique 1187,45€
+        { label: 'Crédit immobilier', amount: 653.95, dayOfMonth: 5, category: 'Crédit' },
+        { label: 'CE Midi-Pyrénées (assurances)', amount: 243.68, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'BPCE Assurances IARD (1)', amount: 104.24, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'BPCE Assurances IARD (2)', amount: 69.13, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'BPCE Assurances IARD (3)', amount: 45.56, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'Canva', amount: 28.00, dayOfMonth: 5, category: 'Abonnement' },
+        { label: 'Tech VIP', amount: 29.90, dayOfMonth: 5, category: 'Abonnement' },
+        { label: 'Blizzard', amount: 12.99, dayOfMonth: 5, category: 'Abonnement' },
+
+        // Jour 6
+        { label: 'CNP Assurances', amount: 5.00, dayOfMonth: 6, category: 'Assurance' },
+        { label: 'PayPal', amount: 75.00, dayOfMonth: 6, category: 'Autre', endDate: '2026-03-31' },
+
+        // Jour 7
+        { label: 'Section locale Multipro', amount: 20.00, dayOfMonth: 7, category: 'Autre' },
+
+        // Jour 9
+        { label: 'EDF électricité', amount: 150.00, dayOfMonth: 9, category: 'Énergie' },
+
+        // Jour 12
+        { label: 'Association financement PCF', amount: 26.00, dayOfMonth: 12, category: 'Autre' },
+
+        // Jour 13
+        { label: 'OpenAI ChatGPT', amount: 20.66, dayOfMonth: 13, category: 'Abonnement' },
+        { label: 'Adobe', amount: 23.99, dayOfMonth: 13, category: 'Abonnement' },
+
+        // Jour 14
+        { label: 'Cofidis', amount: 15.74, dayOfMonth: 14, category: 'Crédit', endDate: '2026-03-31' },
+
+        // Jour 15
+        { label: 'DIAC', amount: 341.25, dayOfMonth: 15, category: 'Crédit' },
+        { label: 'APF France Handicap', amount: 10.00, dayOfMonth: 15, category: 'Autre' },
+
+        // Jour 16
+        { label: 'Orange SA', amount: 28.99, dayOfMonth: 16, category: 'Abonnement' },
+
+        // Jour 22
+        { label: 'Remboursement crédit', amount: 97.00, dayOfMonth: 22, category: 'Crédit', endDate: '2027-01-22' },
+        { label: 'Électricité (janvier)', amount: 119.00, dayOfMonth: 22, category: 'Énergie', startDate: '2026-01-01', endDate: '2026-01-31' },
+
+        // Jour 23
+        { label: 'SFR Internet & téléphonie', amount: 66.98, dayOfMonth: 23, category: 'Abonnement' },
+
+        // Jour 25 - Bimensuel
+        { label: 'CGT FAPT', amount: 22.00, dayOfMonth: 25, category: 'Autre', frequency: 'bimensuel' },
+
+        // Jour 29
+        { label: 'Anthropic Claude', amount: 21.60, dayOfMonth: 29, category: 'Abonnement' },
+        { label: 'Orange Fibre', amount: 30.99, dayOfMonth: 29, category: 'Abonnement' },
+
+        // Jour 9 - Bimensuel (hors janvier)
+        { label: 'EDF électricité (bimensuel)', amount: 238.00, dayOfMonth: 9, category: 'Énergie', frequency: 'bimensuel', startDate: '2026-02-01' },
       ]
 
       for (const expense of expenses) {
         const id = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        const frequency = expense.frequency || 'mensuel'
+        const startDate = expense.startDate ? `'${expense.startDate}'` : 'NULL'
+        const endDate = expense.endDate ? `'${expense.endDate}'` : 'NULL'
+
         await prisma.$executeRawUnsafe(`
           INSERT INTO RecurringExpense (
             id, label, amount, dayOfMonth, frequency, category,
-            isVariable, variableMonths, isActive, createdAt, updatedAt
+            isVariable, variableMonths, isActive, startDate, endDate, createdAt, updatedAt
           ) VALUES (
             '${id}',
             '${expense.label.replace(/'/g, "''")}',
             ${expense.amount},
             ${expense.dayOfMonth},
-            'mensuel',
+            '${frequency}',
             '${expense.category}',
             ${expense.isVariable || 0},
             ${expense.variableMonths ? `'${expense.variableMonths}'` : 'NULL'},
             1,
+            ${startDate},
+            ${endDate},
             datetime('now'),
             datetime('now')
           )

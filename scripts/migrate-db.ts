@@ -208,14 +208,13 @@ async function migrate() {
 
     console.log('✅ Index RecurringExpense créés')
 
-    // Pré-remplir les dépenses récurrentes par défaut (si la table est vide)
-    const expensesCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM RecurringExpense`
-    const count = (expensesCount as any)[0].count
+    // Supprimer les anciennes dépenses et réinsérer les nouvelles
+    console.log('🗑️ Suppression des anciennes dépenses récurrentes...')
+    await prisma.$executeRawUnsafe(`DELETE FROM RecurringExpense`)
 
-    if (count === 0) {
-      console.log('📝 Insertion des dépenses récurrentes par défaut...')
+    console.log('📝 Insertion des dépenses récurrentes à jour...')
 
-      const expenses = [
+    const expenses = [
         // Jour 5 - Jour critique 1187,45€
         { label: 'Crédit immobilier', amount: 653.95, dayOfMonth: 5, category: 'Crédit' },
         { label: 'CE Midi-Pyrénées (assurances)', amount: 243.68, dayOfMonth: 5, category: 'Assurance' },
@@ -302,9 +301,6 @@ async function migrate() {
       }
 
       console.log(`✅ ${expenses.length} dépenses récurrentes insérées`)
-    } else {
-      console.log(`ℹ️ ${count} dépenses récurrentes déjà présentes, pas d'insertion`)
-    }
 
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {

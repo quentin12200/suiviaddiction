@@ -1,72 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Task, priorityEmojis } from '../data/taskTypes'
+import { useTasks } from '../taches/hooks/useTasks'
+import { useTaskFilters } from '../taches/hooks/useTaskFilters'
+import { priorityEmojis } from '../data/taskTypes'
 import styles from './TasksWidget.module.css'
 
 export default function TasksWidget() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [todayTasks, setTodayTasks] = useState<Task[]>([])
+  const { tasks, toggleTask } = useTasks()
+  const { filteredTasks } = useTaskFilters(tasks)
 
-  useEffect(() => {
-    loadTasks()
-  }, [])
-
-  const loadTasks = async () => {
-    try {
-      const response = await fetch('/api/tasks')
-      const data = await response.json()
-      if (data.success) {
-        const loadedTasks: Task[] = data.tasks
-        setTasks(loadedTasks)
-
-        const today = new Date().toISOString().split('T')[0]
-        const filtered = loadedTasks.filter(t =>
-          (t.type === 'quotidienne' && !t.completed) ||
-          (t.type === 'ponctuelle' && !t.completed && t.dueDate === today)
-        )
-        setTodayTasks(filtered)
-      }
-    } catch (error) {
-      console.error('Erreur chargement tâches widget:', error)
-    }
-  }
-
-  const toggleTask = (id: string) => {
-    const today = new Date().toISOString().split('T')[0]
-
-    const updated = tasks.map(task => {
-      if (task.id === id) {
-        const newCompleted = !task.completed
-
-        if (task.type === 'quotidienne') {
-          return {
-            ...task,
-            completed: newCompleted,
-            lastCompleted: newCompleted ? today : task.lastCompleted,
-            daysNotCompleted: newCompleted ? 0 : task.daysNotCompleted
-          }
-        } else {
-          return {
-            ...task,
-            completed: newCompleted,
-            daysNotCompleted: newCompleted ? 0 : task.daysNotCompleted
-          }
-        }
-      }
-      return task
-    })
-
-    setTasks(updated)
-    fetch(`/api/tasks/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updated.find(task => task.id === id)),
-    }).finally(() => {
-      loadTasks()
-    })
-  }
+  // Filtrer uniquement les tâches d'aujourd'hui pour le widget
+  const todayTasks = filteredTasks
 
   const stats = {
     total: todayTasks.length,

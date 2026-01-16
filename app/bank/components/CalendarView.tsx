@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { RecurringExpense } from '../types'
 import styles from '../bank.module.css'
 
@@ -13,6 +13,17 @@ interface CalendarViewProps {
 
 export function CalendarView({ expenses, onEdit, onDelete, monthlyTotal }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [showTwoMonths, setShowTwoMonths] = useState(false)
+
+  // Détecter la largeur de l'écran
+  useEffect(() => {
+    const checkWidth = () => {
+      setShowTwoMonths(window.innerWidth >= 1920)
+    }
+    checkWidth()
+    window.addEventListener('resize', checkWidth)
+    return () => window.removeEventListener('resize', checkWidth)
+  }, [])
 
   // Générer les jours du mois
   const getDaysInMonth = (date: Date) => {
@@ -30,8 +41,6 @@ export function CalendarView({ expenses, onEdit, onDelete, monthlyTotal }: Calen
       month
     }
   }
-
-  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth)
 
   // Regrouper les dépenses par jour
   const expensesByDay = expenses.reduce((acc, expense) => {
@@ -57,7 +66,111 @@ export function CalendarView({ expenses, onEdit, onDelete, monthlyTotal }: Calen
   }
 
   const today = new Date()
-  const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year
+
+  // Fonction pour rendre un mois
+  const renderMonth = (monthDate: Date, isFirst: boolean = true) => {
+    const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(monthDate)
+    const isThisMonth = today.getMonth() === month && today.getFullYear() === year
+
+    return (
+      <div key={`${year}-${month}`} className={styles.singleMonthCalendar}>
+        {/* Titre du mois */}
+        <h3 className={styles.monthTitle}>
+          {monthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+        </h3>
+
+        {/* Jours de la semaine */}
+        <div className={styles.calendarWeekdays}>
+          {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(day => (
+            <div key={day} className={styles.weekdayLabel}>{day}</div>
+          ))}
+        </div>
+
+        {/* Grille du calendrier */}
+        <div className={styles.calendarGrid}>
+          {/* Cases vides avant le 1er du mois */}
+          {Array.from({ length: startingDayOfWeek }).map((_, index) => (
+            <div key={`empty-${index}`} className={styles.calendarDayEmpty} />
+          ))}
+
+          {/* Jours du mois */}
+          {Array.from({ length: daysInMonth }).map((_, index) => {
+            const day = index + 1
+            const dayExpenses = expensesByDay[day] || []
+            const dayTotal = getTotalForDay(day)
+            const isToday = isThisMonth && today.getDate() === day
+            const hasExpenses = dayExpenses.length > 0
+
+            return (
+              <div
+                key={day}
+                className={`${styles.calendarDay} ${isToday ? styles.calendarDayToday : ''} ${hasExpenses ? styles.calendarDayHasExpenses : ''}`}
+              >
+                <div className={styles.calendarDayNumber}>
+                  {day}
+                  {isToday && <span className={styles.todayBadge}>Aujourd'hui</span>}
+                </div>
+
+                {hasExpenses && (
+                  <div className={styles.calendarDayContent}>
+                    <div className={styles.dayExpensesCount}>
+                      {dayExpenses.length} dépense{dayExpenses.length > 1 ? 's' : ''}
+                    </div>
+                    <div className={styles.dayExpensesTotal}>
+                      {dayTotal.toFixed(2)}€
+                    </div>
+
+                    {/* Liste des dépenses */}
+                    <div className={styles.dayExpensesList}>
+                      {dayExpenses
+                        .sort((a, b) => b.amount - a.amount)
+                        .slice(0, 3)
+                        .map(expense => (
+                          <div key={expense.id} className={styles.calendarExpenseItem}>
+                            <div className={styles.calendarExpenseInfo}>
+                              <span className={styles.calendarExpenseLabel} title={expense.label}>
+                                {expense.label}
+                              </span>
+                              <span className={styles.calendarExpenseAmount}>
+                                {expense.amount.toFixed(2)}€
+                              </span>
+                            </div>
+                            <div className={styles.calendarExpenseActions}>
+                              <button
+                                onClick={() => onEdit(expense)}
+                                className={styles.calendarBtnEdit}
+                                title="Modifier"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => onDelete(expense.id)}
+                                className={styles.calendarBtnDelete}
+                                title="Supprimer"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                      {dayExpenses.length > 3 && (
+                        <div className={styles.moreExpenses}>
+                          +{dayExpenses.length - 3} autre{dayExpenses.length - 3 > 1 ? 's' : ''}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  const nextMonthDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
 
   return (
     <div className={styles.calendarContainer}>
@@ -85,99 +198,20 @@ export function CalendarView({ expenses, onEdit, onDelete, monthlyTotal }: Calen
           ← Mois précédent
         </button>
         <h3 className={styles.currentMonthTitle}>
-          {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+          {showTwoMonths
+            ? `${currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })} - ${nextMonthDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`
+            : currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+          }
         </h3>
         <button onClick={nextMonth} className={styles.monthNavButton}>
           Mois suivant →
         </button>
       </div>
 
-      {/* Jours de la semaine */}
-      <div className={styles.calendarWeekdays}>
-        {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(day => (
-          <div key={day} className={styles.weekdayLabel}>{day}</div>
-        ))}
-      </div>
-
-      {/* Grille du calendrier */}
-      <div className={styles.calendarGrid}>
-        {/* Cases vides avant le 1er du mois */}
-        {Array.from({ length: startingDayOfWeek }).map((_, index) => (
-          <div key={`empty-${index}`} className={styles.calendarDayEmpty} />
-        ))}
-
-        {/* Jours du mois */}
-        {Array.from({ length: daysInMonth }).map((_, index) => {
-          const day = index + 1
-          const dayExpenses = expensesByDay[day] || []
-          const dayTotal = getTotalForDay(day)
-          const isToday = isCurrentMonth && today.getDate() === day
-          const hasExpenses = dayExpenses.length > 0
-
-          return (
-            <div
-              key={day}
-              className={`${styles.calendarDay} ${isToday ? styles.calendarDayToday : ''} ${hasExpenses ? styles.calendarDayHasExpenses : ''}`}
-            >
-              <div className={styles.calendarDayNumber}>
-                {day}
-                {isToday && <span className={styles.todayBadge}>Aujourd'hui</span>}
-              </div>
-
-              {hasExpenses && (
-                <div className={styles.calendarDayContent}>
-                  <div className={styles.dayExpensesCount}>
-                    {dayExpenses.length} dépense{dayExpenses.length > 1 ? 's' : ''}
-                  </div>
-                  <div className={styles.dayExpensesTotal}>
-                    {dayTotal.toFixed(2)}€
-                  </div>
-
-                  {/* Liste des dépenses */}
-                  <div className={styles.dayExpensesList}>
-                    {dayExpenses
-                      .sort((a, b) => b.amount - a.amount)
-                      .slice(0, 3)
-                      .map(expense => (
-                        <div key={expense.id} className={styles.calendarExpenseItem}>
-                          <div className={styles.calendarExpenseInfo}>
-                            <span className={styles.calendarExpenseLabel} title={expense.label}>
-                              {expense.label}
-                            </span>
-                            <span className={styles.calendarExpenseAmount}>
-                              {expense.amount.toFixed(2)}€
-                            </span>
-                          </div>
-                          <div className={styles.calendarExpenseActions}>
-                            <button
-                              onClick={() => onEdit(expense)}
-                              className={styles.calendarBtnEdit}
-                              title="Modifier"
-                            >
-                              ✏️
-                            </button>
-                            <button
-                              onClick={() => onDelete(expense.id)}
-                              className={styles.calendarBtnDelete}
-                              title="Supprimer"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-
-                    {dayExpenses.length > 3 && (
-                      <div className={styles.moreExpenses}>
-                        +{dayExpenses.length - 3} autre{dayExpenses.length - 3 > 1 ? 's' : ''}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
+      {/* Grille des mois */}
+      <div className={showTwoMonths ? styles.twoMonthsGrid : styles.singleMonthGrid}>
+        {renderMonth(currentMonth, true)}
+        {showTwoMonths && renderMonth(nextMonthDate, false)}
       </div>
 
       {/* Légende */}

@@ -1,7 +1,20 @@
 .container {
-  max-width: 960px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
+}
+
+/* Ultra-wide screens */
+@media (min-width: 2560px) {
+  .container {
+    max-width: 2200px;
+  }
+}
+
+@media (min-width: 3440px) {
+  .container {
+    max-width: 3000px;
+  }
 }
 
 .header {
@@ -1468,9 +1481,15 @@
 /* Quick Stats */
 .quickStats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 24px;
+}
+
+@media (min-width: 1920px) {
+  .quickStats {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
 }
 
 .statCard {
@@ -1701,6 +1720,34 @@
   letter-spacing: 0.5px;
 }
 
+/* Grilles pour 1 ou 2 mois */
+.singleMonthGrid {
+  display: block;
+}
+
+.twoMonthsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.singleMonthCalendar {
+  display: flex;
+  flex-direction: column;
+}
+
+.monthTitle {
+  margin: 0 0 20px 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-transform: capitalize;
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #e2e8f0;
+}
+
 /* Calendar Grid */
 .calendarGrid {
   display: grid;
@@ -1899,6 +1946,18 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
+}
+
+@media (min-width: 1920px) {
+  .categoriesView {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+@media (min-width: 2560px) {
+  .categoriesView {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
 }
 
 .modernCategoryCard {
@@ -2457,6 +2516,24 @@
   gap: 20px;
 }
 
+@media (min-width: 1920px) {
+  .modernTimeline {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .modernTimelineDay {
+    grid-column: span 1;
+  }
+}
+
+@media (min-width: 2560px) {
+  .modernTimeline {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .modernTimelineDay {
   position: relative;
   display: flex;
@@ -2884,6 +2961,12 @@
   margin-bottom: 24px;
 }
 
+@media (min-width: 1920px) {
+  .modernSummaryGrid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
 .modernSummaryCard {
   background: white;
   border-radius: 16px;
@@ -2951,6 +3034,18 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+@media (min-width: 1920px) {
+  .modernAlertsContainer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .modernAlertCategory {
+    grid-column: span 1;
+  }
 }
 
 .modernAlertCategory {

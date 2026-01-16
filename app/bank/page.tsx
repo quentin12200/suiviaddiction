@@ -188,6 +188,37 @@ export default function BankAnalysisPage() {
           </p>
         </div>
 
+        {/* Quick Actions - Bouton en haut */}
+        <div className={styles.quickActionsBar}>
+          <button
+            onClick={() => {
+              const soldeInput = document.getElementById('solde') as HTMLInputElement
+              soldeInput?.focus()
+              soldeInput?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }}
+            className={styles.quickActionButton}
+          >
+            💰 Saisir mon solde
+          </button>
+          <button
+            onClick={() => {
+              const csvInput = document.getElementById('csv') as HTMLInputElement
+              csvInput?.click()
+            }}
+            className={styles.quickActionButton}
+          >
+            📂 Importer CSV
+          </button>
+          <button
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+            className={styles.quickActionButton}
+          >
+            ⬆️ Haut de page
+          </button>
+        </div>
+
         <div className={styles.notice}>
           <h2>⚙️ Préparation</h2>
           <ul>
@@ -195,6 +226,80 @@ export default function BankAnalysisPage() {
             <li>Le script détecte automatiquement les colonnes et gère la virgule décimale.</li>
             <li>Les résultats restent sur ta machine et ne sont pas envoyés à un service externe.</li>
           </ul>
+        </div>
+
+        {/* Configuration du solde - En haut */}
+        <div className={styles.soldeConfigSection}>
+          <div className={styles.soldeConfigHeader}>
+            <h2 className={styles.soldeConfigTitle}>💰 Configuration du solde</h2>
+            <p className={styles.soldeConfigSubtitle}>
+              Saisissez votre solde actuel pour voir la projection jour par jour
+            </p>
+          </div>
+
+          <div className={styles.soldeConfigGrid}>
+            <div className={styles.soldeConfigCard}>
+              <label htmlFor="solde" className={styles.soldeConfigLabel}>
+                <span className={styles.soldeConfigIcon}>💵</span>
+                Solde actuel (€)
+              </label>
+              <input
+                id="solde"
+                type="number"
+                step="0.01"
+                value={solde}
+                onChange={(event) => setSolde(event.target.value)}
+                placeholder="ex: 1234.56"
+                className={styles.soldeConfigInput}
+              />
+            </div>
+
+            <div className={styles.soldeConfigCard}>
+              <label htmlFor="horizon" className={styles.soldeConfigLabel}>
+                <span className={styles.soldeConfigIcon}>📅</span>
+                Horizon (jours)
+              </label>
+              <input
+                id="horizon"
+                type="number"
+                value={horizon}
+                onChange={(event) => setHorizon(event.target.value)}
+                className={styles.soldeConfigInput}
+              />
+              <small className={styles.soldeConfigHint}>
+                Inclut automatiquement la fin du mois prochain
+              </small>
+            </div>
+
+            <div className={styles.soldeConfigCard}>
+              <label htmlFor="decouvert" className={styles.soldeConfigLabel}>
+                <span className={styles.soldeConfigIcon}>⚠️</span>
+                Découvert autorisé (€)
+              </label>
+              <input
+                id="decouvert"
+                type="number"
+                step="0.01"
+                value={decouvert}
+                onChange={(event) => setDecouvert(event.target.value)}
+                className={styles.soldeConfigInput}
+              />
+            </div>
+          </div>
+
+          {solde && (
+            <div className={styles.soldeConfigSummary}>
+              <div className={styles.summaryBadge}>
+                ✅ Solde configuré : <strong>{parseFloat(solde).toFixed(2)}€</strong>
+              </div>
+              <div className={styles.summaryBadge}>
+                📊 Projection sur <strong>{horizon} jours</strong>
+              </div>
+              <div className={styles.summaryBadge}>
+                🚨 Découvert : <strong>{decouvert}€</strong>
+              </div>
+            </div>
+          )}
         </div>
 
         <IncomeRulesSection
@@ -239,42 +344,6 @@ export default function BankAnalysisPage() {
               accept=".csv"
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
             />
-          </div>
-
-          <div className={styles.grid}>
-            <div className={styles.fieldGroup}>
-              <label htmlFor="solde">Solde actuel (€)</label>
-              <input
-                id="solde"
-                type="number"
-                step="0.01"
-                value={solde}
-                onChange={(event) => setSolde(event.target.value)}
-                placeholder="Solde du jour (ex: 1234.56)"
-              />
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="horizon">Horizon (jours)</label>
-              <input
-                id="horizon"
-                type="number"
-                value={horizon}
-                onChange={(event) => setHorizon(event.target.value)}
-              />
-              <small>Le calcul inclut automatiquement la fin du mois prochain.</small>
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="decouvert">Découvert autorisé (€)</label>
-              <input
-                id="decouvert"
-                type="number"
-                step="0.01"
-                value={decouvert}
-                onChange={(event) => setDecouvert(event.target.value)}
-              />
-            </div>
           </div>
 
           {error && <p className={styles.error}>{error}</p>}

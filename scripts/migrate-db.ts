@@ -273,8 +273,8 @@ async function migrate() {
       for (const expense of expenses) {
         const id = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
         const frequency = (expense as any).frequency || 'mensuel'
-        const startDate = (expense as any).startDate ? `date('${(expense as any).startDate}')` : 'NULL'
-        const endDate = (expense as any).endDate ? `date('${(expense as any).endDate}')` : 'NULL'
+        const startDate = (expense as any).startDate ? `datetime('${(expense as any).startDate} 00:00:00')` : 'NULL'
+        const endDate = (expense as any).endDate ? `datetime('${(expense as any).endDate} 23:59:59')` : 'NULL'
         const isVariable = (expense as any).isVariable || 0
         const variableMonths = (expense as any).variableMonths ? `'${(expense as any).variableMonths}'` : 'NULL'
 

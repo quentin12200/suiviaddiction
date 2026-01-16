@@ -79,3 +79,38 @@ export interface MandatorySummary {
   mandatorySpend: number
   remaining: number
 }
+
+export interface RecurringExpense {
+  id: string
+  label: string
+  amount: number
+  dayOfMonth: number
+  frequency: 'mensuel' | 'bimensuel' | 'annuel'
+  category: 'Crédit' | 'Assurance' | 'Abonnement' | 'Énergie' | 'Autre'
+  startDate?: string
+  endDate?: string
+  isVariable: boolean
+  variableMonths?: string // JSON: {"1": 238, "2": 150}
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SoldeProjection {
+  date: string
+  solde: number
+  isOverdraft: boolean
+  operations: {
+    label: string
+    amount: number
+    category: string
+    isMatched: boolean // true si trouvé dans le CSV importé
+  }[]
+}
+
+export interface Alert {
+  type: 'danger' | 'warning' | 'info'
+  date: string
+  message: string
+  solde: number
+}

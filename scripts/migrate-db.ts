@@ -172,6 +172,136 @@ async function migrate() {
     `)
 
     console.log('✅ Index TaskItem créés')
+
+    // Créer la table RecurringExpense
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "RecurringExpense" (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "label" TEXT NOT NULL,
+        "amount" REAL NOT NULL,
+        "dayOfMonth" INTEGER NOT NULL,
+        "frequency" TEXT NOT NULL DEFAULT 'mensuel',
+        "category" TEXT NOT NULL DEFAULT 'Autre',
+        "startDate" DATETIME,
+        "endDate" DATETIME,
+        "isVariable" INTEGER NOT NULL DEFAULT 0,
+        "variableMonths" TEXT,
+        "isActive" INTEGER NOT NULL DEFAULT 1,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+
+    console.log('✅ Table RecurringExpense créée')
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "RecurringExpense_dayOfMonth_idx" ON "RecurringExpense"("dayOfMonth")
+    `)
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "RecurringExpense_isActive_idx" ON "RecurringExpense"("isActive")
+    `)
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "RecurringExpense_category_idx" ON "RecurringExpense"("category")
+    `)
+
+    console.log('✅ Index RecurringExpense créés')
+
+    // Supprimer les anciennes dépenses et réinsérer les nouvelles
+    console.log('🗑️ Suppression des anciennes dépenses récurrentes...')
+    await prisma.$executeRawUnsafe(`DELETE FROM RecurringExpense`)
+
+    console.log('📝 Insertion des dépenses récurrentes à jour...')
+
+    const expenses = [
+        // Jour 5 - Jour critique 1187,45€
+        { label: 'Crédit immobilier', amount: 653.95, dayOfMonth: 5, category: 'Crédit' },
+        { label: 'CE Midi-Pyrénées (assurances)', amount: 243.68, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'BPCE Assurances IARD (1)', amount: 104.24, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'BPCE Assurances IARD (2)', amount: 69.13, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'BPCE Assurances IARD (3)', amount: 45.56, dayOfMonth: 5, category: 'Assurance' },
+        { label: 'Canva', amount: 28.00, dayOfMonth: 5, category: 'Abonnement' },
+        { label: 'Tech VIP', amount: 29.90, dayOfMonth: 5, category: 'Abonnement' },
+        { label: 'Blizzard', amount: 12.99, dayOfMonth: 5, category: 'Abonnement' },
+
+        // Jour 6
+        { label: 'CNP Assurances', amount: 5.00, dayOfMonth: 6, category: 'Assurance' },
+        { label: 'PayPal', amount: 75.00, dayOfMonth: 6, category: 'Autre', endDate: '2026-03-31' },
+
+        // Jour 7
+        { label: 'Section locale Multipro', amount: 20.00, dayOfMonth: 7, category: 'Autre' },
+
+        // Jour 9
+        { label: 'EDF électricité', amount: 150.00, dayOfMonth: 9, category: 'Énergie' },
+
+        // Jour 12
+        { label: 'Association financement PCF', amount: 26.00, dayOfMonth: 12, category: 'Autre' },
+
+        // Jour 13
+        { label: 'OpenAI ChatGPT', amount: 20.66, dayOfMonth: 13, category: 'Abonnement' },
+        { label: 'Adobe', amount: 23.99, dayOfMonth: 13, category: 'Abonnement' },
+
+        // Jour 14
+        { label: 'Cofidis', amount: 15.74, dayOfMonth: 14, category: 'Crédit', endDate: '2026-03-31' },
+
+        // Jour 15
+        { label: 'DIAC', amount: 341.25, dayOfMonth: 15, category: 'Crédit' },
+        { label: 'APF France Handicap', amount: 10.00, dayOfMonth: 15, category: 'Autre' },
+
+        // Jour 16
+        { label: 'Orange SA', amount: 28.99, dayOfMonth: 16, category: 'Abonnement' },
+
+        // Jour 22
+        { label: 'Remboursement crédit', amount: 97.00, dayOfMonth: 22, category: 'Crédit', endDate: '2027-01-22' },
+        { label: 'Électricité (janvier)', amount: 119.00, dayOfMonth: 22, category: 'Énergie', startDate: '2026-01-01', endDate: '2026-01-31' },
+
+        // Jour 23
+        { label: 'SFR Internet & téléphonie', amount: 66.98, dayOfMonth: 23, category: 'Abonnement' },
+
+        // Jour 25 - Bimensuel
+        { label: 'CGT FAPT', amount: 22.00, dayOfMonth: 25, category: 'Autre', frequency: 'bimensuel' },
+
+        // Jour 29
+        { label: 'Anthropic Claude', amount: 21.60, dayOfMonth: 29, category: 'Abonnement' },
+        { label: 'Orange Fibre', amount: 30.99, dayOfMonth: 29, category: 'Abonnement' },
+
+        // Jour 9 - Bimensuel (hors janvier)
+        { label: 'EDF électricité (bimensuel)', amount: 238.00, dayOfMonth: 9, category: 'Énergie', frequency: 'bimensuel', startDate: '2026-02-01' },
+      ]
+
+      for (const expense of expenses) {
+        const id = `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        const frequency = (expense as any).frequency || 'mensuel'
+        const startDate = (expense as any).startDate ? `'${(expense as any).startDate}'` : 'NULL'
+        const endDate = (expense as any).endDate ? `'${(expense as any).endDate}'` : 'NULL'
+        const isVariable = (expense as any).isVariable || 0
+        const variableMonths = (expense as any).variableMonths ? `'${(expense as any).variableMonths}'` : 'NULL'
+
+        await prisma.$executeRawUnsafe(`
+          INSERT INTO RecurringExpense (
+            id, label, amount, dayOfMonth, frequency, category,
+            isVariable, variableMonths, isActive, startDate, endDate, createdAt, updatedAt
+          ) VALUES (
+            '${id}',
+            '${expense.label.replace(/'/g, "''")}',
+            ${expense.amount},
+            ${expense.dayOfMonth},
+            '${frequency}',
+            '${expense.category}',
+            ${isVariable},
+            ${variableMonths},
+            1,
+            ${startDate},
+            ${endDate},
+            datetime('now'),
+            datetime('now')
+          )
+        `)
+      }
+
+      console.log(`✅ ${expenses.length} dépenses récurrentes insérées`)
+
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

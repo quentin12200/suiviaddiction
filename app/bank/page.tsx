@@ -13,10 +13,15 @@ import {
   useMonthComparison,
   useMandatorySummary,
 } from './hooks/useOperationsData'
+import { useRecurringExpenses } from './hooks/useRecurringExpenses'
+import { useSoldeProjection } from './hooks/useSoldeProjection'
 import { IncomeRulesSection } from './components/IncomeRulesSection'
 import { ManualEntriesSection } from './components/ManualEntriesSection'
 import { ResultsSection } from './components/ResultsSection'
 import { AISection } from './components/AISection'
+import { RecurringExpensesList } from './components/RecurringExpensesList'
+import { SoldeTimeline } from './components/SoldeTimeline'
+import { AlertesSection } from './components/AlertesSection'
 import styles from './bank.module.css'
 
 export default function BankAnalysisPage() {
@@ -85,6 +90,27 @@ export default function BankAnalysisPage() {
     categoryMandatory,
     minimumResources
   )
+
+  // Gestion des dépenses récurrentes
+  const {
+    expenses,
+    isLoading: expensesLoading,
+    error: expensesError,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    monthlyTotal
+  } = useRecurringExpenses()
+
+  // Projection du solde avec les dépenses récurrentes
+  const { projection, alerts, minSolde, endSolde } = useSoldeProjection({
+    solde: parseFloat(solde) || 0,
+    expenses,
+    incomeRules,
+    operations: operationsWithOverrides,
+    horizonDays: parseInt(horizon) || 30,
+    decouvert: parseFloat(decouvert) || -900
+  })
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -180,6 +206,29 @@ export default function BankAnalysisPage() {
           updateIncomeRule={updateIncomeRule}
           removeIncomeRule={removeIncomeRule}
         />
+
+        <RecurringExpensesList
+          expenses={expenses}
+          onAdd={addExpense}
+          onUpdate={updateExpense}
+          onDelete={deleteExpense}
+          monthlyTotal={monthlyTotal}
+        />
+
+        {solde && (
+          <>
+            <AlertesSection
+              alerts={alerts}
+              minSolde={minSolde}
+              endSolde={endSolde}
+            />
+
+            <SoldeTimeline
+              projection={projection}
+              decouvert={parseFloat(decouvert) || -900}
+            />
+          </>
+        )}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.fieldGroup}>

@@ -258,3 +258,30 @@ model Badge {
   @@index([category])
   @@index([isUnlocked])
 }
+
+// Modèle pour les dépenses récurrentes (prévisions bancaires)
+model RecurringExpense {
+  id             String   @id @default(cuid())
+  label          String   // Ex: "Crédit immobilier", "EDF", etc.
+  amount         Float    // Montant en euros
+  dayOfMonth     Int      // Jour du mois (1-31)
+  frequency      String   @default("mensuel") // mensuel, bimensuel, annuel
+  category       String   @default("Autre") // Crédit, Assurance, Abonnement, Énergie, Autre
+
+  // Dates de validité
+  startDate      DateTime? // Quand la dépense commence
+  endDate        DateTime? // Quand la dépense se termine (optionnel, pour prélèvements temporaires)
+
+  // Gestion des variations
+  isVariable     Boolean  @default(false) // True pour dépenses variables comme EDF
+  variableMonths String?  // JSON: {"1": 238, "2": 150} pour janvier=238€, autres=150€
+
+  // Métadonnées
+  isActive       Boolean  @default(true) // Permet de désactiver sans supprimer
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([dayOfMonth])
+  @@index([isActive])
+  @@index([category])
+}

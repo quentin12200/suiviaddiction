@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     const payload = messageData.payload
 
     // Fonction récursive pour extraire le texte de l'email
-    function extractBody(part: any): string {
+    const extractBody = (part: any): string => {
       if (part.body && part.body.data) {
         return decodeGmailBody(part.body.data)
       }

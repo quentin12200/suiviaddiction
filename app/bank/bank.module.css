@@ -2290,137 +2290,850 @@
   transform: translateY(-2px);
 }
 
+/* ============================================
+   OPTIMISATIONS MOBILE (SMARTPHONES UNIQUEMENT)
+   ============================================ */
+
 @media (max-width: 640px) {
+  /* Container principal */
   .container {
+    padding: 12px;
+  }
+
+  /* Headers et titres */
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .header p {
+    font-size: 0.9rem;
+  }
+
+  /* Formulaires */
+  .form {
     padding: 16px;
+    gap: 12px;
   }
 
   .submitButton {
     width: 100%;
     text-align: center;
+    padding: 14px 20px;
   }
 
   .manualRow {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .aiForm button {
     width: 100%;
   }
 
+  /* Grilles de catégories */
   .categoryGrid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
+  .categoryCard {
+    padding: 14px;
+  }
+
+  .categoryAmount {
+    font-size: 1.3rem;
+  }
+
+  /* Tableaux */
+  .table {
+    font-size: 0.85rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 4px;
+  }
+
+  /* Summary Grid - Statistiques */
+  .summaryGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .summaryGrid > div {
+    padding: 14px;
+  }
+
+  .bigAmount {
+    font-size: 1.5rem;
+  }
+
+  /* Expenses Grid */
   .expensesGrid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
+  .expenseItem {
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+
+  .expenseInfo {
+    flex: 1 1 100%;
+    margin-bottom: 8px;
+  }
+
+  .expenseAmount {
+    font-size: 1.1rem;
+  }
+
+  /* ========================================
+     TIMELINE - Projection du solde
+     ======================================== */
   .timeline {
-    gap: 8px;
+    gap: 10px;
   }
 
   .timelineDay {
     padding: 12px;
+    border-radius: 10px;
   }
 
+  .dayHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .dayDate {
+    font-size: 0.95rem;
+  }
+
+  .daySolde {
+    font-size: 1.1rem;
+    align-self: flex-end;
+  }
+
+  .dayOperations {
+    gap: 4px;
+  }
+
+  .operation {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+
+  .dayAlert {
+    margin-top: 8px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  /* ========================================
+     MODERN TIMELINE
+     ======================================== */
+  .modernTimelineSection {
+    padding: 16px;
+    border-radius: 20px;
+    margin: 20px 0;
+  }
+
+  .modernTimelineHeader {
+    padding: 16px;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .modernTimelineTitle {
+    font-size: 1.4rem;
+  }
+
+  .modernTimelineSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .timelineMiniStats {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+
+  .miniStatItem {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 14px;
+  }
+
+  .miniStatValue {
+    font-size: 1.1rem;
+  }
+
+  .modernTimeline {
+    gap: 16px;
+  }
+
+  .modernTimelineDay {
+    gap: 12px;
+  }
+
+  .timelineIndicator {
+    width: 30px;
+  }
+
+  .timelineDot {
+    width: 16px;
+    height: 16px;
+    border: 3px solid white;
+  }
+
+  .modernDayToday .timelineDot {
+    width: 20px;
+    height: 20px;
+  }
+
+  .modernDayCard {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .modernDayHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .modernDayDate {
+    font-size: 1.1rem;
+  }
+
+  .modernDayWeekday {
+    font-size: 0.8rem;
+  }
+
+  .modernDaySolde {
+    align-self: flex-end;
+  }
+
+  .modernSoldeValue {
+    font-size: 1.4rem;
+  }
+
+  .modernOperation {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .modernOperationIcon {
+    font-size: 1.3rem;
+  }
+
+  .modernOperationLabel {
+    font-size: 0.9rem;
+  }
+
+  .modernOperationAmount {
+    font-size: 1rem;
+  }
+
+  .modernDayAlert {
+    margin-top: 12px;
+    padding: 10px 12px;
+  }
+
+  /* ========================================
+     SECTION DÉPENSES RÉCURRENTES
+     ======================================== */
   .expensesSection {
+    padding: 16px;
+    border-radius: 20px;
+    margin: 20px 0;
+  }
+
+  .expensesHeader {
     padding: 20px;
+    border-radius: 16px;
   }
 
   .expensesHeaderTop {
     flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .expensesMainTitle {
+    font-size: 1.5rem;
+  }
+
+  .expensesSubtitle {
+    font-size: 0.9rem;
   }
 
   .expensesHeaderActions {
     width: 100%;
+    flex-direction: column;
   }
 
   .initButton,
   .addExpenseButton {
-    flex: 1;
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1rem;
   }
 
+  /* Quick Stats */
   .quickStats {
     grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
   }
 
+  .statCard {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .statIcon {
+    font-size: 2rem;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+
+  .statLabel {
+    font-size: 0.8rem;
+  }
+
+  /* View Toggle */
+  .viewToggleContainer {
+    width: 100%;
+  }
+
+  .viewToggleBtn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  /* ========================================
+     CALENDRIER
+     ======================================== */
   .calendarContainer {
     padding: 16px;
+    border-radius: 16px;
+  }
+
+  .calendarHeader {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .calendarTitle {
+    font-size: 1.4rem;
+  }
+
+  .calendarSubtitle {
+    font-size: 0.85rem;
+  }
+
+  .monthlyTotalCard {
+    padding: 14px 20px;
+    width: 100%;
+  }
+
+  .monthlyTotalAmount {
+    font-size: 1.6rem;
+  }
+
+  .monthNavigation {
+    flex-direction: row;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .monthNavButton {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .currentMonthTitle {
+    font-size: 1.1rem;
+  }
+
+  .calendarWeekdays {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .weekdayLabel {
+    font-size: 0.75rem;
+    padding: 6px 2px;
+  }
+
+  .twoMonthsGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .monthTitle {
+    font-size: 1.2rem;
+    margin-bottom: 16px;
   }
 
   .calendarGrid {
-    gap: 6px;
+    gap: 4px;
+    margin-bottom: 20px;
   }
 
   .calendarDay {
-    min-height: 100px;
-    padding: 8px;
+    min-height: 80px;
+    padding: 6px;
+    border-radius: 8px;
   }
 
   .calendarDayNumber {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+
+  .todayBadge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  .dayExpensesCount {
+    font-size: 0.7rem;
   }
 
   .dayExpensesTotal {
     font-size: 1rem;
+    margin-bottom: 6px;
   }
 
-  .monthNavigation {
-    flex-direction: column;
+  .dayExpensesList {
+    gap: 4px;
   }
 
+  .calendarExpenseItem {
+    padding: 6px;
+    border-radius: 6px;
+  }
+
+  .calendarExpenseLabel {
+    font-size: 0.75rem;
+  }
+
+  .calendarExpenseAmount {
+    font-size: 0.75rem;
+  }
+
+  .calendarBtnEdit,
+  .calendarBtnDelete {
+    font-size: 0.8rem;
+    padding: 2px 4px;
+  }
+
+  .moreExpenses {
+    font-size: 0.7rem;
+    padding: 3px;
+  }
+
+  /* ========================================
+     CATEGORIES VIEW (Liste)
+     ======================================== */
   .categoriesView {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .modernCategoryCard {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .categoryCardHeader {
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+
+  .categoryIcon {
+    font-size: 1.5rem;
+  }
+
+  .categoryName {
+    font-size: 1.1rem;
+  }
+
+  .categoryTotal {
+    font-size: 1.3rem;
+  }
+
+  .categoryCount {
+    font-size: 0.8rem;
+  }
+
+  .modernExpensesList {
+    gap: 10px;
   }
 
   .modernExpenseItem {
     flex-direction: column;
     align-items: flex-start;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .expenseItemLeft {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .expenseDayBadge {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    min-width: 35px;
+  }
+
+  .expenseItemLabel {
+    font-size: 0.95rem;
+  }
+
+  .expenseFrequency,
+  .expenseEndDate {
+    font-size: 0.75rem;
   }
 
   .expenseItemRight {
     width: 100%;
     justify-content: space-between;
+    align-items: center;
+  }
+
+  .expenseItemAmount {
+    font-size: 1.2rem;
+    min-width: auto;
+  }
+
+  .expenseItemActions {
+    gap: 8px;
+  }
+
+  .modernBtnEdit,
+  .modernBtnDelete {
+    font-size: 1.1rem;
+    padding: 6px;
+  }
+
+  /* ========================================
+     FORMULAIRE MODERNE
+     ======================================== */
+  .modernExpenseForm {
+    padding: 20px;
+    border-radius: 16px;
+    margin-top: 20px;
+  }
+
+  .formHeader {
+    flex-direction: row;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+  }
+
+  .formTitle {
+    font-size: 1.3rem;
+  }
+
+  .formCloseBtn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+    flex-shrink: 0;
   }
 
   .modernFormGrid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .formLabel {
+    font-size: 0.85rem;
+  }
+
+  .formInput,
+  .formSelect {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+
+  .checkboxLabel {
+    padding: 12px;
   }
 
   .modernFormActions {
     flex-direction: column-reverse;
+    gap: 10px;
   }
 
   .modernBtnSubmit,
   .modernBtnCancel {
     width: 100%;
+    padding: 12px 24px;
   }
 
-  .modernTimelineSection {
-    padding: 20px;
-  }
-
-  .modernTimelineHeader {
-    flex-direction: column;
-  }
-
-  .timelineMiniStats {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-around;
-  }
-
+  /* ========================================
+     ALERTES SECTION
+     ======================================== */
   .modernAlertesSection {
-    padding: 20px;
+    padding: 16px;
+    border-radius: 20px;
+    margin: 20px 0;
+  }
+
+  .modernAlertesHeader {
+    padding: 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modernAlertesTitle {
+    font-size: 1.4rem;
+  }
+
+  .modernAlertesSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .statusBadge {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: center;
   }
 
   .modernSummaryGrid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .modernSummaryCard {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .summaryCardIcon {
+    font-size: 2.5rem;
+  }
+
+  .summaryCardValue {
+    font-size: 1.6rem;
+  }
+
+  .summaryCardLabel {
+    font-size: 0.8rem;
   }
 
   .modernAlertsContainer {
     gap: 16px;
+  }
+
+  .modernAlertCategory {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .alertCategoryHeader {
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+
+  .alertCategoryIcon {
+    font-size: 1.5rem;
+  }
+
+  .alertCategoryTitle {
+    font-size: 1.1rem;
+  }
+
+  .alertsList {
+    gap: 10px;
+  }
+
+  .modernAlertCard {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .alertCardIcon {
+    font-size: 1.3rem;
+  }
+
+  .alertCardDate {
+    font-size: 0.85rem;
+  }
+
+  .alertCardMessage {
+    font-size: 0.9rem;
+  }
+
+  .alertCardBadge {
+    padding: 5px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* ========================================
+     QUICK ACTIONS BAR
+     ======================================== */
+  .quickActionsBar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+  }
+
+  .quickActionButton {
+    width: 100%;
+    min-width: auto;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+  }
+
+  /* ========================================
+     SOLDE CONFIGURATION
+     ======================================== */
+  .soldeConfigSection {
+    padding: 16px;
+    border-radius: 20px;
+    margin: 20px 0;
+  }
+
+  .soldeConfigHeader {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .soldeConfigTitle {
+    font-size: 1.4rem;
+  }
+
+  .soldeConfigSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .soldeConfigGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .soldeConfigCard {
+    padding: 16px;
+  }
+
+  .soldeConfigLabel {
+    font-size: 0.9rem;
+    gap: 10px;
+  }
+
+  .soldeConfigIcon {
+    font-size: 1.3rem;
+  }
+
+  .soldeConfigInput {
+    padding: 10px 14px;
+    font-size: 1rem;
+  }
+
+  .soldeConfigSummary {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .summaryBadge {
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .summaryBadge strong {
+    font-size: 1rem;
+  }
+
+  /* ========================================
+     DIVERS
+     ======================================== */
+  .emptyState {
+    padding: 40px 20px;
+  }
+
+  .emptyStateIcon {
+    font-size: 4rem;
+  }
+
+  .emptyStateTitle {
+    font-size: 1.3rem;
+  }
+
+  .emptyStateText {
+    font-size: 0.9rem;
+  }
+
+  .legend {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .legendItem {
+    font-size: 0.85rem;
+  }
+
+  .modernLegend {
+    padding: 16px 20px;
+  }
+
+  .modernLegendTitle {
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+  }
+
+  .modernLegendItems {
+    gap: 14px;
+  }
+
+  .modernLegendItem span {
+    font-size: 0.85rem;
+  }
+
+  /* Success Message */
+  .successMessage {
+    padding: 24px 16px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .successIcon {
+    font-size: 3rem;
+  }
+
+  .successContent h3 {
+    font-size: 1.3rem;
+  }
+
+  .successContent p {
+    font-size: 0.9rem;
+  }
+
+  .successTip {
+    padding: 10px 14px;
+    font-size: 0.9rem !important;
   }
 }
 

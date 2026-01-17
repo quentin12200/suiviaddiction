@@ -2,7 +2,13 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Routes publiques qui ne nécessitent pas d'authentification
-const publicRoutes = ['/login', '/api/auth/login']
+const publicRoutes = [
+  '/login',
+  '/api/auth/login',
+  '/api/auth/google/login',
+  '/api/auth/google/callback',
+  '/api/auth/google/route'
+]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

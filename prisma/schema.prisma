@@ -285,3 +285,31 @@ model RecurringExpense {
   @@index([isActive])
   @@index([category])
 }
+
+// Modèle pour le solde automatique récupéré depuis Gmail (emails Caisse d'Épargne)
+model EmailSolde {
+  id              String   @id @default(cuid())
+  userId          String   // Email de l'utilisateur (session)
+
+  // Données extraites de l'email
+  solde           Float                    // 938.12
+  soldeRaw        String                   // "+938,12 €"
+
+  // Opération associée (optionnel)
+  operationLabel  String?                  // "EDF"
+  operationMontant Float?                  // -404.21
+  operationDate   String?                  // "16 janvier 2026"
+
+  // Métadonnées email
+  emailId         String   @unique         // Gmail message ID (pour éviter doublons)
+  emailDate       DateTime                 // Date réception email
+  expediteur      String                   // Validation expéditeur
+
+  // Audit
+  fetchedAt       DateTime @default(now()) // Date récupération
+  createdAt       DateTime @default(now())
+
+  // Index pour performance
+  @@index([userId, emailDate])
+  @@index([fetchedAt])
+}

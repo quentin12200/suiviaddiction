@@ -34,6 +34,18 @@ export default function BankAnalysisPage() {
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [minimumResources, setMinimumResources] = useState('2600')
 
+  // États pour le solde automatique (Gmail)
+  const [soldeAutomatique, setSoldeAutomatique] = useState<number | null>(null)
+  const [derniereMajSolde, setDerniereMajSolde] = useState<Date | null>(null)
+  const [isLoadingSolde, setIsLoadingSolde] = useState(false)
+  const [derniereOperation, setDerniereOperation] = useState<{
+    label: string
+    montant: number
+    date: string
+  } | null>(null)
+  const [errorSolde, setErrorSolde] = useState('')
+  const [needsGmailAuth, setNeedsGmailAuth] = useState(false)
+
   const {
     incomeRules,
     addIncomeRule,
@@ -111,6 +123,55 @@ export default function BankAnalysisPage() {
     horizonDays: parseInt(horizon) || 30,
     decouvert: parseFloat(decouvert) || -900
   })
+
+  // Fonction pour actualiser le solde depuis Gmail
+  const actualiserSoldeAutomatique = async () => {
+    setIsLoadingSolde(true)
+    setErrorSolde('')
+    setNeedsGmailAuth(false)
+
+    try {
+      const response = await fetch('/api/bank/sync-gmail', { method: 'POST' })
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Gestion des erreurs spécifiques
+        if (data.error === 'gmail_not_authorized' || data.error === 'gmail_token_expired') {
+          setNeedsGmailAuth(true)
+          setErrorSolde(data.message)
+        } else if (data.error === 'no_email') {
+          setErrorSolde('Aucune notification récente trouvée. Vérifiez que vous recevez bien les emails de la Caisse d\'Épargne.')
+        } else if (data.error === 'parse_failed') {
+          setErrorSolde('Format email non reconnu. Contactez le support.')
+        } else {
+          setErrorSolde(data.message || 'Une erreur est survenue')
+        }
+        return
+      }
+
+      // Succès
+      setSoldeAutomatique(data.solde)
+      setDerniereMajSolde(new Date(data.dateEmail))
+      if (data.operation) {
+        setDerniereOperation(data.operation)
+      }
+
+      // Message de succès
+      if (data.source === 'cache') {
+        console.log('ℹ️ Solde déjà à jour')
+      } else {
+        console.log('✅ Solde actualisé :', data.soldeRaw)
+      }
+
+      // Optionnel: Remplir automatiquement le champ solde manuel
+      setSolde(data.solde.toString())
+    } catch (err) {
+      console.error('Erreur actualisation solde:', err)
+      setErrorSolde('Erreur de connexion au serveur')
+    } finally {
+      setIsLoadingSolde(false)
+    }
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -227,6 +288,94 @@ export default function BankAnalysisPage() {
             <li>Les résultats restent sur ta machine et ne sont pas envoyés à un service externe.</li>
           </ul>
         </div>
+
+        {/* Section Solde Automatique (Gmail) - NOUVELLE */}
+        <div className={styles.soldeAutomatiqueSection}>
+          <div className={styles.soldeAutomatiqueHeader}>
+            <h2 className={styles.soldeAutomatiqueTitle}>💰 Solde Automatique (Gmail)</h2>
+            <p className={styles.soldeAutomatiqueSubtitle}>
+              Récupérez votre solde directement depuis vos emails Caisse d&apos;Épargne
+            </p>
+          </div>
+
+          {soldeAutomatique === null ? (
+            // État initial : Aucun solde récupéré
+            <div className={styles.soldeAutomatiqueEmpty}>
+              <p className={styles.soldeAutomatiqueEmptyText}>
+                Aucun solde récupéré. Cliquez sur le bouton pour synchroniser.
+              </p>
+
+              {needsGmailAuth && (
+                <div className={styles.soldeAutomatiqueAuthNeeded}>
+                  <p>⚠️ Vous devez d&apos;abord autoriser l&apos;accès à Gmail</p>
+                  <a href="/api/auth/google/gmail" className={styles.soldeAutomatiqueAuthButton}>
+                    🔑 Autoriser Gmail
+                  </a>
+                </div>
+              )}
+
+              <button
+                onClick={actualiserSoldeAutomatique}
+                disabled={isLoadingSolde}
+                className={styles.soldeAutomatiqueButton}
+              >
+                {isLoadingSolde ? '⏳ Recherche emails...' : '🔄 Actualiser depuis Gmail'}
+              </button>
+
+              {errorSolde && (
+                <p className={styles.soldeAutomatiqueError}>❌ {errorSolde}</p>
+              )}
+            </div>
+          ) : (
+            // État avec solde récupéré
+            <div className={styles.soldeAutomatiqueDisplay}>
+              <div className={styles.soldeAutomatiqueMontant}>
+                {soldeAutomatique.toFixed(2)} €
+              </div>
+
+              {derniereOperation && (
+                <div className={styles.soldeAutomatiqueOperation}>
+                  ↗️ Dernière opération : {derniereOperation.label}{' '}
+                  <span className={derniereOperation.montant < 0 ? styles.negatif : styles.positif}>
+                    {derniereOperation.montant.toFixed(2)} €
+                  </span>
+                </div>
+              )}
+
+              <div className={styles.soldeAutomatiqueDate}>
+                📅 Actualisé le{' '}
+                {derniereMajSolde?.toLocaleDateString('fr-FR', {
+                  day: '2-digit',
+                  month: 'long',
+                  year: 'numeric',
+                })}{' '}
+                à{' '}
+                {derniereMajSolde?.toLocaleTimeString('fr-FR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </div>
+
+              <button
+                onClick={actualiserSoldeAutomatique}
+                disabled={isLoadingSolde}
+                className={styles.soldeAutomatiqueButtonSecondary}
+              >
+                {isLoadingSolde ? '⏳ Actualisation...' : '🔄 Actualiser'}
+              </button>
+
+              {errorSolde && (
+                <p className={styles.soldeAutomatiqueError}>❌ {errorSolde}</p>
+              )}
+            </div>
+          )}
+
+          <p className={styles.soldeAutomatiqueInfo}>
+            ℹ️ Solde basé sur les notifications de la Caisse d&apos;Épargne Midi-Pyrénées
+          </p>
+        </div>
+
+        <div className={styles.separator}></div>
 
         {/* Configuration du solde - En haut */}
         <div className={styles.soldeConfigSection}>

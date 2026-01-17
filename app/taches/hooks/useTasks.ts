@@ -62,7 +62,7 @@ export function useTasks() {
         const updatedTasks = updateTasksDaily(originalTasks)
 
         // Détection des tâches modifiées par updateTasksDaily
-        const originalTasksMap = new Map(originalTasks.map(t => [t.id, t]))
+        const originalTasksMap = new Map(originalTasks.map((t: Task) => [t.id, t]))
         const modifiedTasks = updatedTasks.filter(updated => {
           const original = originalTasksMap.get(updated.id)
           if (!original) return false

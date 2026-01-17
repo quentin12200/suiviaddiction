@@ -22,6 +22,13 @@ export function parseEmailSolde(emailBody: string): ParsedSolde {
   // Décoder le HTML si nécessaire (parfois les emails sont encodés)
   let textContent = emailBody
 
+  // Supprimer COMPLÈTEMENT les balises style et script avec leur contenu
+  textContent = textContent.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+  textContent = textContent.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+
+  // Supprimer les commentaires HTML
+  textContent = textContent.replace(/<!--[\s\S]*?-->/g, ' ')
+
   // Strip HTML tags pour ne garder que le texte
   textContent = textContent.replace(/<[^>]*>/g, ' ')
 
@@ -53,6 +60,9 @@ export function parseEmailSolde(emailBody: string): ParsedSolde {
 
   // Normaliser les espaces multiples
   textContent = textContent.replace(/\s+/g, ' ')
+
+  // Trim pour enlever les espaces au début et à la fin
+  textContent = textContent.trim()
 
   // Regex principal pour extraire le solde (plusieurs patterns possibles)
   // Pattern 1: "Le solde de votre compte est désormais de : +938,12 €"

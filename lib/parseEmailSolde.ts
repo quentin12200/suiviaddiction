@@ -32,7 +32,17 @@ export function parseEmailSolde(emailBody: string): ParsedSolde {
   // Strip HTML tags pour ne garder que le texte
   textContent = textContent.replace(/<[^>]*>/g, ' ')
 
-  // Décoder TOUTES les entités HTML courantes
+  // Décoder les entités HTML NUMÉRIQUES (&#233; → é, &#160; → espace)
+  textContent = textContent.replace(/&#(\d+);/g, (match, dec) => {
+    return String.fromCharCode(parseInt(dec, 10))
+  })
+
+  // Décoder les entités HTML HEXADÉCIMALES (&#x00E9; → é)
+  textContent = textContent.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16))
+  })
+
+  // Décoder TOUTES les entités HTML NOMMÉES courantes
   const htmlEntities: { [key: string]: string } = {
     '&nbsp;': ' ',
     '&euro;': '€',

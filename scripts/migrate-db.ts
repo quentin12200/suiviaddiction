@@ -302,6 +302,36 @@ async function migrate() {
 
       console.log(`✅ ${expenses.length} dépenses récurrentes insérées`)
 
+    // Créer la table EmailSolde pour le solde automatique Gmail
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "EmailSolde" (
+        "id" TEXT PRIMARY KEY NOT NULL,
+        "userId" TEXT NOT NULL,
+        "solde" REAL NOT NULL,
+        "soldeRaw" TEXT NOT NULL,
+        "operationLabel" TEXT,
+        "operationMontant" REAL,
+        "operationDate" TEXT,
+        "emailId" TEXT NOT NULL UNIQUE,
+        "emailDate" DATETIME NOT NULL,
+        "expediteur" TEXT NOT NULL,
+        "fetchedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+
+    console.log('✅ Table EmailSolde créée')
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "EmailSolde_userId_emailDate_idx" ON "EmailSolde"("userId", "emailDate")
+    `)
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "EmailSolde_fetchedAt_idx" ON "EmailSolde"("fetchedAt")
+    `)
+
+    console.log('✅ Index EmailSolde créés')
+
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

@@ -31,12 +31,33 @@ export function parseEmailSolde(emailBody: string): ParsedSolde {
   // Normaliser les espaces multiples
   textContent = textContent.replace(/\s+/g, ' ')
 
-  // Regex principal pour extraire le solde
-  // Pattern: "Le solde de votre compte est désormais de : +938,12 €"
-  const soldeRegex = /Le solde de votre compte est désormais de\s*:\s*([+-]?\d[\d\s]*,\d{2})\s*€/i
-  const soldeMatch = textContent.match(soldeRegex)
+  // Regex principal pour extraire le solde (plusieurs patterns possibles)
+  // Pattern 1: "Le solde de votre compte est désormais de : +938,12 €"
+  let soldeRegex = /Le solde de votre compte est désormais de\s*:\s*([+-]?\d[\d\s]*,\d{2})\s*€/i
+  let soldeMatch = textContent.match(soldeRegex)
+
+  // Pattern 2: "solde de votre compte est désormais de +938,12 €" (sans "Le")
+  if (!soldeMatch) {
+    soldeRegex = /solde de votre compte est désormais de\s*:?\s*([+-]?\d[\d\s]*,\d{2})\s*€/i
+    soldeMatch = textContent.match(soldeRegex)
+  }
+
+  // Pattern 3: "Le solde ... est de : +938,12 €" (variante courte)
+  if (!soldeMatch) {
+    soldeRegex = /solde.*?est.*?de\s*:?\s*([+-]?\d[\d\s]*,\d{2})\s*€/i
+    soldeMatch = textContent.match(soldeRegex)
+  }
+
+  // Pattern 4: Chercher juste un montant précédé de "solde" (fallback large)
+  if (!soldeMatch) {
+    soldeRegex = /solde[^\d]*([+-]?\d[\d\s]*,\d{2})\s*€/i
+    soldeMatch = textContent.match(soldeRegex)
+  }
 
   if (!soldeMatch) {
+    // Debug: Afficher un extrait de l'email pour diagnostic
+    const excerpt = textContent.substring(0, 500)
+    console.error('❌ Pattern solde non trouvé. Extrait email:', excerpt)
     throw new Error('PARSE_ERROR: Pattern solde non trouvé dans l\'email')
   }
 

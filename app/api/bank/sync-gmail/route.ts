@@ -134,6 +134,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // DEBUG: Logger le contenu de l'email pour analyse
+    console.log('=== EMAIL BODY (DEBUT) ===')
+    console.log(emailBody.substring(0, 1000)) // Premiers 1000 caractères
+    console.log('=== EMAIL BODY (FIN) ===')
+
     // Parser l'email pour extraire le solde
     let parsedData
     try {

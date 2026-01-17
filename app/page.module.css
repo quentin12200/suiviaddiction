@@ -6,6 +6,13 @@
   overflow-y: auto;
 }
 
+/* Ultrawide screens optimization */
+@media (min-width: 2000px) {
+  .container {
+    max-width: 2400px;
+  }
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -274,6 +281,49 @@
 }
 
 /* Responsive */
+/* Ultrawide screens - expand columns for better space utilization */
+@media (min-width: 2000px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 30px;
+  }
+
+  .dashboardGrid .card {
+    padding: 20px;
+  }
+
+  .dashboardGrid .card h2 {
+    font-size: 20px;
+  }
+
+  .dashboardGrid .chartSection {
+    padding: 20px;
+  }
+
+  .dashboardGrid .chartSection h2 {
+    font-size: 20px;
+  }
+
+  .chartContainer {
+    height: 300px;
+  }
+}
+
+@media (min-width: 2800px) {
+  .container {
+    max-width: 3200px;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr 1.8fr 1fr;
+    gap: 40px;
+  }
+
+  .chartContainer {
+    height: 350px;
+  }
+}
+
 @media (max-width: 1400px) {
   /* 2 columns on medium screens */
   .dashboardGrid {

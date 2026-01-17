@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSessionFromRequest } from '@/lib/session'
+import { getSession } from '@/lib/session'
 import { parseEmailSolde, decodeGmailBody } from '@/lib/parseEmailSolde'
 import { PrismaClient } from '@prisma/client'
 
@@ -12,7 +12,7 @@ const prisma = new PrismaClient()
 export async function POST(request: NextRequest) {
   try {
     // Vérifier la session utilisateur
-    const session = await getSessionFromRequest(request)
+    const session = await getSession()
 
     if (!session || !session.isLoggedIn || !session.username) {
       return NextResponse.json(

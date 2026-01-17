@@ -57,3 +57,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Erreur serveur' }, { status: 500 })
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json()
+    const { tasks } = body
+
+    if (!Array.isArray(tasks)) {
+      return NextResponse.json({ success: false, error: 'Format invalide' }, { status: 400 })
+    }
+
+    // Mise à jour en batch avec Promise.all pour paralléliser
+    const updatePromises = tasks.map(task =>
+      prisma.taskItem.update({
+        where: { id: task.id },
+        data: {
+          completed: task.completed,
+          lastCompleted: toDate(task.lastCompleted),
+          daysNotCompleted: task.daysNotCompleted,
+        },
+      })
+    )
+
+    await Promise.all(updatePromises)
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Erreur mise à jour batch tâches:', error)
+    return NextResponse.json({ success: false, error: 'Erreur serveur' }, { status: 500 })
+  }
+}

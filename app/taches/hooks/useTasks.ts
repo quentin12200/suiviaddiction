@@ -58,7 +58,35 @@ export function useTasks() {
       const response = await fetch('/api/tasks')
       const data = await response.json()
       if (data.success) {
-        const updatedTasks = updateTasksDaily(data.tasks || [])
+        const originalTasks = data.tasks || []
+        const updatedTasks = updateTasksDaily(originalTasks)
+
+        // Détection des tâches modifiées par updateTasksDaily
+        const originalTasksMap = new Map(originalTasks.map(t => [t.id, t]))
+        const modifiedTasks = updatedTasks.filter(updated => {
+          const original = originalTasksMap.get(updated.id)
+          if (!original) return false
+          return (
+            updated.completed !== original.completed ||
+            updated.lastCompleted !== original.lastCompleted ||
+            updated.daysNotCompleted !== original.daysNotCompleted
+          )
+        })
+
+        // Sauvegarder les modifications dans la base de données
+        if (modifiedTasks.length > 0) {
+          try {
+            await fetch('/api/tasks', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tasks: modifiedTasks }),
+            })
+            console.log(`✅ ${modifiedTasks.length} tâche(s) mise(s) à jour pour le nouveau jour`)
+          } catch (syncError) {
+            console.error('Erreur sauvegarde updateTasksDaily:', syncError)
+          }
+        }
+
         setTasks(updatedTasks)
       } else {
         setError('Erreur de chargement des tâches')

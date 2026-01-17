@@ -24,10 +24,33 @@ export function parseEmailSolde(emailBody: string): ParsedSolde {
 
   // Strip HTML tags pour ne garder que le texte
   textContent = textContent.replace(/<[^>]*>/g, ' ')
-  // Nettoyer les entités HTML
-  textContent = textContent.replace(/&nbsp;/g, ' ')
-  textContent = textContent.replace(/&euro;/g, '€')
-  textContent = textContent.replace(/&amp;/g, '&')
+
+  // Décoder TOUTES les entités HTML courantes
+  const htmlEntities: { [key: string]: string } = {
+    '&nbsp;': ' ',
+    '&euro;': '€',
+    '&amp;': '&',
+    '&eacute;': 'é',
+    '&egrave;': 'è',
+    '&ecirc;': 'ê',
+    '&agrave;': 'à',
+    '&acirc;': 'â',
+    '&ocirc;': 'ô',
+    '&ucirc;': 'û',
+    '&ccedil;': 'ç',
+    '&quot;': '"',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&rsquo;': "'",
+    '&lsquo;': "'",
+    '&rdquo;': '"',
+    '&ldquo;': '"',
+  }
+
+  for (const [entity, char] of Object.entries(htmlEntities)) {
+    textContent = textContent.replace(new RegExp(entity, 'g'), char)
+  }
+
   // Normaliser les espaces multiples
   textContent = textContent.replace(/\s+/g, ' ')
 
@@ -56,8 +79,9 @@ export function parseEmailSolde(emailBody: string): ParsedSolde {
 
   if (!soldeMatch) {
     // Debug: Afficher un extrait de l'email pour diagnostic
-    const excerpt = textContent.substring(0, 500)
-    console.error('❌ Pattern solde non trouvé. Extrait email:', excerpt)
+    const excerpt = textContent.substring(0, 1500)
+    console.error('❌ Pattern solde non trouvé. Extrait email (après nettoyage HTML):', excerpt)
+    console.error('Longueur texte total:', textContent.length)
     throw new Error('PARSE_ERROR: Pattern solde non trouvé dans l\'email')
   }
 

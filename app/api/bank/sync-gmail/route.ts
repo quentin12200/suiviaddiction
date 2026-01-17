@@ -112,20 +112,34 @@ export async function POST(request: NextRequest) {
     const payload = messageData.payload
 
     // Fonction récursive pour extraire le texte de l'email
-    const extractBody = (part: any): string => {
-      if (part.body && part.body.data) {
+    // Préfère text/plain, sinon prend text/html
+    const extractBody = (part: any, preferredType: string = 'text/plain'): string => {
+      // Si cette partie a le type préféré et contient des données
+      if (part.mimeType === preferredType && part.body && part.body.data) {
         return decodeGmailBody(part.body.data)
       }
+
+      // Chercher récursivement dans les sous-parties
       if (part.parts) {
         for (const subPart of part.parts) {
-          const body = extractBody(subPart)
+          const body = extractBody(subPart, preferredType)
           if (body) return body
         }
       }
+
+      // Si on n'a pas trouvé le type préféré et que cette partie a des données
+      if (part.body && part.body.data) {
+        return decodeGmailBody(part.body.data)
+      }
+
       return ''
     }
 
-    emailBody = extractBody(payload)
+    // Essayer d'abord text/plain, sinon text/html
+    emailBody = extractBody(payload, 'text/plain')
+    if (!emailBody) {
+      emailBody = extractBody(payload, 'text/html')
+    }
 
     if (!emailBody) {
       return NextResponse.json(
@@ -136,8 +150,9 @@ export async function POST(request: NextRequest) {
 
     // DEBUG: Logger le contenu de l'email pour analyse
     console.log('=== EMAIL BODY (DEBUT) ===')
-    console.log(emailBody.substring(0, 1000)) // Premiers 1000 caractères
+    console.log(emailBody.substring(0, 3000)) // Premiers 3000 caractères
     console.log('=== EMAIL BODY (FIN) ===')
+    console.log('Longueur totale email:', emailBody.length)
 
     // Parser l'email pour extraire le solde
     let parsedData

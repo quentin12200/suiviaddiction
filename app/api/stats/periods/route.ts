@@ -123,37 +123,61 @@ export async function GET() {
         : 0,
     }
 
-    // Calculer la plus longue série de MOMENTS DE RÉSISTANCE consécutifs
+    // NOUVEAU CALCUL : Streak basé sur les JOURS, pas sur les entrées
+    // Trouver le dernier joint (hasSmoked = true)
+    const sortedEntries = [...allEntries].sort((a, b) => {
+      const dateComp = new Date(b.date).getTime() - new Date(a.date).getTime()
+      if (dateComp !== 0) return dateComp
+      return b.time.localeCompare(a.time)
+    })
+
+    const lastJointEntry = sortedEntries.find(e => e.hasSmoked === true)
+
     let currentStreak = 0
     let bestStreak = 0
-    let tempStreak = 0
 
-    // Trier par date + heure pour avoir l'ordre chronologique
-    const sortedEntries = [...allEntries].sort((a, b) => {
+    if (lastJointEntry) {
+      // Calculer le nombre de jours depuis le dernier joint
+      const lastJointDate = new Date(lastJointEntry.date)
+      lastJointDate.setHours(0, 0, 0, 0)
+
+      const todayMidnight = new Date(today)
+      todayMidnight.setHours(0, 0, 0, 0)
+
+      const daysSinceLastJoint = Math.floor((todayMidnight.getTime() - lastJointDate.getTime()) / (1000 * 60 * 60 * 24))
+      currentStreak = Math.max(0, daysSinceLastJoint)
+    } else {
+      // Aucun joint trouvé dans les 3 derniers mois
+      currentStreak = 90
+    }
+
+    // Calculer le meilleur streak historique
+    // On parcourt toutes les entrées et on calcule les périodes sans fumer
+    const allEntriesByDate = [...allEntries].sort((a, b) => {
       const dateComp = new Date(a.date).getTime() - new Date(b.date).getTime()
       if (dateComp !== 0) return dateComp
       return a.time.localeCompare(b.time)
     })
 
-    // Meilleur streak de moments de résistance
-    for (const entry of sortedEntries) {
-      if (!entry.hasSmoked) {
-        tempStreak++
-        bestStreak = Math.max(bestStreak, tempStreak)
-      } else {
+    let lastSmokingDate: Date | null = null
+    let tempStreak = 0
+
+    for (const entry of allEntriesByDate) {
+      if (entry.hasSmoked) {
+        lastSmokingDate = new Date(entry.date)
         tempStreak = 0
+      } else if (lastSmokingDate) {
+        const currentDate = new Date(entry.date)
+        currentDate.setHours(0, 0, 0, 0)
+        lastSmokingDate.setHours(0, 0, 0, 0)
+
+        const daysDiff = Math.floor((currentDate.getTime() - lastSmokingDate.getTime()) / (1000 * 60 * 60 * 24))
+        bestStreak = Math.max(bestStreak, daysDiff)
       }
     }
 
-    // Streak actuel (du plus récent vers le passé)
-    const reversedEntries = [...sortedEntries].reverse()
-    for (const entry of reversedEntries) {
-      if (!entry.hasSmoked) {
-        currentStreak++
-      } else {
-        break
-      }
-    }
+    // Le streak actuel pourrait être le meilleur
+    bestStreak = Math.max(bestStreak, currentStreak)
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import styles from './SobrietyCounter.module.css'
+import NicotineDoseModal from './NicotineDoseModal'
 
 interface CounterData {
   lastJointDate: string | null
@@ -19,6 +20,21 @@ export default function SobrietyCounter() {
     totalMinutes: 0,
   })
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [nicotineDose, setNicotineDose] = useState(14)
+  const [showDoseModal, setShowDoseModal] = useState(false)
+
+  // Charger la dose de nicotine depuis le localStorage
+  useEffect(() => {
+    const savedDose = localStorage.getItem('nicotineDose')
+    if (savedDose) {
+      setNicotineDose(parseInt(savedDose))
+    }
+  }, [])
+
+  const handleSaveDose = (dose: number) => {
+    setNicotineDose(dose)
+    localStorage.setItem('nicotineDose', dose.toString())
+  }
 
   // Charger les données
   useEffect(() => {
@@ -235,9 +251,29 @@ export default function SobrietyCounter() {
 
         {/* ALERTE PATCH */}
         <div className={styles.warningCard}>
-          <h3>⚠️ Rappel Important</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <h3 style={{ margin: 0 }}>⚠️ Rappel Important</h3>
+            <button
+              onClick={() => setShowDoseModal(true)}
+              style={{
+                background: '#667eea',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: '600',
+                transition: 'all 0.2s',
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#5568d3'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#667eea'}
+            >
+              ⚙️ Modifier la dose
+            </button>
+          </div>
           <p className={styles.warningText}>
-            Tu portes un patch <strong>14mg de nicotine</strong>. Quand tu fumes un joint avec du tabac,
+            Tu portes un patch <strong>{nicotineDose}mg de nicotine</strong>. Quand tu fumes un joint avec du tabac,
             tu RAJOUTES de la nicotine alors que ton corps en a déjà assez.
             <br/><br/>
             <strong>Résultat :</strong> Surdosage = anxiété, palpitations, nausées.
@@ -248,7 +284,7 @@ export default function SobrietyCounter() {
 
         {/* COMBAT 1 : Nicotine (déjà géré par patch) */}
         <div className={styles.healthCard}>
-          <h3>💊 Combat Nicotine (Patch 14mg)</h3>
+          <h3>💊 Combat Nicotine (Patch {nicotineDose}mg)</h3>
           <p className={styles.subtitle}>Tu as déjà ce qu'il faut avec le patch. Le tabac du joint est INUTILE.</p>
 
           <div className={styles.benefits}>
@@ -380,6 +416,14 @@ export default function SobrietyCounter() {
           </div>
         </div>
       </div>
+
+      {showDoseModal && (
+        <NicotineDoseModal
+          currentDose={nicotineDose}
+          onSave={handleSaveDose}
+          onClose={() => setShowDoseModal(false)}
+        />
+      )}
     </div>
   )
 }

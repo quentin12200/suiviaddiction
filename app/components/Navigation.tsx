@@ -36,6 +36,7 @@ export default function Navigation() {
       title: 'PRINCIPAL',
       items: [
         { href: '/', label: 'Dashboard', icon: '📊' },
+        { href: '/journal', label: 'Journal', icon: '📝' },
         { href: '/new', label: 'Nouvelle entrée', icon: '➕' },
         { href: '/history', label: 'Historique', icon: '📜' },
         { href: '/thoughts', label: 'Pensées', icon: '💭' },
@@ -51,6 +52,7 @@ export default function Navigation() {
         { href: '/habits/tracker', label: 'Tracker', icon: '✅' },
         { href: '/discipline', label: 'Discipline', icon: '⚔️' },
         { href: '/strategies', label: 'Stratégies', icon: '🛡️' },
+        { href: '/hyperactivite', label: 'Hyperactivité', icon: '⚡' },
         { href: '/reading', label: 'Lectures', icon: '📚' },
       ],
     },

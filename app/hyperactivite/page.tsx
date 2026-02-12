@@ -409,7 +409,7 @@ export default function HyperactivityPage() {
               <p>Sport = médicament le plus puissant pour ton cerveau.</p>
             </div>
             <div className={styles.point}>
-              <strong>4. Stimulation active > Stimulation passive</strong>
+              <strong>4. Stimulation active {'>'} Stimulation passive</strong>
               <p>Crée au lieu de consommer. Agis au lieu de regarder.</p>
             </div>
           </div>

@@ -44,18 +44,25 @@ export async function GET() {
     type EntryType = typeof allEntries[number]
 
     const calculatePeriodStats = (entries: typeof allEntries) => {
-      // NOUVELLE LOGIQUE : Compter les MOMENTS, pas les jours
-      const totalEntries = entries.length
-      const resistanceMoments = entries.filter((e: EntryType) => !e.hasSmoked).length
-      const smokingMoments = entries.filter((e: EntryType) => e.hasSmoked).length
+      // Calculer les jours uniques
+      const uniqueDaysSet = new Set(entries.map((e: EntryType) => e.date.toISOString().split('T')[0]))
+      const totalDays = uniqueDaysSet.size || 1 // Au moins 1 pour éviter division par 0
+
+      // Jours où on a fumé
+      const smokingDaysSet = new Set(
+        entries
+          .filter((e: EntryType) => e.hasSmoked)
+          .map((e: EntryType) => e.date.toISOString().split('T')[0])
+      )
+      const smokingDays = smokingDaysSet.size
+
+      // Jours propres = jours totaux - jours où on a fumé
+      const cleanDays = totalDays - smokingDays
 
       const totalJoints = entries.reduce((sum: number, e: EntryType) => sum + (e.jointCount || 0), 0)
       const avgCraving = entries.length > 0
         ? entries.reduce((sum: number, e: EntryType) => sum + e.cravingLevel, 0) / entries.length
         : 0
-
-      // Jours uniques (pour calculer moyenne joints/jour)
-      const uniqueDays = new Set(entries.map((e: EntryType) => e.date.toISOString().split('T')[0])).size
 
       // Alternatives constructives
       const constructiveAlternatives = entries.filter(
@@ -68,12 +75,12 @@ export async function GET() {
       ).length
 
       return {
-        totalEntries,
-        resistanceMoments,
-        smokingMoments,
-        resistancePercentage: totalEntries > 0 ? (resistanceMoments / totalEntries) * 100 : 0,
+        totalDays,
+        smokingDays,
+        cleanDays,
+        cleanPercentage: totalDays > 0 ? (cleanDays / totalDays) * 100 : 0,
         totalJoints,
-        avgJointsPerDay: uniqueDays > 0 ? totalJoints / uniqueDays : 0,
+        avgJointsPerDay: totalDays > 0 ? totalJoints / totalDays : 0,
         avgCraving: Math.round(avgCraving * 10) / 10,
         constructiveAlternatives,
         successfulIsolations,
@@ -100,27 +107,27 @@ export async function GET() {
 
     // Calculer les tendances (% de changement)
     const weekTrend = {
-      resistanceMoments: previousWeekStats.resistanceMoments > 0
-        ? ((lastWeekStats.resistanceMoments - previousWeekStats.resistanceMoments) / previousWeekStats.resistanceMoments) * 100
-        : 0,
+      cleanDays: previousWeekStats.cleanDays > 0
+        ? ((lastWeekStats.cleanDays - previousWeekStats.cleanDays) / previousWeekStats.cleanDays) * 100
+        : (lastWeekStats.cleanDays > 0 ? 100 : 0),
       avgJointsPerDay: previousWeekStats.avgJointsPerDay > 0
         ? ((lastWeekStats.avgJointsPerDay - previousWeekStats.avgJointsPerDay) / previousWeekStats.avgJointsPerDay) * 100
-        : 0,
+        : (lastWeekStats.avgJointsPerDay > 0 ? 100 : -100),
       avgCraving: previousWeekStats.avgCraving > 0
         ? ((lastWeekStats.avgCraving - previousWeekStats.avgCraving) / previousWeekStats.avgCraving) * 100
-        : 0,
+        : (lastWeekStats.avgCraving > 0 ? 100 : -100),
     }
 
     const monthTrend = {
-      resistanceMoments: previousMonthStats.resistanceMoments > 0
-        ? ((lastMonthStats.resistanceMoments - previousMonthStats.resistanceMoments) / previousMonthStats.resistanceMoments) * 100
-        : 0,
+      cleanDays: previousMonthStats.cleanDays > 0
+        ? ((lastMonthStats.cleanDays - previousMonthStats.cleanDays) / previousMonthStats.cleanDays) * 100
+        : (lastMonthStats.cleanDays > 0 ? 100 : 0),
       avgJointsPerDay: previousMonthStats.avgJointsPerDay > 0
         ? ((lastMonthStats.avgJointsPerDay - previousMonthStats.avgJointsPerDay) / previousMonthStats.avgJointsPerDay) * 100
-        : 0,
+        : (lastMonthStats.avgJointsPerDay > 0 ? 100 : -100),
       avgCraving: previousMonthStats.avgCraving > 0
         ? ((lastMonthStats.avgCraving - previousMonthStats.avgCraving) / previousMonthStats.avgCraving) * 100
-        : 0,
+        : (lastMonthStats.avgCraving > 0 ? 100 : -100),
     }
 
     // NOUVEAU CALCUL : Streak basé sur les JOURS, pas sur les entrées

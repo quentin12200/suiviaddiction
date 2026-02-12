@@ -153,7 +153,7 @@ export default function PeriodStats() {
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statHeader}>
-            <span className={styles.statTitle}>Jours propres</span>
+            <span className={styles.statTitle}>Jours sans fumer</span>
             {selectedPeriod !== '3months' && (
               <span className={getTrendColor(currentTrend.cleanDays)}>
                 {getTrendIcon(currentTrend.cleanDays)}
@@ -165,11 +165,13 @@ export default function PeriodStats() {
             {currentPeriod.cleanDays} / {currentPeriod.totalDays}
           </div>
           <div className={styles.statSubtext}>
-            {Math.round(currentPeriod.cleanPercentage)}% de réussite
+            {currentPeriod.cleanDays === currentPeriod.totalDays
+              ? '🎉 Aucun joint fumé !'
+              : `${Math.round(currentPeriod.cleanPercentage)}% d'abstinence`}
           </div>
           {selectedPeriod !== '3months' && (
             <div className={styles.comparison}>
-              vs {previousPeriod.cleanDays} période précédente
+              vs {previousPeriod.cleanDays} jours période précédente
             </div>
           )}
         </div>
@@ -251,7 +253,7 @@ export default function PeriodStats() {
           <h3>💡 Analyse</h3>
           {currentTrend.cleanDays > 10 && (
             <p className={styles.positiveNote}>
-              ✅ Excellente progression ! Tu as augmenté tes jours propres de {Math.round(currentTrend.cleanDays)}%
+              ✅ Excellente progression ! Tu as augmenté tes jours sans fumer de {Math.round(currentTrend.cleanDays)}%
             </p>
           )}
           {currentTrend.avgJointsPerDay < -10 && (
@@ -266,7 +268,7 @@ export default function PeriodStats() {
           )}
           {currentTrend.cleanDays < -10 && (
             <p className={styles.warningNote}>
-              ⚠️ Attention : recul de {Math.abs(Math.round(currentTrend.cleanDays))}% sur les jours propres
+              ⚠️ Attention : recul de {Math.abs(Math.round(currentTrend.cleanDays))}% sur les jours sans fumer
             </p>
           )}
           {currentTrend.avgJointsPerDay > 10 && (

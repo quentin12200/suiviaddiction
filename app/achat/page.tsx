@@ -179,53 +179,64 @@ export default function AchatPage() {
         <>
           {step === 0 && (
             <div className={styles.stepCard}>
-              <div className={styles.uploadRow}>
+              {!imageBase64 && !analyzing && (
                 <div className={styles.uploadZone}>
                   <label className={styles.uploadButton}>
-                    📸 Importer une image
+                    <span className={styles.uploadIcon}>📸</span>
+                    <span className={styles.uploadText}>Importer une capture d&apos;écran</span>
+                    <span className={styles.uploadHint}>Amazon, Vinted, Leboncoin, Instagram...</span>
                     <input type="file" accept="image/*" onChange={handleImageUpload} hidden />
                   </label>
-                  {analyzing && <p className={styles.analyzingText}>L&apos;IA analyse l&apos;image...</p>}
-                  {imageBase64 && !analyzing && (
-                    <img src={imageBase64} alt="preview" className={styles.imagePreview} />
-                  )}
-                </div>
-                <div className={styles.orDivider}>ou</div>
-                <div className={styles.manualZone}>
-                  <label className={styles.inputLabel}>Nom du produit</label>
-                  <input
-                    className={styles.editInput}
-                    type="text"
-                    placeholder="Ex: AirPods Pro..."
-                    value={productInfo.produit || manualName}
-                    onChange={e => {
-                      setManualName(e.target.value)
-                      setProductInfo(p => ({ ...p, produit: e.target.value }))
-                    }}
-                  />
-                </div>
-              </div>
-
-              {(productInfo.prix || productInfo.categorie) && (
-                <div className={styles.productCard}>
-                  <div className={styles.productRow}>
-                    <span className={styles.productLabel}>Prix</span>
-                    <input className={styles.editInput} value={productInfo.prix} onChange={e => setProductInfo(p => ({ ...p, prix: e.target.value }))} placeholder="Non détecté" />
-                  </div>
-                  <div className={styles.productRow}>
-                    <span className={styles.productLabel}>Catégorie</span>
-                    <input className={styles.editInput} value={productInfo.categorie} onChange={e => setProductInfo(p => ({ ...p, categorie: e.target.value }))} placeholder="Non détectée" />
+                  <div className={styles.orDivider}>ou</div>
+                  <div className={styles.manualZone}>
+                    <input
+                      className={styles.editInput}
+                      type="text"
+                      placeholder="Entrez le nom du produit..."
+                      value={manualName}
+                      onChange={e => {
+                        setManualName(e.target.value)
+                        setProductInfo(p => ({ ...p, produit: e.target.value }))
+                      }}
+                    />
                   </div>
                 </div>
               )}
 
-              <button
-                className={styles.btnPrimary}
-                onClick={startTest}
-                disabled={!productInfo.produit.trim() && !manualName.trim()}
-              >
-                Commencer le test →
-              </button>
+              {analyzing && (
+                <div className={styles.analyzingCard}>
+                  <div className={styles.loadingSpinner} />
+                  <p className={styles.analyzingText}>L&apos;IA analyse votre image...</p>
+                </div>
+              )}
+
+              {imageBase64 && !analyzing && (
+                <div className={styles.detectedCard}>
+                  <img src={imageBase64} alt="preview" className={styles.imagePreview} />
+                  <div className={styles.detectedInfo}>
+                    <p className={styles.detectedLabel}>✅ Produit détecté</p>
+                    <p className={styles.detectedProduit}>{productInfo.produit || '—'}</p>
+                    {productInfo.prix && <p className={styles.detectedMeta}>Prix : {productInfo.prix}</p>}
+                    {productInfo.categorie && <p className={styles.detectedMeta}>Catégorie : {productInfo.categorie}</p>}
+                    <input
+                      className={styles.editInput}
+                      type="text"
+                      placeholder="Corriger le nom si besoin..."
+                      value={productInfo.produit}
+                      onChange={e => setProductInfo(p => ({ ...p, produit: e.target.value }))}
+                    />
+                    <button className={styles.btnSecondary} onClick={() => { setImageBase64(null); setProductInfo({ produit: '', prix: '', categorie: '' }) }}>
+                      Changer l&apos;image
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {(productInfo.produit.trim() || manualName.trim()) && !analyzing && (
+                <button className={styles.btnPrimary} onClick={startTest}>
+                  Commencer le test →
+                </button>
+              )}
             </div>
           )}
 

@@ -62,42 +62,70 @@
   gap: 1.25rem;
 }
 
-.uploadRow {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
 .uploadZone {
-  flex: 1;
-  min-width: 180px;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   align-items: center;
 }
 
 .uploadButton {
-  display: inline-block;
-  background: #2563eb;
-  color: white;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: #0f172a;
+  border: 2px dashed #334155;
+  color: #94a3b8;
+  padding: 2rem 1.5rem;
+  border-radius: 1rem;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: background 0.2s;
-  text-align: center;
+  transition: all 0.2s;
   width: 100%;
 }
 
 .uploadButton:hover {
-  background: #1d4ed8;
+  border-color: #3b82f6;
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+.uploadIcon {
+  font-size: 2rem;
+}
+
+.uploadText {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.uploadHint {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.orDivider {
+  color: #475569;
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+}
+
+.manualZone {
+  width: 100%;
+}
+
+.analyzingCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 1rem;
 }
 
 .analyzingText {
   color: #94a3b8;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   animation: pulse 1.5s infinite;
 }
 
@@ -106,27 +134,50 @@
   50% { opacity: 0.4; }
 }
 
+.detectedCard {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  background: #0f172a;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #22c55e33;
+}
+
 .imagePreview {
-  max-width: 100%;
-  max-height: 160px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
   border-radius: 0.5rem;
   border: 1px solid #334155;
+  flex-shrink: 0;
 }
 
-.orDivider {
-  color: #475569;
-  font-size: 0.9rem;
-  padding: 0.5rem 0;
-  align-self: center;
-}
-
-.manualZone {
+.detectedInfo {
   flex: 1;
-  min-width: 180px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.detectedLabel {
+  color: #22c55e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.detectedProduit {
+  color: #f1f5f9;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.detectedMeta {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 0;
 }
 
 .inputLabel {

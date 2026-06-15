@@ -286,6 +286,19 @@ model RecurringExpense {
   @@index([category])
 }
 
+model AchatTest {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  produit     String
+  prix        String?
+  categorie   String?
+  imageUrl    String?
+  reponses    String
+  score       Int
+  decision    String
+  utilisateur String   @default("moi")
+}
+
 // Modèle pour le solde automatique récupéré depuis Gmail (emails Caisse d'Épargne)
 model EmailSolde {
   id              String   @id @default(cuid())

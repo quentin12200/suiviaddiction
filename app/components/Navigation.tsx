@@ -72,6 +72,7 @@ export default function Navigation() {
         { href: '/bank', label: 'Analyse Banque', icon: '💳' },
         { href: '/export', label: 'Export PDF', icon: '📄' },
         { href: '/admin', label: 'Admin', icon: '🔧' },
+        { href: '/achat', label: "Frein à l'Achat", icon: '🛒' },
       ],
     },
   ]

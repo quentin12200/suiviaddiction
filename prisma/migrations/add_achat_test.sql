@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS AchatTest (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  produit TEXT NOT NULL,
+  prix TEXT,
+  categorie TEXT,
+  imageUrl TEXT,
+  reponses TEXT NOT NULL,
+  score INTEGER NOT NULL,
+  decision TEXT NOT NULL,
+  utilisateur TEXT NOT NULL DEFAULT 'moi'
+);

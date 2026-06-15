@@ -332,6 +332,24 @@ async function migrate() {
 
     console.log('✅ Index EmailSolde créés')
 
+    // Créer la table AchatTest
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "AchatTest" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "produit" TEXT NOT NULL,
+        "prix" TEXT,
+        "categorie" TEXT,
+        "imageUrl" TEXT,
+        "reponses" TEXT NOT NULL,
+        "score" INTEGER NOT NULL,
+        "decision" TEXT NOT NULL,
+        "utilisateur" TEXT NOT NULL DEFAULT 'moi'
+      )
+    `)
+
+    console.log('✅ Table AchatTest créée')
+
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

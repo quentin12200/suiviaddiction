@@ -37,6 +37,7 @@ export default function Navigation() {
       items: [
         { href: '/', label: 'Dashboard', icon: '📊' },
         { href: '/journal', label: 'Journal', icon: '📝' },
+        { href: '/achat', label: "Frein à l'Achat", icon: '🛒' },
         { href: '/new', label: 'Nouvelle entrée', icon: '➕' },
         { href: '/history', label: 'Historique', icon: '📜' },
         { href: '/thoughts', label: 'Pensées', icon: '💭' },
@@ -72,7 +73,6 @@ export default function Navigation() {
         { href: '/bank', label: 'Analyse Banque', icon: '💳' },
         { href: '/export', label: 'Export PDF', icon: '📄' },
         { href: '/admin', label: 'Admin', icon: '🔧' },
-        { href: '/achat', label: "Frein à l'Achat", icon: '🛒' },
       ],
     },
   ]

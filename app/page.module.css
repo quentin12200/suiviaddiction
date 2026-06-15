@@ -1,9 +1,31 @@
 .container {
-  max-width: 1600px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
-  height: calc(100vh - 80px); /* Full height minus nav */
+  height: calc(100vh - 80px);
   overflow-y: auto;
+}
+
+.journalShortcut {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.journalButton {
+  display: inline-block;
+  background: #667eea;
+  color: white;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.journalButton:hover {
+  background: #5568d3;
 }
 
 /* Ultrawide screens optimization */

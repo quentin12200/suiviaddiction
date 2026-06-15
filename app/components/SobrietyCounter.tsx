@@ -13,11 +13,13 @@ interface CounterData {
 export default function SobrietyCounter() {
   const [data, setData] = useState<CounterData | null>(null)
   const [timeElapsed, setTimeElapsed] = useState({
+    months: 0,
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
     totalMinutes: 0,
+    totalDays: 0,
   })
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [nicotineDose, setNicotineDose] = useState(14)
@@ -77,12 +79,14 @@ export default function SobrietyCounter() {
       const diff = now.getTime() - lastJoint.getTime()
 
       const totalMinutes = Math.floor(diff / (1000 * 60))
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const totalDays = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const months = Math.floor(totalDays / 30)
+      const days = totalDays % 30
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       const seconds = Math.floor((diff % (1000 * 60)) / 1000)
 
-      setTimeElapsed({ days, hours, minutes, seconds, totalMinutes })
+      setTimeElapsed({ months, days, hours, minutes, seconds, totalMinutes, totalDays })
     }
 
     updateCounter()
@@ -225,6 +229,12 @@ export default function SobrietyCounter() {
 
         {/* Compteur principal */}
         <div className={styles.mainCounter}>
+          {timeElapsed.months > 0 && (
+            <div className={styles.timeUnit}>
+              <div className={styles.number}>{timeElapsed.months}</div>
+              <div className={styles.label}>mois</div>
+            </div>
+          )}
           {timeElapsed.days > 0 && (
             <div className={styles.timeUnit}>
               <div className={styles.number}>{timeElapsed.days}</div>

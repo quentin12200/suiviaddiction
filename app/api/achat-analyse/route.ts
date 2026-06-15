@@ -4,6 +4,13 @@ export async function POST(request: Request) {
   try {
     const { imageBase64 } = await request.json()
 
+    if (!imageBase64) {
+      return NextResponse.json({ error: 'Aucune image reçue' }, { status: 400 })
+    }
+
+    console.log('🖼️ Image reçue, taille:', Math.round(imageBase64.length / 1024), 'KB')
+    console.log('🖼️ Type:', imageBase64.substring(0, 30))
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
@@ -28,12 +35,33 @@ export async function POST(request: Request) {
     })
 
     const data = await response.json()
-    const content = data.choices[0].message.content
+    console.log('🤖 OpenAI status:', response.status)
+    console.log('🤖 OpenAI response:', JSON.stringify(data).substring(0, 500))
+
+    if (!response.ok) {
+      console.error('❌ OpenAI error:', data)
+      return NextResponse.json({ error: `OpenAI error: ${data.error?.message || 'unknown'}` }, { status: 500 })
+    }
+
+    const content = data.choices?.[0]?.message?.content
+    if (!content) {
+      console.error('❌ No content in response')
+      return NextResponse.json({ error: 'Pas de réponse de l\'IA' }, { status: 500 })
+    }
+
+    console.log('📝 Content:', content)
+
     const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No JSON found')
+    if (!jsonMatch) {
+      console.error('❌ No JSON in content:', content)
+      return NextResponse.json({ error: 'Format de réponse invalide' }, { status: 500 })
+    }
+
     const result = JSON.parse(jsonMatch[0])
+    console.log('✅ Parsed result:', result)
     return NextResponse.json(result)
   } catch (error) {
-    return NextResponse.json({ error: 'Analyse échouée' }, { status: 500 })
+    console.error('❌ Exception:', error)
+    return NextResponse.json({ error: String(error) }, { status: 500 })
   }
 }

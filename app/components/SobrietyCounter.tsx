@@ -162,31 +162,31 @@ export default function SobrietyCounter() {
     // Après 1h : clarté mentale revient
     mentalClarity: timeElapsed.totalMinutes >= 60,
     // Après 24h : THC commence à quitter le système
-    thcElimination: timeElapsed.days >= 1,
+    thcElimination: timeElapsed.totalDays >=1,
     // Après 2-3 jours : mémoire court terme s'améliore
-    memoryImprovement: timeElapsed.days >= 2,
+    memoryImprovement: timeElapsed.totalDays >=2,
     // Après 1 semaine : sommeil REM se normalise
-    sleepQuality: timeElapsed.days >= 7,
+    sleepQuality: timeElapsed.totalDays >=7,
     // Après 2 semaines : motivation naturelle revient
-    motivationBoost: timeElapsed.days >= 14,
+    motivationBoost: timeElapsed.totalDays >=14,
     // Après 1 mois : récepteurs cannabinoïdes se régénèrent
-    receptorsHealing: timeElapsed.days >= 30,
+    receptorsHealing: timeElapsed.totalDays >=30,
   }
 
   // COMBAT 3 : COMBUSTION (commun tabac + cannabis)
   const combustionBenefits = {
     // Après 2 jours : goût et odorat s'améliorent
-    sensesImprove: timeElapsed.days >= 2,
+    sensesImprove: timeElapsed.totalDays >=2,
     // Après 3 jours : respiration s'améliore
-    breathingImproves: timeElapsed.days >= 3,
+    breathingImproves: timeElapsed.totalDays >=3,
     // Après 1 semaine : toux diminue
-    coughReduction: timeElapsed.days >= 7,
+    coughReduction: timeElapsed.totalDays >=7,
     // Après 1 mois : fonction pulmonaire +30%
-    lungFunction: timeElapsed.days >= 30,
+    lungFunction: timeElapsed.totalDays >=30,
   }
 
-  const lungRecovery = Math.min(100, (timeElapsed.days / 365) * 100) // Récupération complète en 1 an
-  const thcDetox = Math.min(100, (timeElapsed.days / 30) * 100) // Récepteurs CB1 en 30 jours
+  const lungRecovery = Math.min(100, (timeElapsed.totalDays / 365) * 100)
+  const thcDetox = Math.min(100, (timeElapsed.totalDays / 30) * 100)
 
   return (
     <div className={styles.container}>
@@ -359,20 +359,20 @@ export default function SobrietyCounter() {
             {!cannabisBenefits.mentalClarity && timeElapsed.totalMinutes < 60 && (
               <div className={styles.milestone}>Dans {60 - timeElapsed.totalMinutes} min : Clarté mentale</div>
             )}
-            {!cannabisBenefits.thcElimination && timeElapsed.days < 1 && (
-              <div className={styles.milestone}>Dans {1 - timeElapsed.days} jour : THC éliminé</div>
+            {!cannabisBenefits.thcElimination && timeElapsed.totalDays <1 && (
+              <div className={styles.milestone}>Dans {1 - timeElapsed.totalDays}jour : THC éliminé</div>
             )}
-            {!cannabisBenefits.memoryImprovement && timeElapsed.days < 2 && (
-              <div className={styles.milestone}>Dans {2 - timeElapsed.days} jours : Mémoire améliorée</div>
+            {!cannabisBenefits.memoryImprovement && timeElapsed.totalDays <2 && (
+              <div className={styles.milestone}>Dans {2 - timeElapsed.totalDays}jours : Mémoire améliorée</div>
             )}
-            {!cannabisBenefits.sleepQuality && timeElapsed.days < 7 && (
-              <div className={styles.milestone}>Dans {7 - timeElapsed.days} jours : Sommeil normalisé</div>
+            {!cannabisBenefits.sleepQuality && timeElapsed.totalDays <7 && (
+              <div className={styles.milestone}>Dans {7 - timeElapsed.totalDays}jours : Sommeil normalisé</div>
             )}
-            {!cannabisBenefits.motivationBoost && timeElapsed.days < 14 && (
-              <div className={styles.milestone}>Dans {14 - timeElapsed.days} jours : Motivation revenue</div>
+            {!cannabisBenefits.motivationBoost && timeElapsed.totalDays <14 && (
+              <div className={styles.milestone}>Dans {14 - timeElapsed.totalDays}jours : Motivation revenue</div>
             )}
-            {!cannabisBenefits.receptorsHealing && timeElapsed.days < 30 && (
-              <div className={styles.milestone}>Dans {30 - timeElapsed.days} jours : Récepteurs guéris</div>
+            {!cannabisBenefits.receptorsHealing && timeElapsed.totalDays <30 && (
+              <div className={styles.milestone}>Dans {30 - timeElapsed.totalDays}jours : Récepteurs guéris</div>
             )}
           </div>
         </div>
@@ -411,17 +411,17 @@ export default function SobrietyCounter() {
 
           <div className={styles.nextMilestones}>
             <h4>🎯 Prochains Paliers Poumons</h4>
-            {!combustionBenefits.sensesImprove && timeElapsed.days < 2 && (
-              <div className={styles.milestone}>Dans {2 - timeElapsed.days} jours : Goût/odorat</div>
+            {!combustionBenefits.sensesImprove && timeElapsed.totalDays <2 && (
+              <div className={styles.milestone}>Dans {2 - timeElapsed.totalDays}jours : Goût/odorat</div>
             )}
-            {!combustionBenefits.breathingImproves && timeElapsed.days < 3 && (
-              <div className={styles.milestone}>Dans {3 - timeElapsed.days} jours : Respiration</div>
+            {!combustionBenefits.breathingImproves && timeElapsed.totalDays <3 && (
+              <div className={styles.milestone}>Dans {3 - timeElapsed.totalDays}jours : Respiration</div>
             )}
-            {!combustionBenefits.coughReduction && timeElapsed.days < 7 && (
-              <div className={styles.milestone}>Dans {7 - timeElapsed.days} jours : Toux réduite</div>
+            {!combustionBenefits.coughReduction && timeElapsed.totalDays <7 && (
+              <div className={styles.milestone}>Dans {7 - timeElapsed.totalDays}jours : Toux réduite</div>
             )}
-            {!combustionBenefits.lungFunction && timeElapsed.days < 30 && (
-              <div className={styles.milestone}>Dans {30 - timeElapsed.days} jours : Poumons +30%</div>
+            {!combustionBenefits.lungFunction && timeElapsed.totalDays <30 && (
+              <div className={styles.milestone}>Dans {30 - timeElapsed.totalDays}jours : Poumons +30%</div>
             )}
           </div>
         </div>

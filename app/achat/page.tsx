@@ -20,6 +20,7 @@ interface ProductInfo {
   produit: string
   prix: string
   categorie: string
+  commentaire: string
 }
 
 interface HistoryItem {
@@ -36,7 +37,7 @@ interface HistoryItem {
 export default function AchatPage() {
   const [step, setStep] = useState(0)
   const [imageBase64, setImageBase64] = useState<string | null>(null)
-  const [productInfo, setProductInfo] = useState<ProductInfo>({ produit: '', prix: '', categorie: '' })
+  const [productInfo, setProductInfo] = useState<ProductInfo>({ produit: '', prix: '', categorie: '', commentaire: '' })
   const [manualName, setManualName] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [answers, setAnswers] = useState<number[]>([])
@@ -71,7 +72,7 @@ export default function AchatPage() {
         })
         const data = await res.json()
         if (!data.error) {
-          setProductInfo({ produit: data.produit || '', prix: data.prix || '', categorie: data.categorie || '' })
+          setProductInfo({ produit: data.produit || '', prix: data.prix || '', categorie: data.categorie || '', commentaire: data.commentaire || '' })
         }
       } catch {}
       setAnalyzing(false)
@@ -134,7 +135,7 @@ export default function AchatPage() {
   const reset = () => {
     setStep(0)
     setImageBase64(null)
-    setProductInfo({ produit: '', prix: '', categorie: '' })
+    setProductInfo({ produit: '', prix: '', categorie: '', commentaire: '' })
     setManualName('')
     setAnswers([])
     setUtilisateur('moi')
@@ -216,8 +217,10 @@ export default function AchatPage() {
                   <div className={styles.detectedInfo}>
                     <p className={styles.detectedLabel}>✅ Produit détecté</p>
                     <p className={styles.detectedProduit}>{productInfo.produit || '—'}</p>
-                    {productInfo.prix && <p className={styles.detectedMeta}>Prix : {productInfo.prix}</p>}
-                    {productInfo.categorie && <p className={styles.detectedMeta}>Catégorie : {productInfo.categorie}</p>}
+                    {productInfo.prix && <p className={styles.detectedMeta}>💰 {productInfo.prix}</p>}
+                    {productInfo.commentaire && (
+                      <p className={styles.aiComment}>🤔 {productInfo.commentaire}</p>
+                    )}
                     <input
                       className={styles.editInput}
                       type="text"
@@ -225,7 +228,7 @@ export default function AchatPage() {
                       value={productInfo.produit}
                       onChange={e => setProductInfo(p => ({ ...p, produit: e.target.value }))}
                     />
-                    <button className={styles.btnSecondary} onClick={() => { setImageBase64(null); setProductInfo({ produit: '', prix: '', categorie: '' }) }}>
+                    <button className={styles.btnSecondary} onClick={() => { setImageBase64(null); setProductInfo({ produit: '', prix: '', categorie: '', commentaire: '' }) }}>
                       Changer l&apos;image
                     </button>
                   </div>

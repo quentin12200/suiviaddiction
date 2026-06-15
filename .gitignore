@@ -42,3 +42,4 @@ prisma/dev.db-journal
 # csv data
 data/*.csv
 !data/*.example.csv
+.claude/worktrees/

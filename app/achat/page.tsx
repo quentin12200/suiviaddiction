@@ -40,6 +40,7 @@ export default function AchatPage() {
   const [productInfo, setProductInfo] = useState<ProductInfo>({ produit: '', prix: '', categorie: '', commentaire: '' })
   const [manualName, setManualName] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
   const [answers, setAnswers] = useState<number[]>([])
   const [utilisateur, setUtilisateur] = useState('moi')
   const [saving, setSaving] = useState(false)
@@ -64,6 +65,7 @@ export default function AchatPage() {
       const base64 = ev.target?.result as string
       setImageBase64(base64)
       setAnalyzing(true)
+      setAnalyzeError(null)
       try {
         const res = await fetch('/api/achat-analyse', {
           method: 'POST',
@@ -71,10 +73,14 @@ export default function AchatPage() {
           body: JSON.stringify({ imageBase64: base64 })
         })
         const data = await res.json()
-        if (!data.error) {
+        if (data.error) {
+          setAnalyzeError(`Erreur IA : ${data.error}`)
+        } else {
           setProductInfo({ produit: data.produit || '', prix: data.prix || '', categorie: data.categorie || '', commentaire: data.commentaire || '' })
         }
-      } catch {}
+      } catch (e) {
+        setAnalyzeError(`Erreur réseau : ${String(e)}`)
+      }
       setAnalyzing(false)
     }
     reader.readAsDataURL(file)
@@ -208,6 +214,13 @@ export default function AchatPage() {
                 <div className={styles.analyzingCard}>
                   <div className={styles.loadingSpinner} />
                   <p className={styles.analyzingText}>L&apos;IA analyse votre image...</p>
+                </div>
+              )}
+
+              {analyzeError && (
+                <div className={styles.errorCard}>
+                  <p>{analyzeError}</p>
+                  <button className={styles.btnSecondary} onClick={() => { setImageBase64(null); setAnalyzeError(null) }}>Réessayer</button>
                 </div>
               )}
 

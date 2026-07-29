@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import styles from './SobrietyCounter.module.css'
-import NicotineDoseModal from './NicotineDoseModal'
 
 interface CounterData {
   lastJointDate: string | null
@@ -22,21 +21,6 @@ export default function SobrietyCounter() {
     totalDays: 0,
   })
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [nicotineDose, setNicotineDose] = useState(14)
-  const [showDoseModal, setShowDoseModal] = useState(false)
-
-  // Charger la dose de nicotine depuis le localStorage
-  useEffect(() => {
-    const savedDose = localStorage.getItem('nicotineDose')
-    if (savedDose) {
-      setNicotineDose(parseInt(savedDose))
-    }
-  }, [])
-
-  const handleSaveDose = (dose: number) => {
-    setNicotineDose(dose)
-    localStorage.setItem('nicotineDose', dose.toString())
-  }
 
   // Charger les données
   useEffect(() => {
@@ -139,50 +123,29 @@ export default function SobrietyCounter() {
     return (
       <div className={styles.container}>
         <div className={styles.card}>
-          <h2 className={styles.title}>⏱️ Compteur de Sobriété</h2>
-          <p className={styles.noData}>Aucun joint enregistré. Commence ton parcours !</p>
+          <h2 className={styles.title}>⏱️ Compteur d&apos;Arrêt</h2>
+          <p className={styles.noData}>Aucune entrée enregistrée. Commence ton parcours !</p>
         </div>
       </div>
     )
   }
 
-  // COMBAT 1 : NICOTINE (déjà géré par patch 14mg)
-  // Tu rajoutes de la nicotine inutilement avec le tabac du joint
-  const nicotineBenefits = {
-    // Après 20 min : rythme cardiaque normal (nicotine)
-    heartRate: timeElapsed.totalMinutes >= 20,
-    // Après 2h : pression artérielle normale
-    bloodPressure: timeElapsed.totalMinutes >= 120,
-    // Après 12h : niveau CO2 normal (combustion)
-    co2Normal: timeElapsed.totalMinutes >= 720,
-  }
-
-  // COMBAT 2 : CANNABIS/THC (le VRAI combat psychologique)
+  // Bénéfices cannabis/THC
   const cannabisBenefits = {
-    // Après 1h : clarté mentale revient
     mentalClarity: timeElapsed.totalMinutes >= 60,
-    // Après 24h : THC commence à quitter le système
-    thcElimination: timeElapsed.totalDays >=1,
-    // Après 2-3 jours : mémoire court terme s'améliore
-    memoryImprovement: timeElapsed.totalDays >=2,
-    // Après 1 semaine : sommeil REM se normalise
-    sleepQuality: timeElapsed.totalDays >=7,
-    // Après 2 semaines : motivation naturelle revient
-    motivationBoost: timeElapsed.totalDays >=14,
-    // Après 1 mois : récepteurs cannabinoïdes se régénèrent
-    receptorsHealing: timeElapsed.totalDays >=30,
+    thcElimination: timeElapsed.totalDays >= 1,
+    memoryImprovement: timeElapsed.totalDays >= 2,
+    sleepQuality: timeElapsed.totalDays >= 7,
+    motivationBoost: timeElapsed.totalDays >= 14,
+    receptorsHealing: timeElapsed.totalDays >= 30,
   }
 
-  // COMBAT 3 : COMBUSTION (commun tabac + cannabis)
+  // Bénéfices cigarette/combustion
   const combustionBenefits = {
-    // Après 2 jours : goût et odorat s'améliorent
-    sensesImprove: timeElapsed.totalDays >=2,
-    // Après 3 jours : respiration s'améliore
-    breathingImproves: timeElapsed.totalDays >=3,
-    // Après 1 semaine : toux diminue
-    coughReduction: timeElapsed.totalDays >=7,
-    // Après 1 mois : fonction pulmonaire +30%
-    lungFunction: timeElapsed.totalDays >=30,
+    sensesImprove: timeElapsed.totalDays >= 2,
+    breathingImproves: timeElapsed.totalDays >= 3,
+    coughReduction: timeElapsed.totalDays >= 7,
+    lungFunction: timeElapsed.totalDays >= 30,
   }
 
   const lungRecovery = Math.min(100, (timeElapsed.totalDays / 365) * 100)
@@ -192,7 +155,7 @@ export default function SobrietyCounter() {
     <div className={styles.container}>
       <div className={styles.card}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <h2 className={styles.title} style={{ margin: 0 }}>⏱️ Temps Sans Fumer</h2>
+          <h2 className={styles.title} style={{ margin: 0 }}>🚭 Arrêt Tabac &amp; Cannabis</h2>
           <button
             onClick={handleManualRefresh}
             disabled={isRefreshing}
@@ -211,21 +174,11 @@ export default function SobrietyCounter() {
               transition: 'all 0.2s',
             }}
           >
-            <span style={{
-              display: 'inline-block',
-              animation: isRefreshing ? 'spin 1s linear infinite' : 'none',
-            }}>
-              🔄
-            </span>
+            <span style={{ display: 'inline-block', animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }}>🔄</span>
             {isRefreshing ? 'Actualisation...' : 'Actualiser'}
           </button>
         </div>
-        <style>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
         {/* Compteur principal */}
         <div className={styles.mainCounter}>
@@ -256,184 +209,71 @@ export default function SobrietyCounter() {
         </div>
 
         <div className={styles.lastJoint}>
-          Dernier joint : {new Date(data.lastJointDate + 'T' + data.lastJointTime).toLocaleString('fr-FR')}
+          Dernière cigarette : {new Date(data.lastJointDate + 'T' + data.lastJointTime).toLocaleString('fr-FR')}
         </div>
 
-        {/* ALERTE PATCH */}
-        <div className={styles.warningCard}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-            <h3 style={{ margin: 0 }}>⚠️ Rappel Important</h3>
-            <button
-              onClick={() => setShowDoseModal(true)}
-              style={{
-                background: '#667eea',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: '600',
-                transition: 'all 0.2s',
-              }}
-              onMouseOver={(e) => e.currentTarget.style.background = '#5568d3'}
-              onMouseOut={(e) => e.currentTarget.style.background = '#667eea'}
-            >
-              ⚙️ Modifier la dose
-            </button>
-          </div>
-          <p className={styles.warningText}>
-            Tu portes un patch <strong>{nicotineDose}mg de nicotine</strong>. Quand tu fumes un joint avec du tabac,
-            tu RAJOUTES de la nicotine alors que ton corps en a déjà assez.
-            <br/><br/>
-            <strong>Résultat :</strong> Surdosage = anxiété, palpitations, nausées.
-            <br/>
-            <strong>Solution :</strong> Ton vrai combat c'est le THC, pas la nicotine. Passe aux joints SANS tabac.
-          </p>
-        </div>
-
-        {/* COMBAT 1 : Nicotine (déjà géré par patch) */}
+        {/* Bénéfices cannabis */}
         <div className={styles.healthCard}>
-          <h3>💊 Combat Nicotine (Patch {nicotineDose}mg)</h3>
-          <p className={styles.subtitle}>Tu as déjà ce qu'il faut avec le patch. Le tabac du joint est INUTILE.</p>
+          <h3>🧠 Cannabis / THC</h3>
+
+          <div className={styles.lungProgress}>
+            <div className={styles.progressLabel}>Régénération récepteurs CB1 : {thcDetox.toFixed(0)}%</div>
+            <div className={styles.progressBar}>
+              <div className={styles.progressFill} style={{ width: `${thcDetox}%` }} />
+            </div>
+          </div>
 
           <div className={styles.benefits}>
-            {nicotineBenefits.heartRate && (
-              <div className={styles.benefit}>✅ Rythme cardiaque normalisé (sans surdosage)</div>
-            )}
-            {nicotineBenefits.bloodPressure && (
-              <div className={styles.benefit}>✅ Pression artérielle stable</div>
-            )}
-            {nicotineBenefits.co2Normal && (
-              <div className={styles.benefit}>✅ Niveau de CO2 normal</div>
-            )}
+            {cannabisBenefits.mentalClarity && <div className={styles.benefit}>✅ Clarté mentale revenue</div>}
+            {cannabisBenefits.thcElimination && <div className={styles.benefit}>✅ THC quitte le système</div>}
+            {cannabisBenefits.memoryImprovement && <div className={styles.benefit}>✅ Mémoire court terme améliorée</div>}
+            {cannabisBenefits.sleepQuality && <div className={styles.benefit}>✅ Sommeil REM normalisé</div>}
+            {cannabisBenefits.motivationBoost && <div className={styles.benefit}>✅ Motivation naturelle revenue</div>}
+            {cannabisBenefits.receptorsHealing && <div className={styles.benefit}>✅ Récepteurs cannabinoïdes régénérés</div>}
           </div>
 
-          {!nicotineBenefits.heartRate && timeElapsed.totalMinutes < 20 && (
-            <div className={styles.nextMilestone}>
-              Dans {20 - timeElapsed.totalMinutes} min : Rythme cardiaque normal
+          {(!cannabisBenefits.receptorsHealing) && (
+            <div className={styles.nextMilestones}>
+              <h4>🎯 Prochains paliers</h4>
+              {!cannabisBenefits.mentalClarity && timeElapsed.totalMinutes < 60 && <div className={styles.milestone}>Dans {60 - timeElapsed.totalMinutes} min : Clarté mentale</div>}
+              {!cannabisBenefits.thcElimination && timeElapsed.totalDays < 1 && <div className={styles.milestone}>Dans 1 jour : THC éliminé</div>}
+              {!cannabisBenefits.memoryImprovement && timeElapsed.totalDays < 2 && <div className={styles.milestone}>Dans {2 - timeElapsed.totalDays} jour(s) : Mémoire améliorée</div>}
+              {!cannabisBenefits.sleepQuality && timeElapsed.totalDays < 7 && <div className={styles.milestone}>Dans {7 - timeElapsed.totalDays} jours : Sommeil normalisé</div>}
+              {!cannabisBenefits.motivationBoost && timeElapsed.totalDays < 14 && <div className={styles.milestone}>Dans {14 - timeElapsed.totalDays} jours : Motivation revenue</div>}
+              {!cannabisBenefits.receptorsHealing && timeElapsed.totalDays < 30 && <div className={styles.milestone}>Dans {30 - timeElapsed.totalDays} jours : Récepteurs guéris</div>}
             </div>
           )}
         </div>
 
-        {/* COMBAT 2 : Cannabis/THC (le VRAI combat) */}
+        {/* Bénéfices cigarette */}
         <div className={styles.healthCard}>
-          <h3>🧠 Combat Cannabis/THC (Ton VRAI Défi)</h3>
-          <p className={styles.subtitle}>C'est ça que tu combats vraiment. La défonce, pas la nicotine.</p>
+          <h3>🫁 Cigarette / Poumons</h3>
 
           <div className={styles.lungProgress}>
-            <div className={styles.progressLabel}>
-              Régénération récepteurs CB1 : {thcDetox.toFixed(0)}%
-            </div>
+            <div className={styles.progressLabel}>Récupération pulmonaire : {lungRecovery.toFixed(0)}%</div>
             <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${thcDetox}%` }}
-              />
+              <div className={styles.progressFill} style={{ width: `${lungRecovery}%` }} />
             </div>
           </div>
 
           <div className={styles.benefits}>
-            {cannabisBenefits.mentalClarity && (
-              <div className={styles.benefit}>✅ Clarté mentale revenue</div>
-            )}
-            {cannabisBenefits.thcElimination && (
-              <div className={styles.benefit}>✅ THC quitte le système</div>
-            )}
-            {cannabisBenefits.memoryImprovement && (
-              <div className={styles.benefit}>✅ Mémoire court terme améliorée</div>
-            )}
-            {cannabisBenefits.sleepQuality && (
-              <div className={styles.benefit}>✅ Sommeil REM normalisé</div>
-            )}
-            {cannabisBenefits.motivationBoost && (
-              <div className={styles.benefit}>✅ Motivation naturelle revenue</div>
-            )}
-            {cannabisBenefits.receptorsHealing && (
-              <div className={styles.benefit}>✅ Récepteurs cannabinoïdes régénérés</div>
-            )}
+            {combustionBenefits.sensesImprove && <div className={styles.benefit}>✅ Goût et odorat améliorés</div>}
+            {combustionBenefits.breathingImproves && <div className={styles.benefit}>✅ Respiration améliorée</div>}
+            {combustionBenefits.coughReduction && <div className={styles.benefit}>✅ Toux réduite</div>}
+            {combustionBenefits.lungFunction && <div className={styles.benefit}>✅ Fonction pulmonaire +30%</div>}
           </div>
 
-          <div className={styles.nextMilestones}>
-            <h4>🎯 Prochains Paliers THC</h4>
-            {!cannabisBenefits.mentalClarity && timeElapsed.totalMinutes < 60 && (
-              <div className={styles.milestone}>Dans {60 - timeElapsed.totalMinutes} min : Clarté mentale</div>
-            )}
-            {!cannabisBenefits.thcElimination && timeElapsed.totalDays <1 && (
-              <div className={styles.milestone}>Dans {1 - timeElapsed.totalDays}jour : THC éliminé</div>
-            )}
-            {!cannabisBenefits.memoryImprovement && timeElapsed.totalDays <2 && (
-              <div className={styles.milestone}>Dans {2 - timeElapsed.totalDays}jours : Mémoire améliorée</div>
-            )}
-            {!cannabisBenefits.sleepQuality && timeElapsed.totalDays <7 && (
-              <div className={styles.milestone}>Dans {7 - timeElapsed.totalDays}jours : Sommeil normalisé</div>
-            )}
-            {!cannabisBenefits.motivationBoost && timeElapsed.totalDays <14 && (
-              <div className={styles.milestone}>Dans {14 - timeElapsed.totalDays}jours : Motivation revenue</div>
-            )}
-            {!cannabisBenefits.receptorsHealing && timeElapsed.totalDays <30 && (
-              <div className={styles.milestone}>Dans {30 - timeElapsed.totalDays}jours : Récepteurs guéris</div>
-            )}
-          </div>
-        </div>
-
-        {/* COMBAT 3 : Combustion (commun aux deux) */}
-        <div className={styles.healthCard}>
-          <h3>🫁 Combat Combustion (Fumée)</h3>
-          <p className={styles.subtitle}>Tabac + Cannabis = même combat contre la fumée.</p>
-
-          <div className={styles.lungProgress}>
-            <div className={styles.progressLabel}>
-              Fonction pulmonaire : {lungRecovery.toFixed(0)}%
+          {!combustionBenefits.lungFunction && (
+            <div className={styles.nextMilestones}>
+              <h4>🎯 Prochains paliers</h4>
+              {!combustionBenefits.sensesImprove && timeElapsed.totalDays < 2 && <div className={styles.milestone}>Dans {2 - timeElapsed.totalDays} jour(s) : Goût / odorat</div>}
+              {!combustionBenefits.breathingImproves && timeElapsed.totalDays < 3 && <div className={styles.milestone}>Dans {3 - timeElapsed.totalDays} jour(s) : Respiration</div>}
+              {!combustionBenefits.coughReduction && timeElapsed.totalDays < 7 && <div className={styles.milestone}>Dans {7 - timeElapsed.totalDays} jours : Toux réduite</div>}
+              {!combustionBenefits.lungFunction && timeElapsed.totalDays < 30 && <div className={styles.milestone}>Dans {30 - timeElapsed.totalDays} jours : Poumons +30%</div>}
             </div>
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${lungRecovery}%` }}
-              />
-            </div>
-          </div>
-
-          <div className={styles.benefits}>
-            {combustionBenefits.sensesImprove && (
-              <div className={styles.benefit}>✅ Goût et odorat améliorés</div>
-            )}
-            {combustionBenefits.breathingImproves && (
-              <div className={styles.benefit}>✅ Respiration améliorée</div>
-            )}
-            {combustionBenefits.coughReduction && (
-              <div className={styles.benefit}>✅ Toux réduite</div>
-            )}
-            {combustionBenefits.lungFunction && (
-              <div className={styles.benefit}>✅ Fonction pulmonaire +30%</div>
-            )}
-          </div>
-
-          <div className={styles.nextMilestones}>
-            <h4>🎯 Prochains Paliers Poumons</h4>
-            {!combustionBenefits.sensesImprove && timeElapsed.totalDays <2 && (
-              <div className={styles.milestone}>Dans {2 - timeElapsed.totalDays}jours : Goût/odorat</div>
-            )}
-            {!combustionBenefits.breathingImproves && timeElapsed.totalDays <3 && (
-              <div className={styles.milestone}>Dans {3 - timeElapsed.totalDays}jours : Respiration</div>
-            )}
-            {!combustionBenefits.coughReduction && timeElapsed.totalDays <7 && (
-              <div className={styles.milestone}>Dans {7 - timeElapsed.totalDays}jours : Toux réduite</div>
-            )}
-            {!combustionBenefits.lungFunction && timeElapsed.totalDays <30 && (
-              <div className={styles.milestone}>Dans {30 - timeElapsed.totalDays}jours : Poumons +30%</div>
-            )}
-          </div>
+          )}
         </div>
       </div>
-
-      {showDoseModal && (
-        <NicotineDoseModal
-          currentDose={nicotineDose}
-          onSave={handleSaveDose}
-          onClose={() => setShowDoseModal(false)}
-        />
-      )}
     </div>
   )
 }

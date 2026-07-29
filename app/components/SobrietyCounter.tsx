@@ -21,6 +21,7 @@ export default function SobrietyCounter() {
     totalDays: 0,
   })
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   // Charger les données
   useEffect(() => {
@@ -155,7 +156,7 @@ export default function SobrietyCounter() {
     <div className={styles.container}>
       <div className={styles.card}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-          <h2 className={styles.title} style={{ margin: 0 }}>🚭 Arrêt Tabac &amp; Cannabis</h2>
+          <h2 className={styles.title} style={{ margin: 0 }}>🚭 Mon Arrêt du Tabac</h2>
           <button
             onClick={handleManualRefresh}
             disabled={isRefreshing}
@@ -211,6 +212,28 @@ export default function SobrietyCounter() {
         <div className={styles.lastJoint}>
           Dernière cigarette : {new Date(data.lastJointDate + 'T' + data.lastJointTime).toLocaleString('fr-FR')}
         </div>
+
+        {/* Bouton partager */}
+        <button
+          onClick={() => setShowShareModal(true)}
+          style={{
+            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            margin: '0 auto',
+            transition: 'opacity 0.2s',
+          }}
+        >
+          📤 Partager ma fierté
+        </button>
 
         {/* Bénéfices cannabis */}
         <div className={styles.healthCard}>
@@ -274,6 +297,55 @@ export default function SobrietyCounter() {
           )}
         </div>
       </div>
+      {/* Modale de partage */}
+      {showShareModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: '1rem',
+        }} onClick={() => setShowShareModal(false)}>
+          <div style={{
+            background: '#0f172a', borderRadius: '1.5rem', padding: '2.5rem',
+            maxWidth: '400px', width: '100%', textAlign: 'center',
+            border: '2px solid #667eea',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚭</div>
+            <div style={{ fontSize: '1rem', color: '#94a3b8', marginBottom: '0.5rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              Sans cigarette depuis
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', margin: '1.5rem 0' }}>
+              {timeElapsed.months > 0 && (
+                <div>
+                  <div style={{ fontSize: '3.5rem', fontWeight: '800', color: '#667eea', lineHeight: 1 }}>{timeElapsed.months}</div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>mois</div>
+                </div>
+              )}
+              {timeElapsed.days > 0 && (
+                <div>
+                  <div style={{ fontSize: '3.5rem', fontWeight: '800', color: '#764ba2', lineHeight: 1 }}>{timeElapsed.days}</div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>jour{timeElapsed.days > 1 ? 's' : ''}</div>
+                </div>
+              )}
+            </div>
+            <div style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '2rem' }}>
+              Depuis le {new Date(data.lastJointDate + 'T' + data.lastJointTime).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </div>
+            <p style={{ color: '#475569', fontSize: '0.8rem', margin: 0 }}>
+              📸 Fais une capture d&apos;écran pour partager !
+            </p>
+            <button
+              onClick={() => setShowShareModal(false)}
+              style={{
+                marginTop: '1.5rem', background: 'transparent', color: '#64748b',
+                border: '1px solid #334155', padding: '8px 20px', borderRadius: '8px',
+                cursor: 'pointer', fontSize: '0.9rem',
+              }}
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

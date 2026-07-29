@@ -26,6 +26,10 @@ export default function DashboardPage() {
       <div className={styles.container}>
         <SobrietyCounter key={`sobriety-${refreshKey}`} />
 
+        <p className={styles.sobrietyCaption}>
+          🚭 Sans cigarette &nbsp;·&nbsp; 🌿 Sans cannabis &nbsp;·&nbsp; 💪 Chaque jour compte
+        </p>
+
         <div className={styles.journalShortcut}>
           <Link href="/journal" className={styles.journalButton}>
             📓 Ouvrir mon journal

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS "PatchSession" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "startedAt" DATETIME NOT NULL,
+  "endedAt" DATETIME,
+  "doseMg" INTEGER NOT NULL DEFAULT 7,
+  "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS "PatchSession_startedAt_idx" ON "PatchSession"("startedAt");

@@ -1,0 +1,108 @@
+.section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+}
+
+.summary,
+.empty {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.empty {
+  margin-top: 12px;
+}
+
+.error {
+  margin: 12px 0 0;
+  color: #7a2414;
+}
+
+.tableWrap {
+  margin-top: 16px;
+  overflow-x: auto;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--line-strong);
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+}
+
+.table td {
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.live {
+  color: var(--oxygen-ink);
+  font-weight: 600;
+}
+
+.actions {
+  text-align: right;
+}
+
+.delete {
+  font: inherit;
+  font-size: 13px;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.delete:hover {
+  color: var(--ember);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

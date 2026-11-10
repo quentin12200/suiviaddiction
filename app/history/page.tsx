@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Navigation from '../components/Navigation'
+import PatchHistory from '../components/PatchHistory'
 import styles from './history.module.css'
 
 interface Entry {
@@ -141,6 +142,8 @@ export default function HistoryPage() {
             📥 Télécharger CSV
           </a>
         </div>
+
+        <PatchHistory />
 
         {/* Filtres */}
         <div className={styles.filters}>

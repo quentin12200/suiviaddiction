@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Navigation from './components/Navigation'
 import SobrietyCounter from './components/SobrietyCounter'
+import FrequencyTracker from './components/FrequencyTracker'
 import styles from './page.module.css'
 
 // Composants désactivés (code conservé, non supprimé) :
@@ -29,6 +30,8 @@ export default function DashboardPage() {
         <p className={styles.sobrietyCaption}>
           🚭 Sans cigarette &nbsp;·&nbsp; 🌿 Sans cannabis &nbsp;·&nbsp; 💪 Chaque jour compte
         </p>
+
+        <FrequencyTracker onChange={() => setRefreshKey((k) => k + 1)} />
 
         <div className={styles.journalShortcut}>
           <Link href="/journal" className={styles.journalButton}>

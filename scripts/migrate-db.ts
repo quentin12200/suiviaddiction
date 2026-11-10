@@ -350,6 +350,22 @@ async function migrate() {
 
     console.log('✅ Table AchatTest créée')
 
+    // Créer la table PatchSession (patch nicotine posé / retiré)
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "PatchSession" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "startedAt" DATETIME NOT NULL,
+        "endedAt" DATETIME,
+        "doseMg" INTEGER NOT NULL DEFAULT 7,
+        "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    await prisma.$executeRawUnsafe(
+      `CREATE INDEX IF NOT EXISTS "PatchSession_startedAt_idx" ON "PatchSession"("startedAt")`
+    )
+
+    console.log('✅ Table PatchSession créée')
+
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

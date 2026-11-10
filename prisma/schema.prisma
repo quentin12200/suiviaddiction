@@ -326,3 +326,14 @@ model EmailSolde {
   @@index([userId, emailDate])
   @@index([fetchedAt])
 }
+
+// Sessions de patch nicotine : posé (startedAt) puis retiré (endedAt)
+model PatchSession {
+  id        String    @id @default(cuid())
+  startedAt DateTime
+  endedAt   DateTime?
+  doseMg    Int       @default(7)
+  createdAt DateTime  @default(now())
+
+  @@index([startedAt])
+}

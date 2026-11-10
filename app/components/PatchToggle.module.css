@@ -1,0 +1,154 @@
+.patch {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 22px 28px;
+}
+
+.on {
+  border-left-color: var(--oxygen);
+}
+
+.main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.text {
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+}
+
+.timer {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  color: var(--oxygen-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.timer span {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.timer small {
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 3px;
+  color: var(--ink-soft);
+}
+
+.timer .sec {
+  color: var(--ink-faint);
+}
+
+.status {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+  max-width: 52ch;
+}
+
+/* Interrupteur */
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font: inherit;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--air);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  padding: 6px 20px 6px 6px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.knob {
+  position: relative;
+  width: 56px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.knob::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(30, 42, 44, 0.3);
+  transition: transform 0.2s;
+}
+
+.switch[aria-checked='true'] .knob {
+  background: var(--oxygen);
+}
+
+.switch[aria-checked='true'] .knob::after {
+  transform: translateX(24px);
+}
+
+.switch:hover:not(:disabled) {
+  border-color: var(--ink-soft);
+}
+
+.switch:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 12px 0 0;
+  color: #7a2414;
+  font-size: 14px;
+}
+
+.historyLink {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .patch {
+    padding: 18px 20px;
+  }
+
+  .switch {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob,
+  .knob::after,
+  .switch {
+    transition: none;
+  }
+}

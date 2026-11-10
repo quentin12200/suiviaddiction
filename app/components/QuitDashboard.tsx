@@ -13,6 +13,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import styles from './QuitDashboard.module.css'
+import PatchToggle from './PatchToggle'
 
 interface SmokeEntry {
   id: string
@@ -299,6 +300,9 @@ export default function QuitDashboard() {
           </button>
         )}
       </section>
+
+      {/* Patch nicotine */}
+      <PatchToggle />
 
       {/* Mesure de la fréquence */}
       <section className={styles.panel} aria-labelledby="today-title">

@@ -373,6 +373,23 @@ export default function QuitDashboard() {
         </p>
       </section>
 
+      {/* Récupération : repart de 0 à chaque cigarette */}
+      {sinceLast !== null && data?.lastSmoked && (
+        <section className={styles.panel} aria-labelledby="recovery-title">
+          <h2 id="recovery-title" className={styles.panelTitle}>
+            Ma récupération
+          </h2>
+          <p className={styles.resetNote}>
+            Repartie de 0 % le {formatDateFr(data.lastSmoked.date)}, jour de ma dernière cigarette.
+            {record ? ' Mon record, lui, reste enregistré.' : ''}
+          </p>
+          <div className={styles.recoveryList}>
+            <RecoveryBar label="Régénération des récepteurs CB1 (cannabis)" value={sinceLast / (30 * DAY)} target="30 jours" />
+            <RecoveryBar label="Récupération pulmonaire (tabac)" value={sinceLast / (365 * DAY)} target="1 an" />
+          </div>
+        </section>
+      )}
+
       {/* Paliers santé */}
       {sinceLast !== null && (
         <details className={styles.panel}>
@@ -428,6 +445,30 @@ function ClockUnit({ value, unit, pad: doPad, muted }: { value: number; unit: st
       <span className={styles.clockValue}>{doPad ? String(value).padStart(2, '0') : value}</span>
       <span className={styles.clockLabel}>{unit}</span>
     </span>
+  )
+}
+
+function RecoveryBar({ label, value, target }: { label: string; value: number; target: string }) {
+  const pct = Math.min(1, Math.max(0, value)) * 100
+  const shown = pct.toLocaleString('fr-FR', { maximumFractionDigits: pct < 10 ? 1 : 0 })
+  return (
+    <div className={styles.recovery}>
+      <div className={styles.recoveryHead}>
+        <span>{label}</span>
+        <strong>{shown} %</strong>
+      </div>
+      <div
+        className={styles.recoveryTrack}
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(pct)}
+      >
+        <div className={styles.recoveryFill} style={{ width: `${pct}%` }} />
+      </div>
+      <span className={styles.recoveryTarget}>100 % au bout de {target} sans fumer</span>
+    </div>
   )
 }
 

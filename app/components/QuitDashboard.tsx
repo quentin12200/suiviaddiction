@@ -14,6 +14,14 @@ import {
 } from 'recharts'
 import styles from './QuitDashboard.module.css'
 import PatchToggle from './PatchToggle'
+import {
+  assignJournees,
+  computeNights,
+  currentJournee,
+  localDateKey,
+  previousDateKey,
+  NIGHT_END_HOUR,
+} from '@/lib/smokingDay'
 
 interface SmokeEntry {
   id: string
@@ -36,7 +44,6 @@ interface FrequencyResponse {
 
 const DAY = 86_400_000
 const pad = (n: number) => String(n).padStart(2, '0')
-const localDateKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 const fr1 = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 const toTs = (m: Moment) => new Date(`${m.date}T${m.time.slice(0, 5)}:00`).getTime()
 
@@ -117,9 +124,10 @@ export default function QuitDashboard() {
     }
   }, [fetchData])
 
-  const entries = useMemo(() => data?.entries ?? [], [data])
-  const todayKey = localDateKey(new Date(now))
-  const todayEntries = useMemo(() => entries.filter((e) => e.date === todayKey), [entries, todayKey])
+  // Chaque cigarette est rattachée à sa journée réveil → coucher (voir lib/smokingDay.ts)
+  const entries = useMemo(() => assignJournees(data?.entries ?? []), [data])
+  const todayKey = currentJournee(now, entries)
+  const todayEntries = useMemo(() => entries.filter((e) => e.journee === todayKey), [entries, todayKey])
   const todayCount = todayEntries.reduce((s, e) => s + e.count, 0)
 
   const addCigarette = async () => {
@@ -162,19 +170,22 @@ export default function QuitDashboard() {
 
   const stats = useMemo(() => {
     const byDay = new Map<string, number>()
-    entries.forEach((e) => byDay.set(e.date, (byDay.get(e.date) || 0) + e.count))
+    entries.forEach((e) => byDay.set(e.journee, (byDay.get(e.journee) || 0) + e.count))
 
-    const buildDays = (n: number) =>
-      Array.from({ length: n }, (_, i) => {
-        const d = new Date(now)
-        d.setDate(d.getDate() - (n - 1 - i))
-        const key = localDateKey(d)
+    // Les n dernières journées, de la plus ancienne à la journée en cours
+    const buildDays = (n: number) => {
+      const keys: string[] = [todayKey]
+      while (keys.length < n) keys.unshift(previousDateKey(keys[0]))
+      return keys.map((key) => {
+        const [y, m, d] = key.split('-').map(Number)
+        const date = new Date(y, m - 1, d)
         return {
           key,
-          label: n === 7 ? d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '') : `${d.getDate()}/${d.getMonth() + 1}`,
+          label: n === 7 ? date.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '') : `${d}/${m}`,
           cigarettes: byDay.get(key) || 0,
         }
       })
+    }
     const days7 = buildDays(7)
     const days30 = buildDays(30)
 
@@ -186,7 +197,7 @@ export default function QuitDashboard() {
       return slice.reduce((s, d) => s + d.cigarettes, 0) / slice.length
     }
 
-    const todayTs = todayEntries.map((e) => toTs(e)).sort((a, b) => a - b)
+    const todayTs = todayEntries.map((e) => e.ts)
     const gaps = todayTs.slice(1).map((t, i) => t - todayTs[i])
     const avgGapToday = gaps.length ? gaps.reduce((s, g) => s + g, 0) / gaps.length : null
 
@@ -197,6 +208,28 @@ export default function QuitDashboard() {
     })
     const peakHour = byHour.some((v) => v > 0) ? byHour.indexOf(Math.max(...byHour)) : null
 
+    // Nuits : de la dernière cigarette avant de dormir à la première après le réveil
+    const nights = computeNights(entries)
+    const week = new Set(days7.map((d) => d.key))
+    const nights7 = nights.filter((n) => week.has(n.journee))
+    const avgNight7 = nights7.length ? nights7.reduce((s, n) => s + n.durationMs, 0) / nights7.length : null
+    const longestNight = nights.reduce<(typeof nights)[number] | null>(
+      (best, n) => (!best || n.durationMs > best.durationMs ? n : best),
+      null
+    )
+    const lastNight = nights.length ? nights[nights.length - 1] : null
+    // Heure moyenne de la dernière cigarette du soir (sur 7 journées), comptée après minuit si besoin
+    const lastPerDay = new Map<string, number>()
+    entries.forEach((e) => week.has(e.journee) && e.journee !== todayKey && lastPerDay.set(e.journee, e.ts))
+    const bedtimeMinutes = Array.from(lastPerDay.values()).map((ts) => {
+      const d = new Date(ts)
+      const m = d.getHours() * 60 + d.getMinutes()
+      return d.getHours() < NIGHT_END_HOUR ? m + 1440 : m
+    })
+    const avgBedtime = bedtimeMinutes.length
+      ? Math.round(bedtimeMinutes.reduce((s, m) => s + m, 0) / bedtimeMinutes.length) % 1440
+      : null
+
     return {
       days7,
       days30,
@@ -205,8 +238,13 @@ export default function QuitDashboard() {
       avgGapToday,
       peakHour,
       yesterday: days7[5]?.cigarettes ?? 0,
+      lastNight,
+      avgNight7,
+      longestNight,
+      nightsCount: nights7.length,
+      avgBedtime,
     }
-  }, [entries, todayEntries, now])
+  }, [entries, todayEntries, todayKey])
 
   const lastTs = data?.lastSmoked ? toTs(data.lastSmoked) : null
   const sinceLast = lastTs !== null ? Math.max(0, now - lastTs) : null
@@ -309,8 +347,13 @@ export default function QuitDashboard() {
         <div className={styles.todayHead}>
           <div>
             <h2 id="today-title" className={styles.panelTitle}>
-              Aujourd’hui
+              {todayKey === localDateKey(new Date(now)) ? 'Aujourd’hui' : `Journée du ${formatDateFr(todayKey, false)}`}
             </h2>
+            <p className={styles.dayHint}>
+              {todayKey === localDateKey(new Date(now))
+                ? 'Depuis ton réveil'
+                : 'Tu n’es pas encore couché : ces cigarettes comptent pour la veille'}
+            </p>
             <p className={styles.todayCount}>
               <span className={`${styles.countNumber} ${justLogged ? styles.bump : ''}`}>{todayCount}</span>
               <span className={styles.countUnit}>cigarette{todayCount > 1 ? 's' : ''}</span>
@@ -328,10 +371,10 @@ export default function QuitDashboard() {
           </div>
         </div>
 
-        <DayRail entries={todayEntries} now={now} />
+        <DayRail entries={todayEntries} now={now} journee={todayKey} />
 
         <dl className={styles.figures}>
-          <Figure label="Écart moyen aujourd’hui" value={stats.avgGapToday !== null ? formatDuration(stats.avgGapToday) : '–'} />
+          <Figure label="Écart moyen sur la journée" value={stats.avgGapToday !== null ? formatDuration(stats.avgGapToday) : '–'} />
           <Figure label="Hier" value={String(stats.yesterday)} />
           <Figure label="Moyenne sur 7 jours" value={fr1(stats.avg7)} />
           <Figure label="Moyenne sur 30 jours" value={fr1(stats.avg30)} />
@@ -372,9 +415,46 @@ export default function QuitDashboard() {
           </ResponsiveContainer>
         </div>
         <p className={styles.footnote}>
-          La ligne pointillée marque ta moyenne sur 7 jours. Pour noter l’envie, le déclencheur ou le contexte, utilise{' '}
+          Une journée va de ton réveil à ton coucher : ce que tu fumes entre minuit et {NIGHT_END_HOUR} h compte pour
+          la veille. La ligne pointillée marque ta moyenne sur 7 jours. Pour noter l’envie, le déclencheur ou le contexte, utilise{' '}
           <Link href="/new">Nouvelle entrée</Link>.
         </p>
+      </section>
+
+      {/* Nuits d'abstinence */}
+      <section className={styles.panel} aria-labelledby="nights-title">
+        <h2 id="nights-title" className={styles.panelTitle}>
+          Mes nuits sans fumer
+        </h2>
+        {stats.lastNight ? (
+          <>
+            <p className={styles.nightLead}>
+              <span className={styles.nightFigure}>{formatDuration(stats.lastNight.durationMs)}</span>
+              <span>
+                la nuit dernière, de ta dernière cigarette à {stats.lastNight.lastBefore.time.slice(0, 5)} jusqu’à la
+                première à {stats.lastNight.firstAfter.time.slice(0, 5)}.
+              </span>
+            </p>
+            <dl className={`${styles.figures} ${styles.nightFigures}`}>
+              <Figure
+                label={`Nuit moyenne (${stats.nightsCount} nuit${stats.nightsCount > 1 ? 's' : ''}, 7 jours)`}
+                value={stats.avgNight7 !== null ? formatDuration(stats.avgNight7) : '–'}
+              />
+              <Figure
+                label="Plus longue nuit (30 jours)"
+                value={stats.longestNight ? formatDuration(stats.longestNight.durationMs) : '–'}
+              />
+              <Figure
+                label="Dernière cigarette du soir, en moyenne"
+                value={stats.avgBedtime !== null ? `${pad(Math.floor(stats.avgBedtime / 60))}:${pad(stats.avgBedtime % 60)}` : '–'}
+              />
+            </dl>
+          </>
+        ) : (
+          <p className={styles.resetNote}>
+            Pas encore de nuit mesurée : il faut une cigarette notée avant de dormir et une après le réveil.
+          </p>
+        )}
       </section>
 
       {/* Récupération : repart de 0 à chaque cigarette */}
@@ -485,36 +565,33 @@ function Figure({ label, value }: { label: string; value: string }) {
   )
 }
 
-/** Frise 0 h–24 h : un trait par cigarette, à son heure. */
-function DayRail({ entries, now }: { entries: SmokeEntry[]; now: number }) {
-  const n = new Date(now)
-  const nowPct = ((n.getHours() * 60 + n.getMinutes()) / 1440) * 100
+/** Frise de la journée, de 5 h à 5 h le lendemain : un trait par cigarette, à son heure. */
+function DayRail({ entries, now, journee }: { entries: { id: string; ts: number; time: string; count: number }[]; now: number; journee: string }) {
+  const [y, m, d] = journee.split('-').map(Number)
+  const start = new Date(y, m - 1, d, NIGHT_END_HOUR).getTime()
+  const pos = (ts: number) => Math.min(100, Math.max(0, ((ts - start) / DAY) * 100))
+  const nowPct = pos(now)
+  const hours = [0, 6, 12, 18, 24].map((h) => (NIGHT_END_HOUR + h) % 24)
   return (
     <div className={styles.rail}>
       <div className={styles.railTrack} aria-hidden="true">
         <div className={styles.railElapsed} style={{ width: `${nowPct}%` }} />
-        {entries.map((e) => {
-          const [h, m] = e.time.split(':').map(Number)
-          const pct = ((h * 60 + m) / 1440) * 100
-          return (
-            <span key={e.id} className={styles.railMark} style={{ left: `${pct}%` }} title={e.time}>
-              {e.count > 1 && <span className={styles.railMulti}>×{e.count}</span>}
-            </span>
-          )
-        })}
+        {entries.map((e) => (
+          <span key={e.id} className={styles.railMark} style={{ left: `${pos(e.ts)}%` }} title={e.time}>
+            {e.count > 1 && <span className={styles.railMulti}>×{e.count}</span>}
+          </span>
+        ))}
         <span className={styles.railNow} style={{ left: `${nowPct}%` }} />
       </div>
       <div className={styles.railScale} aria-hidden="true">
-        <span>0 h</span>
-        <span>6 h</span>
-        <span>12 h</span>
-        <span>18 h</span>
-        <span>24 h</span>
+        {hours.map((h, i) => (
+          <span key={i}>{h} h</span>
+        ))}
       </div>
       <p className={styles.srOnly}>
         {entries.length
-          ? `Cigarettes notées aujourd’hui à ${entries.map((e) => e.time).join(', ')}`
-          : 'Aucune cigarette notée aujourd’hui'}
+          ? `Cigarettes de la journée à ${entries.map((e) => e.time).join(', ')}`
+          : 'Aucune cigarette notée sur cette journée'}
       </p>
     </div>
   )

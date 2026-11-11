@@ -622,3 +622,34 @@
   font-size: 13px;
   color: var(--ink-faint);
 }
+
+.dayHint {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+/* Nuits */
+.nightLead {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 12px 0 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+  max-width: 70ch;
+}
+
+.nightFigure {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--slate);
+  font-variant-numeric: tabular-nums;
+}
+
+.figures.nightFigures {
+  grid-template-columns: repeat(3, 1fr);
+}

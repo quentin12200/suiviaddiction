@@ -366,6 +366,13 @@ async function migrate() {
 
     console.log('✅ Table PatchSession créée')
 
+    // Colonne Entry.kind : "cigarette" ou "joint"
+    const entryCols = (await prisma.$queryRawUnsafe('PRAGMA table_info("Entry")')) as { name: string }[]
+    if (!entryCols.some((c) => c.name === 'kind')) {
+      await prisma.$executeRawUnsafe('ALTER TABLE "Entry" ADD COLUMN "kind" TEXT')
+    }
+    console.log('✅ Colonne Entry.kind prête')
+
     console.log('🎉 Migration terminée avec succès !')
   } catch (error) {
     console.error('❌ Erreur lors de la migration:', error)

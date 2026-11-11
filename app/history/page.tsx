@@ -12,6 +12,7 @@ interface Entry {
   time: string
   hasSmoked: boolean
   jointCount: number
+  kind: string | null
   jointTime: string | null
   minutesSinceLastJoint: number | null
   cravingLevel: number
@@ -236,7 +237,7 @@ export default function HistoryPage() {
                   <th>Date</th>
                   <th>Heure</th>
                   <th>Fumé</th>
-                  <th>Joints</th>
+                  <th>Quoi</th>
                   <th>Envie</th>
                   <th>État émotionnel</th>
                   <th>Contexte</th>
@@ -257,7 +258,11 @@ export default function HistoryPage() {
                         {entry.hasSmoked ? 'Oui' : 'Non'}
                       </span>
                     </td>
-                    <td>{entry.hasSmoked ? entry.jointCount : '-'}</td>
+                    <td>
+                      {entry.hasSmoked
+                        ? `${entry.jointCount} ${entry.kind === 'cigarette' ? 'cigarette' : 'joint'}${entry.jointCount > 1 ? 's' : ''}`
+                        : '-'}
+                    </td>
                     <td>
                       <span className={styles.cravingBadge}>
                         {entry.cravingLevel}/10

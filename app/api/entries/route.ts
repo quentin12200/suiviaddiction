@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { ensureEntryKindColumn, normalizeKind } from '@/lib/entryKind'
 
 /**
  * GET - Récupérer toutes les entrées (avec pagination optionnelle)
  */
 export async function GET(request: NextRequest) {
   try {
+    await ensureEntryKindColumn()
     const searchParams = request.nextUrl.searchParams
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
@@ -36,6 +38,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    await ensureEntryKindColumn()
     const body = await request.json()
 
     // Récupérer la dernière entrée avec consommation pour calculer l'intervalle
@@ -86,6 +89,7 @@ export async function POST(request: NextRequest) {
         time: body.time,
         hasSmoked: body.hasSmoked,
         jointCount: jointCount,
+        kind: body.hasSmoked ? normalizeKind(body.kind) : null,
         jointTime: jointTimeValue,
         minutesSinceLastJoint,
         cravingLevel: body.cravingLevel,

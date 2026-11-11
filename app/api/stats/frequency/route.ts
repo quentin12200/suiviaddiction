@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { ensureEntryKindColumn, normalizeKind } from '@/lib/entryKind'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -12,6 +13,7 @@ export const revalidate = 0
  */
 export async function GET(request: NextRequest) {
   try {
+    await ensureEntryKindColumn()
     const days = Math.min(
       Math.max(parseInt(request.nextUrl.searchParams.get('days') || '30') || 30, 1),
       365
@@ -30,6 +32,7 @@ export async function GET(request: NextRequest) {
         time: true,
         jointTime: true,
         jointCount: true,
+        kind: true,
         cravingLevel: true,
         trigger: true,
         context: true,
@@ -76,6 +79,7 @@ export async function GET(request: NextRequest) {
         date: e.date.toISOString().split('T')[0],
         time: e.jointTime || e.time,
         count: e.jointCount || 1,
+        kind: normalizeKind(e.kind),
         cravingLevel: e.cravingLevel,
         trigger: e.trigger,
         context: e.context,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { ensureEntryKindColumn, normalizeKind } from '@/lib/entryKind'
 
 /**
  * GET - Récupérer une entrée spécifique
@@ -68,6 +69,10 @@ export async function PUT(
     if (data.time !== undefined) updateData.time = data.time
     if (data.hasSmoked !== undefined) updateData.hasSmoked = data.hasSmoked
     if (data.jointCount !== undefined) updateData.jointCount = parseInt(data.jointCount) || 0
+    if (data.kind !== undefined) {
+      await ensureEntryKindColumn()
+      updateData.kind = normalizeKind(data.kind)
+    }
     if (data.jointTime !== undefined) updateData.jointTime = data.jointTime
     if (data.minutesSinceLastJoint !== undefined) updateData.minutesSinceLastJoint = parseInt(data.minutesSinceLastJoint) || null
     if (data.cravingLevel !== undefined) updateData.cravingLevel = parseInt(data.cravingLevel) || 0

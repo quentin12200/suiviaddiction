@@ -38,7 +38,7 @@ export interface Smoke {
   count: number
 }
 
-export interface DaySmoke extends Smoke {
+export type DaySmoke<T extends Smoke = Smoke> = T & {
   ts: number
   journee: string // journée (réveil → coucher) à laquelle la cigarette est rattachée
 }
@@ -64,12 +64,12 @@ function journeeFor(ts: number, prev: DaySmoke | null): string {
 }
 
 /** Rattache chaque cigarette à sa journée (triées chronologiquement). */
-export function assignJournees(smokes: Smoke[]): DaySmoke[] {
-  const sorted = smokes
+export function assignJournees<T extends Smoke>(smokes: T[]): DaySmoke<T>[] {
+  const sorted: DaySmoke<T>[] = smokes
     .map((s) => ({ ...s, ts: smokeTs(s), journee: '' }))
     .filter((s) => !isNaN(s.ts))
     .sort((a, b) => a.ts - b.ts)
-  let prev: DaySmoke | null = null
+  let prev: DaySmoke<T> | null = null
   for (const s of sorted) {
     s.journee = journeeFor(s.ts, prev)
     prev = s

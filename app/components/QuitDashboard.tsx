@@ -125,11 +125,17 @@ export default function QuitDashboard() {
     const tick = setInterval(() => setNow(Date.now()), 1000)
     const poll = setInterval(fetchData, 60_000)
     const onVisible = () => document.visibilityState === 'visible' && fetchData()
+    // Retour sur l'onglet ou la fenêtre (ex. après une modification dans l'historique) : on recharge
+    const onFocus = () => fetchData()
     document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('pageshow', onFocus)
     return () => {
       clearInterval(tick)
       clearInterval(poll)
       document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('pageshow', onFocus)
     }
   }, [fetchData])
 

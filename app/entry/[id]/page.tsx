@@ -11,6 +11,7 @@ interface Entry {
   time: string
   hasSmoked: boolean
   jointCount: number
+  kind?: string | null
   jointTime: string | null
   minutesSinceLastJoint: number | null
   cravingLevel: number
@@ -105,7 +106,8 @@ export default function EntryDetailPage() {
       const data = await response.json()
       if (data.success && data.entry) {
         setEntry(data.entry)
-        setFormData(data.entry)
+        // Une seule heure par entrée : celle du joint si elle existe (c'est elle que lit le dashboard)
+        setFormData({ ...data.entry, time: data.entry.jointTime || data.entry.time })
       } else {
         alert('Entrée non trouvée')
         router.push('/history')
@@ -137,13 +139,18 @@ export default function EntryDetailPage() {
       const response = await fetch(`/api/entries/${entry.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          // L'heure modifiée vaut aussi pour le joint : le dashboard (dernier joint, chrono) suit
+          jointTime: formData.hasSmoked ? formData.time : null,
+        }),
       })
 
       const data = await response.json()
 
       if (data.success) {
         setEntry(data.entry)
+        setFormData({ ...data.entry, time: data.entry.jointTime || data.entry.time })
         setEditing(false)
         alert('✅ Entrée mise à jour !')
       } else {
@@ -281,7 +288,7 @@ export default function EntryDetailPage() {
                     className={styles.input}
                   />
                 ) : (
-                  <p className={styles.value}>{entry.time}</p>
+                  <p className={styles.value}>{entry.jointTime || entry.time}</p>
                 )}
               </div>
             </div>
@@ -308,10 +315,33 @@ export default function EntryDetailPage() {
               )}
             </div>
 
-            {/* Nombre de joints */}
+            {/* Type : joint ou cigarette */}
             {(editing ? formData.hasSmoked : entry.hasSmoked) && (
               <div className={styles.formGroup}>
-                <label>Nombre de joints</label>
+                <label htmlFor="kind">Quoi ?</label>
+                {editing ? (
+                  <select
+                    id="kind"
+                    name="kind"
+                    value={formData.kind === 'cigarette' ? 'cigarette' : 'joint'}
+                    onChange={handleChange}
+                    className={styles.input}
+                  >
+                    <option value="joint">Joint</option>
+                    <option value="cigarette">Cigarette</option>
+                  </select>
+                ) : (
+                  <p className={styles.value}>{entry.kind === 'cigarette' ? 'Cigarette' : 'Joint'}</p>
+                )}
+              </div>
+            )}
+
+            {/* Nombre */}
+            {(editing ? formData.hasSmoked : entry.hasSmoked) && (
+              <div className={styles.formGroup}>
+                <label>
+                  {(editing ? formData.kind : entry.kind) === 'cigarette' ? 'Nombre de cigarettes' : 'Nombre de joints'}
+                </label>
                 {editing ? (
                   <input
                     type="number"

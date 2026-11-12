@@ -60,6 +60,14 @@ export async function PUT(
     console.log('  ID:', params.id)
     console.log('  Données reçues:', data)
 
+    const existing = await prisma.entry.findUnique({
+      where: { id: params.id },
+      select: { time: true, jointTime: true },
+    })
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Entrée introuvable' }, { status: 404 })
+    }
+
     // Construire l'objet de mise à jour en n'incluant que les champs fournis
     const updateData: any = {}
 
@@ -74,6 +82,12 @@ export async function PUT(
       updateData.kind = normalizeKind(data.kind)
     }
     if (data.jointTime !== undefined) updateData.jointTime = data.jointTime
+    // Si l'heure change sans nouvelle heure de joint, l'heure du joint suit :
+    // c'est elle que le dashboard utilise pour le dernier joint et le chrono.
+    const timeChanged = data.time !== undefined && data.time !== existing.time
+    const jointTimeChanged = data.jointTime !== undefined && data.jointTime !== existing.jointTime
+    if (timeChanged && !jointTimeChanged) updateData.jointTime = data.time
+    if (data.hasSmoked === false) updateData.jointTime = null
     if (data.minutesSinceLastJoint !== undefined) updateData.minutesSinceLastJoint = parseInt(data.minutesSinceLastJoint) || null
     if (data.cravingLevel !== undefined) updateData.cravingLevel = parseInt(data.cravingLevel) || 0
     if (data.emotionalState !== undefined) updateData.emotionalState = data.emotionalState

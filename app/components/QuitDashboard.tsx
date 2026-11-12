@@ -14,6 +14,7 @@ import {
 } from 'recharts'
 import styles from './QuitDashboard.module.css'
 import PatchToggle from './PatchToggle'
+import SmokeIcon from './SmokeIcon'
 import {
   assignJournees,
   computeNights,
@@ -28,7 +29,15 @@ interface SmokeEntry {
   date: string // YYYY-MM-DD (date locale saisie)
   time: string // HH:mm
   count: number
+  kind: Kind
 }
+
+type Kind = 'cigarette' | 'joint'
+const KIND_LABEL: Record<Kind, { one: string; many: string }> = {
+  cigarette: { one: 'cigarette', many: 'cigarettes' },
+  joint: { one: 'joint', many: 'joints' },
+}
+const plural = (kind: Kind, n: number) => (n > 1 ? KIND_LABEL[kind].many : KIND_LABEL[kind].one)
 
 interface Moment {
   date: string
@@ -94,7 +103,7 @@ export default function QuitDashboard() {
   const [data, setData] = useState<FrequencyResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [justLogged, setJustLogged] = useState(false)
+  const [justLogged, setJustLogged] = useState<Kind | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [range, setRange] = useState<7 | 30>(7)
   const [showShare, setShowShare] = useState(false)
@@ -128,9 +137,9 @@ export default function QuitDashboard() {
   const entries = useMemo(() => assignJournees(data?.entries ?? []), [data])
   const todayKey = currentJournee(now, entries)
   const todayEntries = useMemo(() => entries.filter((e) => e.journee === todayKey), [entries, todayKey])
-  const todayCount = todayEntries.reduce((s, e) => s + e.count, 0)
+  const countOf = (kind: Kind) => todayEntries.filter((e) => e.kind === kind).reduce((s, e) => s + e.count, 0)
 
-  const addCigarette = async () => {
+  const addSmoke = async (kind: Kind) => {
     setSaving(true)
     try {
       const d = new Date()
@@ -141,16 +150,21 @@ export default function QuitDashboard() {
           date: localDateKey(d),
           time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
           hasSmoked: true,
+          kind,
           jointCount: 1,
           cravingLevel: 5,
         }),
       })
       if (!res.ok) throw new Error()
       await fetchData()
-      setJustLogged(true)
-      setTimeout(() => setJustLogged(false), 1600)
+      setJustLogged(kind)
+      setTimeout(() => setJustLogged(null), 1600)
     } catch {
-      setError('La cigarette n’a pas été enregistrée. Réessaie dans un instant.')
+      setError(
+        kind === 'joint'
+          ? 'Le joint n’a pas été enregistré. Réessaie dans un instant.'
+          : 'La cigarette n’a pas été enregistrée. Réessaie dans un instant.'
+      )
     } finally {
       setSaving(false)
     }
@@ -158,7 +172,7 @@ export default function QuitDashboard() {
 
   const undoLast = async () => {
     const last = todayEntries[todayEntries.length - 1]
-    if (!last || !confirm(`Supprimer la cigarette notée à ${last.time} ?`)) return
+    if (!last || !confirm(`Supprimer ${last.kind === 'joint' ? 'le joint' : 'la cigarette'} noté${last.kind === 'joint' ? '' : 'e'} à ${last.time} ?`)) return
     setSaving(true)
     try {
       await fetch(`/api/entries/${last.id}`, { method: 'DELETE' })
@@ -169,8 +183,8 @@ export default function QuitDashboard() {
   }
 
   const stats = useMemo(() => {
-    const byDay = new Map<string, number>()
-    entries.forEach((e) => byDay.set(e.journee, (byDay.get(e.journee) || 0) + e.count))
+    const byDay: Record<Kind, Map<string, number>> = { cigarette: new Map(), joint: new Map() }
+    entries.forEach((e) => byDay[e.kind].set(e.journee, (byDay[e.kind].get(e.journee) || 0) + e.count))
 
     // Les n dernières journées, de la plus ancienne à la journée en cours
     const buildDays = (n: number) => {
@@ -182,7 +196,8 @@ export default function QuitDashboard() {
         return {
           key,
           label: n === 7 ? date.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '') : `${d}/${m}`,
-          cigarettes: byDay.get(key) || 0,
+          cigarettes: byDay.cigarette.get(key) || 0,
+          joints: byDay.joint.get(key) || 0,
         }
       })
     }
@@ -190,23 +205,30 @@ export default function QuitDashboard() {
     const days30 = buildDays(30)
 
     // Moyenne calculée à partir du premier jour fumé de la fenêtre, pour ne pas diluer avec la période d'abstinence
-    const avgFrom = (days: { cigarettes: number }[]) => {
-      const first = days.findIndex((d) => d.cigarettes > 0)
+    const avgFrom = (days: Record<'cigarettes' | 'joints', number>[], field: 'cigarettes' | 'joints') => {
+      const first = days.findIndex((d) => d[field] > 0)
       if (first === -1) return 0
       const slice = days.slice(first)
-      return slice.reduce((s, d) => s + d.cigarettes, 0) / slice.length
+      return slice.reduce((s, d) => s + d[field], 0) / slice.length
     }
 
-    const todayTs = todayEntries.map((e) => e.ts)
-    const gaps = todayTs.slice(1).map((t, i) => t - todayTs[i])
-    const avgGapToday = gaps.length ? gaps.reduce((s, g) => s + g, 0) / gaps.length : null
-
-    const byHour = new Array(24).fill(0)
-    entries.forEach((e) => {
-      const h = parseInt(e.time.slice(0, 2))
-      if (!isNaN(h)) byHour[h] += e.count
-    })
-    const peakHour = byHour.some((v) => v > 0) ? byHour.indexOf(Math.max(...byHour)) : null
+    const perKind = (kind: Kind) => {
+      const field = kind === 'cigarette' ? 'cigarettes' : 'joints'
+      const ts = todayEntries.filter((e) => e.kind === kind).map((e) => e.ts)
+      const gaps = ts.slice(1).map((t, i) => t - ts[i])
+      const byHour = new Array(24).fill(0)
+      entries.forEach((e) => {
+        const h = parseInt(e.time.slice(0, 2))
+        if (e.kind === kind && !isNaN(h)) byHour[h] += e.count
+      })
+      return {
+        yesterday: days7[5]?.[field] ?? 0,
+        avg7: avgFrom(days7, field),
+        avg30: avgFrom(days30, field),
+        avgGap: gaps.length ? gaps.reduce((s, g) => s + g, 0) / gaps.length : null,
+        peakHour: byHour.some((v) => v > 0) ? byHour.indexOf(Math.max(...byHour)) : null,
+      }
+    }
 
     // Nuits : de la dernière cigarette avant de dormir à la première après le réveil
     const nights = computeNights(entries)
@@ -233,11 +255,8 @@ export default function QuitDashboard() {
     return {
       days7,
       days30,
-      avg7: avgFrom(days7),
-      avg30: avgFrom(days30),
-      avgGapToday,
-      peakHour,
-      yesterday: days7[5]?.cigarettes ?? 0,
+      cigarette: perKind('cigarette'),
+      joint: perKind('joint'),
       lastNight,
       avgNight7,
       longestNight,
@@ -273,7 +292,7 @@ export default function QuitDashboard() {
       {/* Chrono + chemin vers le record */}
       <section className={styles.hero} aria-labelledby="streak-title">
         <h1 id="streak-title" className={styles.heroTitle}>
-          {sinceLast === null ? 'Aucune cigarette notée' : 'Sans fumer depuis'}
+          {sinceLast === null ? 'Rien de noté pour l’instant' : 'Sans fumer depuis'}
         </h1>
 
         {sinceLast !== null && (
@@ -288,7 +307,7 @@ export default function QuitDashboard() {
 
         {data?.lastSmoked && (
           <p className={styles.heroMeta}>
-            Dernière cigarette le {formatDateFr(data.lastSmoked.date)} à {data.lastSmoked.time.slice(0, 5)}
+            Dernière consommation le {formatDateFr(data.lastSmoked.date)} à {data.lastSmoked.time.slice(0, 5)}
           </p>
         )}
 
@@ -342,47 +361,89 @@ export default function QuitDashboard() {
       {/* Patch nicotine */}
       <PatchToggle />
 
-      {/* Mesure de la fréquence */}
+      {/* Mesure de la fréquence : deux compteurs */}
       <section className={styles.panel} aria-labelledby="today-title">
-        <div className={styles.todayHead}>
-          <div>
-            <h2 id="today-title" className={styles.panelTitle}>
-              {todayKey === localDateKey(new Date(now)) ? 'Aujourd’hui' : `Journée du ${formatDateFr(todayKey, false)}`}
-            </h2>
-            <p className={styles.dayHint}>
-              {todayKey === localDateKey(new Date(now))
-                ? 'Depuis ton réveil'
-                : 'Tu n’es pas encore couché : ces cigarettes comptent pour la veille'}
-            </p>
-            <p className={styles.todayCount}>
-              <span className={`${styles.countNumber} ${justLogged ? styles.bump : ''}`}>{todayCount}</span>
-              <span className={styles.countUnit}>cigarette{todayCount > 1 ? 's' : ''}</span>
-            </p>
-          </div>
-          <div className={styles.actions}>
-            <button className={styles.logButton} onClick={addCigarette} disabled={saving}>
-              {saving ? 'Enregistrement…' : justLogged ? 'Notée' : 'Noter une cigarette'}
-            </button>
-            {todayEntries.length > 0 && (
-              <button className={styles.linkButton} onClick={undoLast} disabled={saving}>
-                Annuler la dernière
-              </button>
-            )}
-          </div>
+        <h2 id="today-title" className={styles.panelTitle}>
+          {todayKey === localDateKey(new Date(now)) ? 'Aujourd’hui' : `Journée du ${formatDateFr(todayKey, false)}`}
+        </h2>
+        <p className={styles.dayHint}>
+          {todayKey === localDateKey(new Date(now))
+            ? 'Depuis ton réveil'
+            : 'Tu n’es pas encore couché : ce que tu fumes compte pour la veille'}
+        </p>
+
+        <div className={styles.counters}>
+          {(['cigarette', 'joint'] as Kind[]).map((kind) => {
+            const n = countOf(kind)
+            return (
+              <div key={kind} className={`${styles.counter} ${kind === 'joint' ? styles.counterJoint : ''}`}>
+                <div className={styles.counterHead}>
+                  <SmokeIcon rainbow={kind === 'joint'} size={72} />
+                  <span className={styles.counterName}>{KIND_LABEL[kind].many}</span>
+                </div>
+                <p className={styles.todayCount}>
+                  <span className={`${styles.countNumber} ${justLogged === kind ? styles.bump : ''}`}>{n}</span>
+                  <span className={styles.countUnit}>{plural(kind, n)}</span>
+                </p>
+                <button
+                  className={`${styles.logButton} ${kind === 'joint' ? styles.logJoint : ''}`}
+                  onClick={() => addSmoke(kind)}
+                  disabled={saving}
+                >
+                  {justLogged === kind ? (kind === 'joint' ? 'Noté' : 'Notée') : kind === 'joint' ? 'Noter un joint' : 'Noter une cigarette'}
+                </button>
+              </div>
+            )
+          })}
         </div>
+        {todayEntries.length > 0 && (
+          <button className={styles.linkButton} onClick={undoLast} disabled={saving}>
+            Annuler la dernière saisie ({todayEntries[todayEntries.length - 1].kind}{' '}
+            de {todayEntries[todayEntries.length - 1].time})
+          </button>
+        )}
 
         <DayRail entries={todayEntries} now={now} journee={todayKey} />
 
-        <dl className={styles.figures}>
-          <Figure label="Écart moyen sur la journée" value={stats.avgGapToday !== null ? formatDuration(stats.avgGapToday) : '–'} />
-          <Figure label="Hier" value={String(stats.yesterday)} />
-          <Figure label="Moyenne sur 7 jours" value={fr1(stats.avg7)} />
-          <Figure label="Moyenne sur 30 jours" value={fr1(stats.avg30)} />
-          <Figure label="Heure la plus fréquente" value={stats.peakHour !== null ? `${stats.peakHour} h` : '–'} />
-        </dl>
+        <div className={styles.tableWrap}>
+          <table className={styles.kindTable}>
+            <thead>
+              <tr>
+                <th scope="col">
+                  <span className={styles.srOnly}>Type</span>
+                </th>
+                <th scope="col">Hier</th>
+                <th scope="col">Moyenne 7 j</th>
+                <th scope="col">Moyenne 30 j</th>
+                <th scope="col">Écart moyen sur la journée</th>
+                <th scope="col">Heure la plus fréquente</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(['cigarette', 'joint'] as Kind[]).map((kind) => {
+                const k = stats[kind]
+                return (
+                  <tr key={kind}>
+                    <th scope="row">
+                      <span className={styles.rowKind}>
+                        <SmokeIcon rainbow={kind === 'joint'} size={36} />
+                        {KIND_LABEL[kind].many}
+                      </span>
+                    </th>
+                    <td data-label="Hier">{k.yesterday}</td>
+                    <td data-label="Moyenne 7 j">{fr1(k.avg7)}</td>
+                    <td data-label="Moyenne 30 j">{fr1(k.avg30)}</td>
+                    <td data-label="Écart moyen">{k.avgGap !== null ? formatDuration(k.avgGap) : '–'}</td>
+                    <td data-label="Heure fréquente">{k.peakHour !== null ? `${k.peakHour} h` : '–'}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
 
         <div className={styles.chartHead}>
-          <h3 className={styles.chartTitle}>Cigarettes par jour</h3>
+          <h3 className={styles.chartTitle}>Par jour</h3>
           <div className={styles.segmented} role="group" aria-label="Période du graphique">
             <button aria-pressed={range === 7} onClick={() => setRange(7)}>
               7 jours
@@ -395,6 +456,16 @@ export default function QuitDashboard() {
         <div className={styles.chart}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
+              <defs>
+                <linearGradient id="jointBar" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#e63946" />
+                  <stop offset="20%" stopColor="#f4a261" />
+                  <stop offset="40%" stopColor="#f6d84a" />
+                  <stop offset="60%" stopColor="#52b788" />
+                  <stop offset="80%" stopColor="#4895ef" />
+                  <stop offset="100%" stopColor="#8e5bd8" />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="2 4" vertical={false} stroke="var(--line)" />
               <XAxis
                 dataKey="label"
@@ -406,18 +477,24 @@ export default function QuitDashboard() {
               <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--ink-soft)' }} tickLine={false} axisLine={false} />
               <Tooltip
                 cursor={{ fill: 'var(--air-deep)' }}
-                formatter={(v: number) => [v, 'Cigarettes']}
                 contentStyle={{ borderRadius: 8, border: '1px solid var(--line)', fontSize: 13 }}
               />
-              {stats.avg7 > 0 && <ReferenceLine y={stats.avg7} stroke="var(--brass)" strokeDasharray="4 4" />}
-              <Bar dataKey="cigarettes" fill="var(--slate)" radius={[3, 3, 0, 0]} maxBarSize={36} />
+              <Bar dataKey="cigarettes" name="Cigarettes" stackId="a" fill="var(--slate)" maxBarSize={36} />
+              <Bar dataKey="joints" name="Joints" stackId="a" fill="url(#jointBar)" radius={[3, 3, 0, 0]} maxBarSize={36} />
             </BarChart>
           </ResponsiveContainer>
         </div>
+        <p className={styles.legend}>
+          <span className={styles.legendItem}>
+            <span className={styles.swatch} /> Cigarettes
+          </span>
+          <span className={styles.legendItem}>
+            <span className={`${styles.swatch} ${styles.swatchJoint}`} /> Joints
+          </span>
+        </p>
         <p className={styles.footnote}>
           Une journée va de ton réveil à ton coucher : ce que tu fumes entre minuit et {NIGHT_END_HOUR} h compte pour
-          la veille. La ligne pointillée marque ta moyenne sur 7 jours. Pour noter l’envie, le déclencheur ou le contexte, utilise{' '}
-          <Link href="/new">Nouvelle entrée</Link>.
+          la veille. Pour noter l’envie, le déclencheur ou le contexte, utilise <Link href="/new">Nouvelle entrée</Link>.
         </p>
       </section>
 
@@ -566,7 +643,15 @@ function Figure({ label, value }: { label: string; value: string }) {
 }
 
 /** Frise de la journée, de 5 h à 5 h le lendemain : un trait par cigarette, à son heure. */
-function DayRail({ entries, now, journee }: { entries: { id: string; ts: number; time: string; count: number }[]; now: number; journee: string }) {
+function DayRail({
+  entries,
+  now,
+  journee,
+}: {
+  entries: { id: string; ts: number; time: string; count: number; kind: Kind }[]
+  now: number
+  journee: string
+}) {
   const [y, m, d] = journee.split('-').map(Number)
   const start = new Date(y, m - 1, d, NIGHT_END_HOUR).getTime()
   const pos = (ts: number) => Math.min(100, Math.max(0, ((ts - start) / DAY) * 100))
@@ -577,7 +662,12 @@ function DayRail({ entries, now, journee }: { entries: { id: string; ts: number;
       <div className={styles.railTrack} aria-hidden="true">
         <div className={styles.railElapsed} style={{ width: `${nowPct}%` }} />
         {entries.map((e) => (
-          <span key={e.id} className={styles.railMark} style={{ left: `${pos(e.ts)}%` }} title={e.time}>
+          <span
+            key={e.id}
+            className={`${styles.railMark} ${e.kind === 'joint' ? styles.railJoint : ''}`}
+            style={{ left: `${pos(e.ts)}%` }}
+            title={`${e.kind} à ${e.time}`}
+          >
             {e.count > 1 && <span className={styles.railMulti}>×{e.count}</span>}
           </span>
         ))}
@@ -590,8 +680,8 @@ function DayRail({ entries, now, journee }: { entries: { id: string; ts: number;
       </div>
       <p className={styles.srOnly}>
         {entries.length
-          ? `Cigarettes de la journée à ${entries.map((e) => e.time).join(', ')}`
-          : 'Aucune cigarette notée sur cette journée'}
+          ? `Sur la journée : ${entries.map((e) => `${e.kind} à ${e.time}`).join(', ')}`
+          : 'Rien de noté sur cette journée'}
       </p>
     </div>
   )

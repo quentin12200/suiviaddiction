@@ -27,6 +27,7 @@ export default function NewEntryPage() {
     date: dateStr,
     time: timeStr,
     hasSmoked: false,
+    kind: 'joint',
     jointCount: 1,
     jointTime: timeStr,
     cravingLevel: 5,
@@ -287,8 +288,25 @@ export default function NewEntryPage() {
             <>
               <div className={styles.row}>
                 <div className={styles.formGroup}>
+                  <label htmlFor="kind" className={styles.label}>
+                    Quoi ? *
+                  </label>
+                  <select
+                    id="kind"
+                    name="kind"
+                    value={formData.kind}
+                    onChange={handleChange}
+                    className={styles.input}
+                  >
+                    <option value="joint">Joint</option>
+                    <option value="cigarette">Cigarette</option>
+                  </select>
+                </div>
+              </div>
+              <div className={styles.row}>
+                <div className={styles.formGroup}>
                   <label htmlFor="jointCount" className={styles.label}>
-                    Nombre de joints *
+                    {formData.kind === 'cigarette' ? 'Nombre de cigarettes *' : 'Nombre de joints *'}
                   </label>
                   <input
                     id="jointCount"
@@ -304,7 +322,7 @@ export default function NewEntryPage() {
 
                 <div className={styles.formGroup}>
                   <label htmlFor="jointTime" className={styles.label}>
-                    Heure du joint
+                    {formData.kind === 'cigarette' ? 'Heure de la cigarette' : 'Heure du joint'}
                   </label>
                   <input
                     id="jointTime"

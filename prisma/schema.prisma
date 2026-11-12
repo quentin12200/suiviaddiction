@@ -18,6 +18,7 @@ model Entry {
   time                  String   // Format HH:mm
   hasSmoked             Boolean
   jointCount            Int      @default(0)
+  kind                  String?  // "cigarette" ou "joint" ; vide = ancienne entrée, comptée comme joint
   jointTime             String?  // Heure du joint si différente
   minutesSinceLastJoint Int?
   cravingLevel          Int      // 0-10

@@ -653,3 +653,187 @@
 .figures.nightFigures {
   grid-template-columns: repeat(3, 1fr);
 }
+
+/* Deux compteurs : cigarettes / joints */
+.counters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--air);
+}
+
+.counterJoint {
+  background:
+    linear-gradient(var(--air), var(--air)) padding-box,
+    linear-gradient(90deg, #e63946, #f4a261, #f6d84a, #52b788, #4895ef, #8e5bd8) border-box;
+  border: 2px solid transparent;
+}
+
+.counterHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.counterName {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: capitalize;
+}
+
+.counter .todayCount {
+  margin: 0;
+}
+
+.counter .logButton {
+  width: 100%;
+  min-width: 0;
+}
+
+.logJoint {
+  background: var(--slate);
+}
+
+.logJoint:hover:not(:disabled) {
+  background: var(--ink);
+}
+
+.counter + .counter {
+  margin: 0;
+}
+
+.panel > .linkButton {
+  margin-top: 10px;
+}
+
+.railJoint {
+  width: 6px;
+  margin-left: -3px;
+  background: linear-gradient(180deg, #e63946, #f4a261, #f6d84a, #52b788, #4895ef, #8e5bd8);
+}
+
+/* Tableau par type */
+.tableWrap {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.kindTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.kindTable th,
+.kindTable td {
+  padding: 12px 12px 12px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.kindTable thead th {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--ink-soft);
+  border-bottom-color: var(--line-strong);
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.kindTable td {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowKind {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: capitalize;
+}
+
+.legend {
+  display: flex;
+  gap: 18px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--slate);
+}
+
+.swatchJoint {
+  background: linear-gradient(90deg, #e63946, #f4a261, #f6d84a, #52b788, #4895ef, #8e5bd8);
+}
+
+@media (max-width: 640px) {
+  .counters {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kindTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .kindTable tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .kindTable th,
+  .kindTable td {
+    border-bottom: none;
+    padding: 2px 0;
+  }
+
+  .kindTable tbody th {
+    grid-column: 1 / -1;
+    margin-bottom: 4px;
+  }
+
+  .kindTable td::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-soft);
+  }
+}

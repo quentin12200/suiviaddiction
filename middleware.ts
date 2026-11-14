@@ -7,7 +7,9 @@ const publicRoutes = [
   '/api/auth/login',
   '/api/auth/google/login',
   '/api/auth/google/callback',
-  '/api/auth/google/route'
+  '/api/auth/google/route',
+  // Appelée par le planificateur : la route vérifie elle-même CRON_SECRET ou la session
+  '/api/notifications/habit-check',
 ]
 
 export async function middleware(request: NextRequest) {

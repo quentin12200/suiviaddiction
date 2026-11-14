@@ -15,6 +15,7 @@ import {
 import styles from './QuitDashboard.module.css'
 import PatchToggle from './PatchToggle'
 import SmokeIcon from './SmokeIcon'
+import HabitInsights from './HabitInsights'
 import {
   assignJournees,
   computeNights,
@@ -364,6 +365,9 @@ export default function QuitDashboard() {
         )}
       </section>
 
+      {/* Bandeau : heure habituelle imminente */}
+      <HabitInsights part="alert" />
+
       {/* Patch nicotine */}
       <PatchToggle />
 
@@ -503,6 +507,9 @@ export default function QuitDashboard() {
           la veille. Pour noter l’envie, le déclencheur ou le contexte, utilise <Link href="/new">Nouvelle entrée</Link>.
         </p>
       </section>
+
+      {/* Heures habituelles + projections, sur tout l'historique */}
+      <HabitInsights part="panels" recordMs={record?.durationMs ?? null} lastSmoked={data?.lastSmoked ?? null} />
 
       {/* Nuits d'abstinence */}
       <section className={styles.panel} aria-labelledby="nights-title">

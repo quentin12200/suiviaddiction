@@ -1,0 +1,26 @@
+# Toutes les 15 minutes, demande au site s'il faut envoyer une alerte « heure habituelle ».
+# À configurer une fois dans GitHub : Settings > Secrets and variables > Actions
+#   APP_URL      : l'adresse du site (ex. https://mon-site.vercel.app)
+#   CRON_SECRET  : la même valeur que la variable CRON_SECRET sur Vercel
+name: Alertes heures habituelles
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Vérifier l'heure habituelle
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "APP_URL ou CRON_SECRET manquant : rien à faire."
+            exit 0
+          fi
+          curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/notifications/habit-check"
